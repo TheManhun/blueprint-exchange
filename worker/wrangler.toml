@@ -1,0 +1,7 @@
+name = "blueprint-exchange-thumbnails"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[[r2_buckets]]
+binding = "BLUEPRINT_THUMBNAILS"
+bucket_name = "blueprint-thumbnails"

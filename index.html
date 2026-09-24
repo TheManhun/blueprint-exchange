@@ -82,6 +82,7 @@
   #thumbCanvas:active { cursor: grabbing; }
   #thumbZoom { width: 100%; margin: 10px 0 0; }
   #thumbCropStage label { margin: 14px 0 2px; }
+  #r2TestPanel { flex-basis: 100%; border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
 </style>
 </head>
 <body>
@@ -151,6 +152,14 @@
         <p class="hint">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a> &mdash; local test only, not uploaded yet.</p>
         <button type="button" id="changeThumbBtn">Change image</button>
         <button type="button" id="removeThumbBtn">Remove image</button>
+        <!-- Stage 2 dev panel: uploads to the Worker/R2 in isolation, no
+             Supabase call. Remove this block (and r2TestPanel's script
+             further down) once stage 3 wires thumbnail_url into the
+             real submit and this manual check is no longer needed. -->
+        <div id="r2TestPanel">
+          <button type="button" id="r2TestBtn">Test R2 upload</button>
+          <p class="hint" id="r2TestMsg"></p>
+        </div>
       </div>
     </div>
 
@@ -614,6 +623,78 @@
     readyBox.hidden = false;
     addBtn.hidden = true;
     closeDialog();
+  });
+
+})();
+</script>
+
+<script>
+// ============================================================
+// STAGE 2 dev-only check: POST window.bpThumbnail.blob (set by the
+// stage 1 cropper above) to the Cloudflare Worker and show whatever
+// it returns. Deliberately isolated -- it does not touch the
+// blueprint upload button, does not call Supabase, and saves nothing.
+// Its only job is proving the Worker writes to R2 and hands back a
+// URL that actually loads an image, before stage 3 wires this into
+// the real submit. Delete this block (and the #r2TestPanel markup)
+// once that's done.
+(function () {
+
+  // Fill in after `wrangler deploy` -- see worker/DEPLOY.md. Left blank
+  // on purpose: the panel below refuses to run until this is set, so
+  // there's no way to silently POST to the wrong place.
+  const WORKER_UPLOAD_URL = ""; // e.g. "https://blueprint-exchange-thumbnails.<your-subdomain>.workers.dev"
+
+  const btn = document.getElementById("r2TestBtn");
+  const msg = document.getElementById("r2TestMsg");
+
+  if (!btn) return;
+
+  btn.addEventListener("click", async function () {
+
+    if (!WORKER_UPLOAD_URL) {
+      msg.textContent = "WORKER_UPLOAD_URL isn't set yet -- deploy the Worker, then paste its URL into the script (see worker/DEPLOY.md).";
+      msg.style.color = "var(--bad)";
+      return;
+    }
+
+    if (!window.bpThumbnail || !window.bpThumbnail.blob) {
+      msg.textContent = "No processed thumbnail yet -- use the cropper above first.";
+      msg.style.color = "var(--bad)";
+      return;
+    }
+
+    btn.disabled = true;
+    msg.style.color = "var(--ink-2)";
+    msg.textContent = "Uploading to the Worker…";
+
+    try {
+
+      const res = await fetch(WORKER_UPLOAD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "image/webp" },
+        body: window.bpThumbnail.blob,
+      });
+
+      const data = await res.json().catch(function () { return null; });
+
+      if (!res.ok || !data || !data.ok) {
+        const reason = (data && data.error) || ("HTTP " + res.status);
+        msg.textContent = "Worker rejected the upload: " + reason;
+        msg.style.color = "var(--bad)";
+        return;
+      }
+
+      msg.innerHTML = "Uploaded. Public URL: <a href=\"" + data.url + "\" target=\"_blank\" rel=\"noopener\">" + data.url + "</a> -- open it to confirm the image loads.";
+      msg.style.color = "var(--ok)";
+
+    } catch (err) {
+      msg.textContent = "Request failed: " + err.message + " (check the Worker's CORS origin and that it's deployed).";
+      msg.style.color = "var(--bad)";
+    } finally {
+      btn.disabled = false;
+    }
+
   });
 
 })();
