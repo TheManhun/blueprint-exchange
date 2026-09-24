@@ -192,9 +192,10 @@
   <h2 id="dlgTitle">Downloaded</h2>
   <p id="dlgBody"></p>
   <ol class="steps">
-    <li>Move <code id="dlgFile"></code> into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it).</li>
-    <li>In game: <strong>BP</strong> &rarr; <strong>[ Import ]</strong>. It lands in your library as <code id="dlgName"></code>.</li>
-    <li><strong>[ Place ]</strong>, aim, click. (Import each download before grabbing the next &mdash; the inbox holds one file.)</li>
+    <li>Your Downloads folder may already have a file with this name from an earlier download -- if so, Windows just saved this one as <code id="dlgFile"></code>&nbsp;<strong>(1)</strong> instead of overwriting it. Check the name before you move it.</li>
+    <li>Move it into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it) &mdash; renamed back to exactly <code id="dlgFile2"></code> if it picked up a <strong>(1)</strong>.</li>
+    <li>In game: <strong>BP</strong> &rarr; <strong>Import a download</strong>. It lands in your library as <code id="dlgName"></code>.</li>
+    <li><strong>Place</strong>, aim, click. Downloading a second blueprint before doing this? Move this one out of Downloads first, or the next download will just pile up as another <strong>(1)</strong>, <strong>(2)</strong>&hellip;</li>
   </ol>
   <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
 </dialog>
@@ -294,6 +295,7 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     document.getElementById("dlgFile").textContent = fileName;
+    document.getElementById("dlgFile2").textContent = fileName;
     document.getElementById("dlgName").textContent = fileBase;
     document.getElementById("dlgBody").textContent = `"${btn.dataset.name}" is in your downloads folder.`;
     document.getElementById("dlg").showModal();
