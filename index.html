@@ -70,12 +70,14 @@
   @media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
 
   /* Thumbnail field + cropper (stage 1: local only, no upload) */
-  /* Decision -- one persistent image slot, always populated (placeholder
-     art or the real crop), sitting right beside the button/text instead
-     of a separate banner above a box that could show broken. */
-  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
-  #thumbSlotImg { display: block; width: 240px; height: 135px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); flex: none; }
-  #thumbSlotSide { flex: 1 1 220px; min-width: 220px; }
+  /* One persistent image slot, always populated (placeholder art or
+     the real crop), stacked above the button -- the placeholder art
+     has its own arrow pointing up at where the button sits, so the
+     button has to stay below it, not next to it (Epod: "why move the
+     button the image points UP to where the button was"). */
+  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
+  #thumbSlotImg { display: block; width: 100%; max-width: 320px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); margin: 0 0 12px; }
+  #thumbSlotSide { max-width: 320px; }
   #thumbSlotSide .hint { max-width: 32ch; margin-top: 0; }
   #thumbReadyActions:not([hidden]) { display: flex; gap: 10px; margin-top: 10px; }
   dialog#thumbDlg { max-width: 560px; width: calc(100% - 32px); }
