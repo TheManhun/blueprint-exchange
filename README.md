@@ -71,3 +71,21 @@ image is loaded.
 Preview image field by default, before Add a preview image is ever
 pressed -- not just inside the popup dialog. It hides once an image is
 chosen and reappears if that image is removed.
+
+## Card thumbnail crop bug (found and fixed)
+
+Browse cards were cropping preview images far more aggressively than
+the cropper's own 480x270 export -- root cause: `.thumb` set a CSS
+`width` but relied on `aspect-ratio: 16/9` to derive the height, while
+the `<img>` tag's own `height="270"` HTML attribute counts as an
+already-definite height in the box-sizing algorithm, so `aspect-ratio`
+never got to compute it from the real rendered width. The box ended
+up (card width) x 270px -- nowhere near 16:9 -- and `object-fit: cover`
+zoomed hard to fill that mismatched box, chopping the sides off.
+Fixed with one rule, `height: auto` on `.thumb`, letting `aspect-ratio`
+actually control the box. Verified with a real Chromium instance:
+before the fix a card rendered at ratio 1.18 (should be 1.78); after,
+1.7779. The exported thumbnail file itself was always a correct,
+undistorted 480x270 -- confirmed against two real uploads in
+production -- so no crop/export logic needed to change, only the
+card's own display CSS.
