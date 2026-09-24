@@ -54,3 +54,35 @@ grant execute on function public.bp_download(bigint) to anon;
 
 -- Moderation (Supabase SQL editor only):
 --   delete from public.bp_blueprints where id = <id>;
+
+-- Second migration ("blue_print_library_identity"): blueprint identity.
+-- The mod stamps a permanent blueprintId + version into every capture;
+-- an upload of an id seen before becomes the next version (bp_next_version),
+-- and bp_list() shows only the latest version of each id.
+alter table public.bp_blueprints
+  add column if not exists blueprint_id text,
+  add column if not exists version int not null default 1;
+
+create index if not exists bp_blueprints_blueprint_id_idx on public.bp_blueprints (blueprint_id);
+
+create or replace function public.bp_list()
+returns jsonb language sql security definer set search_path = public as $$
+  with latest as (
+    select distinct on (coalesce(blueprint_id, id::text)) *
+    from public.bp_blueprints
+    order by coalesce(blueprint_id, id::text), version desc, created_at desc
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id, 'created_at', created_at, 'name', name, 'author', author,
+    'description', description, 'game', game, 'constructions', constructions,
+    'edges', edges, 'requires', requires, 'downloads', downloads,
+    'size', char_length(content), 'blueprint_id', blueprint_id, 'version', version
+  ) order by created_at desc), '[]'::jsonb)
+  from latest;
+$$;
+
+create or replace function public.bp_next_version(p_blueprint_id text)
+returns int language sql security definer set search_path = public as $$
+  select coalesce(max(version), 0) + 1 from public.bp_blueprints where blueprint_id = p_blueprint_id;
+$$;
+grant execute on function public.bp_next_version(text) to anon;

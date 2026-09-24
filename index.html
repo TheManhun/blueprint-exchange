@@ -152,7 +152,7 @@
       const req = (b.requires && b.requires.constructions) || [];
       return `<article class="card">
         <h3>${esc(b.name)}</h3>
-        <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
+        <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
         <p class="desc">${esc(b.description || "")}</p>
         <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>
         ${req.length ? `<div class="req">needs: ${esc(req.join(", "))}</div>` : ""}
@@ -171,12 +171,13 @@
     const btn = e.target.closest("button[data-id]");
     if (!btn) return;
     btn.disabled = true;
+    const row = all.find((b) => String(b.id) === btn.dataset.id) || {};
     const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
     btn.disabled = false;
     if (error || !content) { alert("Download failed -- try again in a moment."); return; }
     const fileBase = sanitize(btn.dataset.name);
     const fileName = `blue_print_bp_${fileBase}.lua`;
-    const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+    const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
@@ -201,7 +202,24 @@
     const reqBlock = (text.match(/requires = \{([\s\S]*?)\}\s*,\s*constructions = \{/) || [, ""])[1];
     const requires = { constructions: [...reqBlock.matchAll(/"([^"]+\.con)"/g)].map((m) => m[1]) };
     const name = (text.match(/^-- Name: (.*)$/m) || [, ""])[1].trim();
-    return { constructions: Number(constructions), edges, requires, name };
+    const blueprintId = (text.match(/\bblueprintId = "([0-9a-f]+)"/) || [, null])[1];
+    const author = (text.match(/\bauthor = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
+    const description = (text.match(/\bdescription = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
+    return { constructions: Number(constructions), edges, requires, name, blueprintId, author, description };
+  }
+
+  // Lua %q-style string literal.
+  const luaStr = (s) => '"' + String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, "\\n") + '"';
+
+  // The file the page hands out is the stored text with identity stamped
+  // in: origin -> "community", plus author/description/version so they
+  // travel with the file even when it's passed on by hand. Any existing
+  // origin/author/description/version keys are replaced.
+  function stampCommunity(text, row) {
+    let out = text.replace(/\b(origin|author|description|version) = (?:"(?:[^"\\]|\\.)*"|\d+|nil)\s*,?\s*/g, "");
+    const stamp = `origin = "community", version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, `;
+    out = out.replace(/return\s*\{/, "return {" + stamp);
+    return out.replace(/^-- Origin: .*$/m, `-- Origin: community | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
   }
 
   document.getElementById("file").addEventListener("change", async (e) => {
@@ -218,6 +236,10 @@
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB.`;
     const nameField = document.getElementById("name");
     if (!nameField.value && r.name) nameField.value = r.name;
+    const authorField = document.getElementById("author");
+    if (!authorField.value && r.author) authorField.value = r.author;
+    const descField = document.getElementById("desc");
+    if (!descField.value && r.description) descField.value = r.description;
     document.getElementById("upload").disabled = false;
   });
 
@@ -228,13 +250,20 @@
     if (!name) { msg.className = "msg bad"; msg.textContent = "Give it a name."; return; }
     const btn = document.getElementById("upload");
     btn.disabled = true;
+    // Same blueprintId seen before -> the next version of it, not a duplicate.
+    let version = 1;
+    if (pending.blueprintId) {
+      const { data: v } = await sb.rpc("bp_next_version", { p_blueprint_id: pending.blueprintId });
+      version = Number(v) || 1;
+    }
     const { error } = await sb.from("bp_blueprints").insert({
       name, author: document.getElementById("author").value.trim() || null,
       description: document.getElementById("desc").value.trim() || null,
       content: pending.text, constructions: pending.constructions, edges: pending.edges, requires: pending.requires,
+      blueprint_id: pending.blueprintId, version,
     });
     if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
-    msg.className = "msg ok"; msg.textContent = `"${name}" is in the library. Thank you!`;
+    msg.className = "msg ok"; msg.textContent = version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`;
     pending = null; document.getElementById("file").value = "";
     load();
   });
