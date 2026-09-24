@@ -237,6 +237,12 @@
     window.bpThumbnail = null;
     const readyBox = document.getElementById("thumbReady");
     const addBtn = document.getElementById("addThumbBtn");
+    const readyImgEl = document.getElementById("thumbReadyImg");
+    // The revoked URL above still sits in the <img>'s src otherwise --
+    // if this box is ever shown again without a fresh image, it shows
+    // a broken icon instead of just being empty (Epod: "I was
+    // expecting to see the Upload your image pic there").
+    if (readyImgEl) readyImgEl.removeAttribute("src");
     if (readyBox) readyBox.hidden = true;
     if (addBtn) addBtn.hidden = false;
   }
@@ -637,6 +643,7 @@
       URL.revokeObjectURL(window.bpThumbnail.url);
     }
     window.bpThumbnail = null;
+    readyImg.removeAttribute("src"); // same fix as clearThumbnail -- never leave a dead blob: URL sitting in src
     readyBox.hidden = true;
     addBtn.hidden = false;
   });
