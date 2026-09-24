@@ -76,7 +76,9 @@
      button has to stay below it, not next to it (Epod: "why move the
      button the image points UP to where the button was"). */
   #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
-  #thumbSlotImg { display: block; width: 100%; max-width: 320px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); margin: 0 0 12px; }
+  #thumbSlotWrap { position: relative; width: 100%; max-width: 320px; margin: 0 0 12px; }
+  #thumbSlotImg { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
+  #thumbSlotWrap #addThumbBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 2px 10px rgba(0,0,0,.4); }
   #thumbSlotSide { max-width: 320px; }
   #thumbSlotSide .hint { max-width: 32ch; margin-top: 0; }
   #thumbReadyActions:not([hidden]) { display: flex; gap: 10px; margin-top: 10px; }
@@ -157,9 +159,11 @@
 
     <label>Preview image (optional)</label>
     <div id="thumbField">
-      <img id="thumbSlotImg" src="drop-placeholder.webp" alt="" width="240" height="135">
-      <div id="thumbSlotSide">
+      <div id="thumbSlotWrap">
+        <img id="thumbSlotImg" src="drop-placeholder.webp" alt="" width="240" height="135">
         <button type="button" id="addThumbBtn">Add a preview image</button>
+      </div>
+      <div id="thumbSlotSide">
         <p class="hint" id="thumbEmptyHint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
         <p class="hint" id="thumbReadyMsg" hidden>Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
         <p class="hint" id="thumbReadyError" hidden></p>
