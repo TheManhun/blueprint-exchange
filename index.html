@@ -51,6 +51,9 @@
   label { display: block; font-weight: 600; margin: 12px 0 4px; }
   input[type=text], textarea { width: 100%; font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); }
   textarea { min-height: 70px; resize: vertical; }
+  figure { margin: 16px 0 0; }
+  figure img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+  figcaption { color: var(--ink-2); font-size: 14px; margin-top: 8px; }
   .hint { color: var(--ink-2); font-size: 14px; margin: 4px 0 0; }
   .msg { padding: 10px 14px; border-radius: 6px; margin: 12px 0 0; display: none; }
   .msg.ok { display: block; background: var(--accent-soft); }
@@ -70,7 +73,7 @@
 <div class="wrap">
   <p class="eyebrow">Transport Fever 2 &middot; Blueprint Exchange mod</p>
   <h1>Blueprint Exchange Library</h1>
-  <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blueprint Exchange</strong> mod. Download one, put the file next to the game, Import, Place. New to it? <a href="guide.html">Read the guide</a> &mdash; how to capture your own layout in five minutes.</p>
+  <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blueprint Exchange</strong> mod. Download one, drop it in the game folder, press Import. Want to share your own? <a href="#share">Add it to the library</a>.</p>
 
   <div class="stats" id="stats" aria-live="polite">
     <div class="stat"><b id="statCount">&ndash;</b>blueprints</div>
@@ -85,10 +88,31 @@
     <div class="empty" id="empty" hidden>Nothing here yet &mdash; be the first to share one below.</div>
   </section>
 
+  <section class="panel" id="use">
+    <h2>Downloaded one? The mod won't see it until you do this</h2>
+    <p class="lede">The game can't look inside its own folder, so a download only shows up after you move it there and press one button.</p>
+    <ol class="steps">
+      <li>Every download from this page is named <code>blueprint_import.lua</code>. Find it in your Downloads folder.</li>
+      <li>Move it into the <strong>Transport Fever 2 game folder</strong> &mdash; the one with <code>TransportFever2.exe</code>. Not sure where that is? The picture below shows the three Steam clicks.</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>Import a download</strong>. The blueprint joins your library under its own name.</li>
+      <li>Press <strong>Place</strong>, aim the blue outline at flat, clear ground, turn it if you like, and left-click. If it needs a mod you don't have, the status line names it.</li>
+    </ol>
+    <p class="hint">One download at a time: import it before downloading the next, or the second overwrites the first.</p>
+    <figure>
+      <img src="guide-game-folder.jpg" alt="Three Steam screenshots: right-click Transport Fever 2, choose Manage then Properties, open Installed Files and click Browse">
+      <figcaption>Finding the game folder: Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Properties &rarr; Installed Files &rarr; Browse.</figcaption>
+    </figure>
+  </section>
+
   <section class="panel" id="share">
-    <h2>Share a blueprint</h2>
-    <p class="lede">Pick the file the mod saved next to your game (<code>blueprint_&lt;name&gt;.lua</code>). It's checked here before upload &mdash; only real Blueprint Exchange files, plain data, no code.</p>
-    <p class="hint">Where the files are: the game's install folder, the one with <code>TransportFever2.exe</code>. Usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> &mdash; or, if the game lives on another drive, <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code>. Quickest way there: Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files.</p>
+    <h2>Built something good? Add it to the library</h2>
+    <p class="lede">For designers: capture your layout in game, then upload the file it made.</p>
+    <ol class="steps">
+      <li>In game, open <strong>BP</strong> &rarr; <strong>Capture a design</strong> and follow the numbered steps. Full walkthrough with pictures in the <a href="guide.html">guide</a>.</li>
+      <li>The mod saves it as <code>blueprint_&lt;name&gt;.lua</code> in the same game folder shown above.</li>
+      <li>Pick that file here, add a line about it, upload. Re-uploading the same blueprint later becomes v2, v3&hellip; automatically.</li>
+    </ol>
+    <p class="hint">Files are checked before upload &mdash; only real Blueprint Exchange files, plain data, no code.</p>
     <label for="file">Blueprint file</label>
     <input type="file" id="file" accept=".lua,text/plain">
     <p class="hint" id="fileInfo"></p>
@@ -105,14 +129,6 @@
     <div class="msg" id="uploadMsg"></div>
   </section>
 
-  <section class="panel">
-    <h2>How to use a downloaded blueprint</h2>
-    <ol class="steps">
-      <li>Put the downloaded <code>blueprint_import.lua</code> file <strong>next to the game's executable</strong> &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (or <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code> on another drive). In Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it for you.</li>
-      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>[ Import ]</strong> &mdash; the mod reads the inbox file and files the blueprint into your library under its own name. One download at a time: import before downloading the next.</li>
-      <li>Click <strong>[ Place ]</strong>, aim the blue outline at flat, clear ground, rotate if you like, and left-click. If it needs mods you don't have, the status line names them.</li>
-    </ol>
-  </section>
 
   <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
 </div>
