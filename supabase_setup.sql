@@ -278,3 +278,67 @@ begin
 end;
 $$;
 grant execute on function public.bp_upload(text, text, text, text, int, int, jsonb, text, text, text) to anon;
+
+-- Sixth migration ("blue_print_library_visitors"): unique visitor
+-- count with real day-by-day history, not just a running total. The
+-- "visitor" is a random id the page generates once and keeps in
+-- localStorage -- no IP, no real identity, nothing PII. Two tables:
+-- bp_visits (one row per visitor id ever seen -- the all-time unique
+-- count) and bp_visit_days (one row per visitor per calendar day, so
+-- unique-visitors-per-day can be charted later). Both write-only from
+-- the anon side through bp_track_visit, a single security-definer
+-- function -- no direct table access granted, and it validates the
+-- visitor id's shape before touching a row.
+--
+-- NOTE (caught testing): supabase-js's rpc() builder doesn't expose a
+-- bare .catch() the way a real Promise does -- wrap it in try/await,
+-- not .then/.catch chaining, or errors go uncaught silently wrong.
+create table if not exists public.bp_visits (
+  visitor_id text primary key,
+  first_seen timestamptz not null default now(),
+  last_seen timestamptz not null default now(),
+  visit_count int not null default 1
+);
+alter table public.bp_visits enable row level security;
+
+create table if not exists public.bp_visit_days (
+  day date not null,
+  visitor_id text not null,
+  primary key (day, visitor_id)
+);
+alter table public.bp_visit_days enable row level security;
+create index if not exists bp_visit_days_day_idx on public.bp_visit_days (day);
+
+create or replace function public.bp_track_visit(p_visitor_id text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if p_visitor_id is null or p_visitor_id !~ '^[a-zA-Z0-9_-]{8,64}$' then
+    return;
+  end if;
+
+  insert into public.bp_visits (visitor_id) values (p_visitor_id)
+  on conflict (visitor_id) do update
+    set last_seen = now(), visit_count = bp_visits.visit_count + 1;
+
+  insert into public.bp_visit_days (day, visitor_id) values (current_date, p_visitor_id)
+  on conflict (day, visitor_id) do nothing;
+end;
+$$;
+grant execute on function public.bp_track_visit(text) to anon;
+
+create or replace function public.bp_visit_stats()
+returns jsonb language sql security definer set search_path = public as $$
+  select jsonb_build_object(
+    'total_unique', (select count(*) from public.bp_visits),
+    'last_30_days', coalesce((
+      select jsonb_agg(jsonb_build_object('day', day, 'unique_visitors', cnt) order by day)
+      from (
+        select day, count(*) as cnt
+        from public.bp_visit_days
+        where day > current_date - interval '30 days'
+        group by day
+      ) d
+    ), '[]'::jsonb)
+  );
+$$;
+grant execute on function public.bp_visit_stats() to anon;

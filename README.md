@@ -103,3 +103,12 @@ CSS trap as the download-block banner earlier: `#thumbReadyActions`
 had an unconditional `display: flex` that beat the `hidden` attribute,
 so Change/Remove image showed even in the empty state -- guarded with
 `:not([hidden])`.
+
+## Unique visitors
+
+The stats row shows an all-time unique-visitor count. Each browser
+keeps a random id in localStorage (no IP, no real identity) sent once
+per page load to `bp_track_visit`; `bp_visit_days` keeps a
+one-row-per-visitor-per-day history for a future chart, queryable via
+`bp_visit_stats`. No direct table access from the page -- both go
+through security-definer functions only.

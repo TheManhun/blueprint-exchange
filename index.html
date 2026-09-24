@@ -107,6 +107,7 @@
     <div class="stat"><b id="statCount">&ndash;</b>blueprints</div>
     <div class="stat"><b id="statDownloads">&ndash;</b>downloads</div>
     <div class="stat"><b id="statEdges">&ndash;</b>track &amp; road segments shared</div>
+    <div class="stat"><b id="statVisitors">&ndash;</b>unique visitors</div>
   </div>
 
   <section class="panel" id="browse">
@@ -344,6 +345,35 @@
 
   document.getElementById("inboxResetBtn")?.addEventListener("click", resetInboxSlots);
 
+  // Unique visitors: a random id the page keeps in localStorage,
+  // nothing tied to a real identity or an IP address. Sent once per
+  // page load to bp_track_visit, which is the only thing on the
+  // server that ever sees it (no direct table access from here).
+  function getOrMakeVisitorId() {
+    try {
+      const key = "bpxVisitorId";
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9_-]/g, "");
+        localStorage.setItem(key, id);
+      }
+      return id;
+    } catch (err) {
+      return null; // private browsing etc. -- just skip tracking, never break the page over it
+    }
+  }
+
+  async function trackVisitAndLoadStats() {
+    const visitorId = getOrMakeVisitorId();
+    if (visitorId) {
+      try { await sb.rpc("bp_track_visit", { p_visitor_id: visitorId }); } catch (err) { /* never break the page over this */ }
+    }
+    let data = null;
+    try { ({ data } = await sb.rpc("bp_visit_stats")); } catch (err) { /* leave the stat showing the placeholder */ }
+    const el = document.getElementById("statVisitors");
+    if (el) el.textContent = fmt(data && data.total_unique);
+  }
+
   let all = [];
 
   async function load() {
@@ -525,6 +555,7 @@
 
   load();
   updateInboxIndicator();
+  trackVisitAndLoadStats();
 </script>
 
 <script>
