@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Blue Print Library</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #e2e7ec; --ink: #1b2430; --ink-2: #5b6876;
+    --line: #cfd6de; --accent: #2b6cb0; --accent-ink: #ffffff; --accent-soft: #dbe8f7;
+    --ok: #2f8f57; --bad: #c23f2a; --bad-soft: #f9e1dc; --code-ground: #1b1f24; --code-ink: #e6e1d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+      --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+      --ok: #55b87c; --bad: #e0634f; --bad-soft: #3d2320; --code-ground: #0d1116; --code-ink: #e6e1d6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+    --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+    --ok: #55b87c; --bad: #e0634f; --bad-soft: #3d2320; --code-ground: #0d1116; --code-ink: #e6e1d6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.5 Barlow, system-ui, sans-serif; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding-block: 32px 64px; padding-inline: 16px; }
+  h1, h2, h3 { font-family: "Barlow Condensed", Barlow, sans-serif; text-wrap: balance; margin: 0 0 .3em; }
+  h1 { font-size: 44px; line-height: 1; }
+  h2 { font-size: 26px; }
+  .lede { color: var(--ink-2); max-width: 66ch; margin: 0 0 24px; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-width: 150px; }
+  .stat b { display: block; font-size: 26px; font-family: "Barlow Condensed", sans-serif; font-variant-numeric: tabular-nums; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card h3 { font-size: 22px; margin: 0; }
+  .meta { color: var(--ink-2); font-size: 14px; }
+  .desc { margin: 0; min-height: 1.5em; }
+  .req { font: 12px/1.4 "JetBrains Mono", monospace; color: var(--ink-2); word-break: break-all; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: auto; }
+  button, .btn { font: 600 15px Barlow, sans-serif; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: .55; cursor: default; }
+  section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 0 0 28px; }
+  label { display: block; font-weight: 600; margin: 12px 0 4px; }
+  input[type=text], textarea { width: 100%; font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); }
+  textarea { min-height: 70px; resize: vertical; }
+  .hint { color: var(--ink-2); font-size: 14px; margin: 4px 0 0; }
+  .msg { padding: 10px 14px; border-radius: 6px; margin: 12px 0 0; display: none; }
+  .msg.ok { display: block; background: var(--accent-soft); }
+  .msg.bad { display: block; background: var(--bad-soft); color: var(--bad); }
+  .steps { counter-reset: s; padding: 0; margin: 12px 0 0; list-style: none; }
+  .steps li { counter-increment: s; padding-left: 36px; position: relative; margin: 0 0 10px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 14px/26px "Barlow Condensed", sans-serif; text-align: center; }
+  code { font: 13px "JetBrains Mono", monospace; background: var(--code-ground); color: var(--code-ink); padding: 2px 6px; border-radius: 4px; }
+  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); max-width: 560px; padding: 24px; }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  .empty { color: var(--ink-2); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
+  .search { margin: 0 0 14px; }
+  @media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Transport Fever 2 &middot; Blue Print mod</p>
+  <h1>Blue Print Library</h1>
+  <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blue Print</strong> mod. Download one, put the file next to the game, Import, Place.</p>
+
+  <div class="stats" id="stats" aria-live="polite">
+    <div class="stat"><b id="statCount">&ndash;</b>blueprints</div>
+    <div class="stat"><b id="statDownloads">&ndash;</b>downloads</div>
+    <div class="stat"><b id="statEdges">&ndash;</b>track &amp; road segments shared</div>
+  </div>
+
+  <section class="panel" id="browse">
+    <h2>Browse</h2>
+    <input class="search" type="text" id="search" placeholder="Search by name, author or construction&hellip;" aria-label="Search blueprints">
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" hidden>Nothing here yet &mdash; be the first to share one below.</div>
+  </section>
+
+  <section class="panel" id="share">
+    <h2>Share a blueprint</h2>
+    <p class="lede">Pick the file the mod saved next to your game (<code>blue_print_bp_&lt;name&gt;.lua</code>). It's checked here before upload &mdash; only real Blue Print files, plain data, no code.</p>
+    <label for="file">Blueprint file</label>
+    <input type="file" id="file" accept=".lua,text/plain">
+    <p class="hint" id="fileInfo"></p>
+    <label for="name">Name shown in the library</label>
+    <input type="text" id="name" maxlength="60" placeholder="e.g. Four-platform through station">
+    <label for="author">Your name (optional)</label>
+    <input type="text" id="author" maxlength="60">
+    <label for="desc">Description (optional)</label>
+    <textarea id="desc" maxlength="600" placeholder="What it is, what mods it needs, where it fits&hellip;"></textarea>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="upload" disabled>Upload to the library</button>
+      <span class="hint">Uploads are public and permanent.</span>
+    </div>
+    <div class="msg" id="uploadMsg"></div>
+  </section>
+
+  <section class="panel">
+    <h2>How to use a downloaded blueprint</h2>
+    <ol class="steps">
+      <li>Put the downloaded <code>blue_print_bp_&lt;name&gt;.lua</code> file <strong>next to the game's executable</strong> &mdash; in Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files (the folder with <code>TransportFever2.exe</code>).</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, type the blueprint's name (the part after <code>blue_print_bp_</code>) and click <strong>[ Import File ]</strong>.</li>
+      <li>Click <strong>[ Place ]</strong>, aim the blue outline at flat, clear ground, rotate if you like, and left-click. If it needs mods you don't have, the status line names them.</li>
+    </ol>
+  </section>
+</div>
+
+<dialog id="dlg">
+  <h2 id="dlgTitle">Downloaded</h2>
+  <p id="dlgBody"></p>
+  <ol class="steps">
+    <li>Move <code id="dlgFile"></code> into your game folder (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files).</li>
+    <li>In game: <strong>BP</strong> &rarr; type <code id="dlgName"></code> &rarr; <strong>[ Import File ]</strong>.</li>
+    <li><strong>[ Place ]</strong>, aim, click.</li>
+  </ol>
+  <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = "https://aijqcrrcreectihaeqoc.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_R3nt2zIP1QF6iJiGfJ220A_zX3JTQ0_";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Same rule as the mod's bp_files.sanitizeName, so the file name the
+  // page hands out is exactly what [ Import File ] expects.
+  const sanitize = (s) => (s || "").replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 60);
+  const fmt = (n) => Number(n || 0).toLocaleString();
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  let all = [];
+
+  async function load() {
+    const { data, error } = await sb.rpc("bp_list");
+    if (error) { console.error(error); return; }
+    all = data || [];
+    render();
+  }
+
+  function render() {
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    const grid = document.getElementById("grid");
+    const rows = all.filter((b) => !q || [b.name, b.author, b.description, JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q));
+    grid.innerHTML = rows.map((b) => {
+      const req = (b.requires && b.requires.constructions) || [];
+      return `<article class="card">
+        <h3>${esc(b.name)}</h3>
+        <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
+        <p class="desc">${esc(b.description || "")}</p>
+        <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>
+        ${req.length ? `<div class="req">needs: ${esc(req.join(", "))}</div>` : ""}
+        <div class="row"><button class="primary" data-id="${b.id}" data-name="${esc(b.name)}">Download</button></div>
+      </article>`;
+    }).join("");
+    document.getElementById("empty").hidden = rows.length > 0;
+    document.getElementById("statCount").textContent = fmt(all.length);
+    document.getElementById("statDownloads").textContent = fmt(all.reduce((s, b) => s + (b.downloads || 0), 0));
+    document.getElementById("statEdges").textContent = fmt(all.reduce((s, b) => s + (b.edges || 0), 0));
+  }
+
+  document.getElementById("search").addEventListener("input", render);
+
+  document.getElementById("grid").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-id]");
+    if (!btn) return;
+    btn.disabled = true;
+    const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
+    btn.disabled = false;
+    if (error || !content) { alert("Download failed -- try again in a moment."); return; }
+    const fileBase = sanitize(btn.dataset.name);
+    const fileName = `blue_print_bp_${fileBase}.lua`;
+    const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    document.getElementById("dlgFile").textContent = fileName;
+    document.getElementById("dlgName").textContent = fileBase;
+    document.getElementById("dlgBody").textContent = `"${btn.dataset.name}" is in your downloads folder.`;
+    document.getElementById("dlg").showModal();
+    load();
+  });
+
+  document.getElementById("dlgClose").addEventListener("click", () => document.getElementById("dlg").close());
+
+  // ---- Upload: validate the file as a REAL Blue Print data file.
+  let pending = null;
+
+  function inspect(text) {
+    if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blue Print file (it must start with a comment header and 'return {')." };
+    if (!/\bblueprint\s*=\s*1\b/.test(text)) return { err: "Not a Blue Print file (no 'blueprint = 1' version field)." };
+    if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text)) return { err: "This file contains code, not just layout data -- refused." };
+    const constructions = (text.match(/^-- Constructions: (\d+)/m) || [, "0"])[1];
+    const edges = (text.match(/\bn0 = \d+/g) || []).length;
+    const reqBlock = (text.match(/requires = \{([\s\S]*?)\}\s*,\s*constructions = \{/) || [, ""])[1];
+    const requires = { constructions: [...reqBlock.matchAll(/"([^"]+\.con)"/g)].map((m) => m[1]) };
+    const name = (text.match(/^-- Name: (.*)$/m) || [, ""])[1].trim();
+    return { constructions: Number(constructions), edges, requires, name };
+  }
+
+  document.getElementById("file").addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    const info = document.getElementById("fileInfo");
+    pending = null;
+    document.getElementById("upload").disabled = true;
+    if (!f) return;
+    if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; return; }
+    const text = await f.text();
+    const r = inspect(text);
+    if (r.err) { info.textContent = r.err; return; }
+    pending = { text, ...r };
+    info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB.`;
+    const nameField = document.getElementById("name");
+    if (!nameField.value && r.name) nameField.value = r.name;
+    document.getElementById("upload").disabled = false;
+  });
+
+  document.getElementById("upload").addEventListener("click", async () => {
+    const msg = document.getElementById("uploadMsg");
+    const name = document.getElementById("name").value.trim();
+    if (!pending) return;
+    if (!name) { msg.className = "msg bad"; msg.textContent = "Give it a name."; return; }
+    const btn = document.getElementById("upload");
+    btn.disabled = true;
+    const { error } = await sb.from("bp_blueprints").insert({
+      name, author: document.getElementById("author").value.trim() || null,
+      description: document.getElementById("desc").value.trim() || null,
+      content: pending.text, constructions: pending.constructions, edges: pending.edges, requires: pending.requires,
+    });
+    if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
+    msg.className = "msg ok"; msg.textContent = `"${name}" is in the library. Thank you!`;
+    pending = null; document.getElementById("file").value = "";
+    load();
+  });
+
+  load();
+</script>
+</body>
+</html>
