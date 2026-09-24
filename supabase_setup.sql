@@ -1,9 +1,9 @@
--- Blue Print Library -- live schema on the aijqcrrcreectihaeqoc Supabase
+-- Blueprint Exchange Library -- live schema on the aijqcrrcreectihaeqoc Supabase
 -- project (shared with the PYT Gate Generator), applied as migration
 -- "blue_print_library". Kept here for reference/rebuild.
 --
 -- The blueprint FILES live in the `content` column (the exact text of
--- blue_print_bp_<name>.lua); the page assembles the download from it,
+-- blueprint_<name>.lua); the page assembles the download from it,
 -- so git never stores submitted blueprints. Public read + public
 -- insert; bp_download() bumps the counter and returns the text.
 

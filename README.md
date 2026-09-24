@@ -1,7 +1,7 @@
-# Blue Print Library
+# Blueprint Exchange Library
 
-Community library for the **Blue Print** Transport Fever 2 mod: browse, download and share layout blueprints (stations, yards, junctions, whole complexes with their track).
+Community library for the **Blueprint Exchange** Transport Fever 2 mod: browse, download and share layout blueprints (stations, yards, junctions, whole complexes with their track).
 
-Live page: https://themanhun.github.io/blue-print-library/
+Live page: https://themanhun.github.io/blueprint-exchange/
 
 Blueprint files are stored in Supabase (see `supabase_setup.sql`), not in this repo -- the page assembles each download from the stored data and shows where to put the file.

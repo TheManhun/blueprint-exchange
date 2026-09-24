@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Blue Print Library</title>
+<title>Blueprint Exchange Library</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -66,9 +66,9 @@
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Transport Fever 2 &middot; Blue Print mod</p>
-  <h1>Blue Print Library</h1>
-  <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blue Print</strong> mod. Download one, put the file next to the game, Import, Place.</p>
+  <p class="eyebrow">Transport Fever 2 &middot; Blueprint Exchange mod</p>
+  <h1>Blueprint Exchange Library</h1>
+  <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blueprint Exchange</strong> mod. Download one, put the file next to the game, Import, Place.</p>
 
   <div class="stats" id="stats" aria-live="polite">
     <div class="stat"><b id="statCount">&ndash;</b>blueprints</div>
@@ -85,7 +85,7 @@
 
   <section class="panel" id="share">
     <h2>Share a blueprint</h2>
-    <p class="lede">Pick the file the mod saved next to your game (<code>blue_print_bp_&lt;name&gt;.lua</code>). It's checked here before upload &mdash; only real Blue Print files, plain data, no code.</p>
+    <p class="lede">Pick the file the mod saved next to your game (<code>blueprint_&lt;name&gt;.lua</code>). It's checked here before upload &mdash; only real Blueprint Exchange files, plain data, no code.</p>
     <p class="hint">Where the files are: the game's install folder, the one with <code>TransportFever2.exe</code>. Usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> &mdash; or, if the game lives on another drive, <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code>. Quickest way there: Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files.</p>
     <label for="file">Blueprint file</label>
     <input type="file" id="file" accept=".lua,text/plain">
@@ -106,8 +106,8 @@
   <section class="panel">
     <h2>How to use a downloaded blueprint</h2>
     <ol class="steps">
-      <li>Put the downloaded <code>blue_print_bp_&lt;name&gt;.lua</code> file <strong>next to the game's executable</strong> &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (or <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code> on another drive). In Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it for you.</li>
-      <li>In game, click <strong>BP</strong> in the bottom bar, type the blueprint's name (the part after <code>blue_print_bp_</code>) and click <strong>[ Import File ]</strong>.</li>
+      <li>Put the downloaded <code>blueprint_&lt;name&gt;.lua</code> file <strong>next to the game's executable</strong> &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (or <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code> on another drive). In Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it for you.</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, type the blueprint's name (the part after <code>blueprint_</code>) and click <strong>[ Import File ]</strong>.</li>
       <li>Click <strong>[ Place ]</strong>, aim the blue outline at flat, clear ground, rotate if you like, and left-click. If it needs mods you don't have, the status line names them.</li>
     </ol>
   </section>
@@ -177,7 +177,7 @@
     btn.disabled = false;
     if (error || !content) { alert("Download failed -- try again in a moment."); return; }
     const fileBase = sanitize(btn.dataset.name);
-    const fileName = `blue_print_bp_${fileBase}.lua`;
+    const fileName = `blueprint_${fileBase}.lua`;
     const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
@@ -191,12 +191,12 @@
 
   document.getElementById("dlgClose").addEventListener("click", () => document.getElementById("dlg").close());
 
-  // ---- Upload: validate the file as a REAL Blue Print data file.
+  // ---- Upload: validate the file as a REAL Blueprint Exchange data file.
   let pending = null;
 
   function inspect(text) {
-    if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blue Print file (it must start with a comment header and 'return {')." };
-    if (!/\bblueprint\s*=\s*1\b/.test(text)) return { err: "Not a Blue Print file (no 'blueprint = 1' version field)." };
+    if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blueprint Exchange file (it must start with a comment header and 'return {')." };
+    if (!/\bblueprint\s*=\s*1\b/.test(text)) return { err: "Not a Blueprint Exchange file (no 'blueprint = 1' version field)." };
     if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text)) return { err: "This file contains code, not just layout data -- refused." };
     const constructions = (text.match(/^-- Constructions: (\d+)/m) || [, "0"])[1];
     const edges = (text.match(/\bn0 = \d+/g) || []).length;
