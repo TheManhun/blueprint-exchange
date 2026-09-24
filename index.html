@@ -109,12 +109,12 @@
     <h2>Downloaded one? The mod won't see it until you do this</h2>
     <p class="lede">The game can't look inside its own folder, so a download only shows up after you move it there and press one button.</p>
     <ol class="steps">
-      <li>Every download from this page is named <code>blueprint_import.lua</code>. Find it in your Downloads folder.</li>
-      <li>Move it into the <strong>Transport Fever 2 game folder</strong> &mdash; the one with <code>TransportFever2.exe</code>. Not sure where that is? The picture below shows the three Steam clicks.</li>
-      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>Import a download</strong>. The blueprint joins your library under its own name.</li>
+      <li>Grab as many as you like &mdash; each download from this page gets its own file (<code>blueprint_import.lua</code>, <code>blueprint_import_2.lua</code>, and so on). Find them in your Downloads folder.</li>
+      <li>Move them all into the <strong>Transport Fever 2 game folder</strong> &mdash; the one with <code>TransportFever2.exe</code>. Not sure where that is? The picture below shows the three Steam clicks.</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>Import a download</strong>. One press picks up everything you moved in and files each blueprint into your library under its own name.</li>
       <li>Press <strong>Place</strong>, aim the blue outline at flat, clear ground, turn it if you like, and left-click. If it needs a mod you don't have, the status line names it.</li>
     </ol>
-    <p class="hint">One download at a time: import it before downloading the next, or the second overwrites the first.</p>
+    <p class="hint">Five downloads can wait at once. Import before grabbing a sixth, or it wraps back to the first slot and overwrites it.</p>
     <figure>
       <img src="guide-add-download.jpg" alt="Four File Explorer screenshots: open Downloads, find blueprint_import.lua, Cut it, Paste it into the Transport Fever 2 folder">
       <figcaption>Downloads to game folder: find blueprint_import.lua, Cut, then Paste into the Transport Fever 2 folder.</figcaption>
@@ -192,10 +192,9 @@
   <h2 id="dlgTitle">Downloaded</h2>
   <p id="dlgBody"></p>
   <ol class="steps">
-    <li>Your Downloads folder may already have a file with this name from an earlier download -- if so, Windows just saved this one as <code id="dlgFile"></code>&nbsp;<strong>(1)</strong> instead of overwriting it. Check the name before you move it.</li>
-    <li>Move it into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it) &mdash; renamed back to exactly <code id="dlgFile2"></code> if it picked up a <strong>(1)</strong>.</li>
-    <li>In game: <strong>BP</strong> &rarr; <strong>Import a download</strong>. It lands in your library as <code id="dlgName"></code>.</li>
-    <li><strong>Place</strong>, aim, click. Downloading a second blueprint before doing this? Move this one out of Downloads first, or the next download will just pile up as another <strong>(1)</strong>, <strong>(2)</strong>&hellip;</li>
+    <li>Move <code id="dlgFile"></code> into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it). Downloading more? Each one gets its own file name, so grab a few before moving them in.</li>
+    <li>In game: <strong>BP</strong> &rarr; <strong>Import a download</strong>. It lands in your library as <code id="dlgName"></code> &mdash; one press picks up everything you moved in, not just this one.</li>
+    <li><strong>Place</strong>, aim, click.</li>
   </ol>
   <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
 </dialog>
@@ -242,6 +241,29 @@
   const fmt = (n) => Number(n || 0).toLocaleString();
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+  // Decision 30 (mod side) -- a fixed set of inbox names the mod checks
+  // in one press. blueprint_import.lua is slot 1 (unchanged, so a
+  // single download or a hand-shared file still works exactly as
+  // before); this just cycles through the rest for consecutive
+  // downloads. Falls back to slot 1 if sessionStorage is unavailable
+  // (private browsing etc.) -- worst case, back to today's one-at-a-
+  // time behaviour, never a broken filename.
+  const INBOX_SLOT_NAMES = [
+    "blueprint_import.lua", "blueprint_import_2.lua", "blueprint_import_3.lua",
+    "blueprint_import_4.lua", "blueprint_import_5.lua",
+  ];
+  function nextInboxSlotName() {
+    try {
+      const key = "bpxInboxSlot";
+      const current = Number(sessionStorage.getItem(key) || "0");
+      const next = (current % INBOX_SLOT_NAMES.length) + 1; // 1-indexed, wraps
+      sessionStorage.setItem(key, String(next));
+      return INBOX_SLOT_NAMES[next - 1];
+    } catch (err) {
+      return INBOX_SLOT_NAMES[0];
+    }
+  }
+
   let all = [];
 
   async function load() {
@@ -286,16 +308,18 @@
     const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
     btn.disabled = false;
     if (error || !content) { alert("Download failed -- try again in a moment."); return; }
-    // One fixed inbox name: the mod's [ Import ] reads exactly this file
-    // and stores the blueprint under the name inside it -- no typing.
+    // A fixed, small set of inbox names the mod already knows to check
+    // (it can't list a folder, only open a name it's told about) --
+    // consecutive downloads in this browser session cycle through them,
+    // so grabbing several before importing doesn't collide in Downloads.
+    // The mod sweeps all of them on one press of Import a download.
     const fileBase = sanitize(btn.dataset.name);
-    const fileName = "blueprint_import.lua";
+    const fileName = nextInboxSlotName();
     const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     document.getElementById("dlgFile").textContent = fileName;
-    document.getElementById("dlgFile2").textContent = fileName;
     document.getElementById("dlgName").textContent = fileBase;
     document.getElementById("dlgBody").textContent = `"${btn.dataset.name}" is in your downloads folder.`;
     document.getElementById("dlg").showModal();

@@ -33,3 +33,14 @@ by storing a hash of that secret; any later upload of the same id
 must match it or is rejected. Downloads never carry the secret --
 `bp_upload` strips it from the stored text before anyone else can see
 the file.
+
+## Batch downloads
+
+Every download used to be named `blueprint_import.lua`, so grabbing a
+second blueprint before importing the first left Windows appending
+`(1)` to the filename -- and only the plain name was ever recognised.
+The site now cycles consecutive downloads across five known names
+(`blueprint_import.lua` through `blueprint_import_5.lua`) and the mod
+checks all five in one press of Import a download, so a batch of
+downloads (up to five in flight) imports together. Sixth without
+importing wraps back to slot 1 and overwrites it.
