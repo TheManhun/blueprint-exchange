@@ -44,3 +44,15 @@ The site now cycles consecutive downloads across five known names
 checks all five in one press of Import a download, so a batch of
 downloads (up to five in flight) imports together. Sixth without
 importing wraps back to slot 1 and overwrites it.
+
+## Ten inbox slots, blocked and counted
+
+Consecutive downloads in a browser session now cycle through 10 known
+names (`blueprint_import.lua` through `blueprint_import_10.lua`,
+matching the mod's `bp_files.INBOX_SLOTS`). A small indicator above
+the Browse list shows how many are waiting; reaching 10 blocks further
+downloads with a clear message and an "I've moved them -- reset
+downloads" button, rather than silently wrapping and overwriting an
+unimported file. Slot-counting logic was unit-tested with a mock
+sessionStorage before commit (sequential 1..10 naming, 11th blocked
+without incrementing, reset returns to slot 1).

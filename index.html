@@ -101,6 +101,11 @@
   <section class="panel" id="browse">
     <h2>Browse</h2>
     <input class="search" type="text" id="search" placeholder="Search by name, author or construction&hellip;" aria-label="Search blueprints">
+    <p class="hint" id="inboxStatus" hidden></p>
+    <div class="msg bad" id="inboxBlocked" hidden>
+      You&rsquo;ve downloaded 10 blueprints. Please cut and paste them into your Transport Fever 2 game folder, then press <strong>Import downloads</strong> in game before continuing.
+      <div class="row" style="margin-top:10px"><button id="inboxResetBtn">I&rsquo;ve moved them &mdash; reset downloads</button></div>
+    </div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" hidden>Nothing here yet &mdash; be the first to share one below.</div>
   </section>
@@ -111,10 +116,10 @@
     <ol class="steps">
       <li>Grab as many as you like &mdash; each download from this page gets its own file (<code>blueprint_import.lua</code>, <code>blueprint_import_2.lua</code>, and so on). Find them in your Downloads folder.</li>
       <li>Move them all into the <strong>Transport Fever 2 game folder</strong> &mdash; the one with <code>TransportFever2.exe</code>. Not sure where that is? The picture below shows the three Steam clicks.</li>
-      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>Import a download</strong>. One press picks up everything you moved in and files each blueprint into your library under its own name.</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>Import downloads</strong>. One press picks up everything you moved in and files each blueprint into your library under its own name.</li>
       <li>Press <strong>Place</strong>, aim the blue outline at flat, clear ground, turn it if you like, and left-click. If it needs a mod you don't have, the status line names it.</li>
     </ol>
-    <p class="hint">Five downloads can wait at once. Import before grabbing a sixth, or it wraps back to the first slot and overwrites it.</p>
+    <p class="hint">Up to 10 downloads can wait at once (see the counter above the list) &mdash; the site blocks the 11th until you say you've moved the files in.</p>
     <figure>
       <img src="guide-add-download.jpg" alt="Four File Explorer screenshots: open Downloads, find blueprint_import.lua, Cut it, Paste it into the Transport Fever 2 folder">
       <figcaption>Downloads to game folder: find blueprint_import.lua, Cut, then Paste into the Transport Fever 2 folder.</figcaption>
@@ -241,28 +246,66 @@
   const fmt = (n) => Number(n || 0).toLocaleString();
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  // Decision 30 (mod side) -- a fixed set of inbox names the mod checks
-  // in one press. blueprint_import.lua is slot 1 (unchanged, so a
-  // single download or a hand-shared file still works exactly as
-  // before); this just cycles through the rest for consecutive
-  // downloads. Falls back to slot 1 if sessionStorage is unavailable
-  // (private browsing etc.) -- worst case, back to today's one-at-a-
-  // time behaviour, never a broken filename.
-  const INBOX_SLOT_NAMES = [
-    "blueprint_import.lua", "blueprint_import_2.lua", "blueprint_import_3.lua",
-    "blueprint_import_4.lua", "blueprint_import_5.lua",
-  ];
-  function nextInboxSlotName() {
-    try {
-      const key = "bpxInboxSlot";
-      const current = Number(sessionStorage.getItem(key) || "0");
-      const next = (current % INBOX_SLOT_NAMES.length) + 1; // 1-indexed, wraps
-      sessionStorage.setItem(key, String(next));
-      return INBOX_SLOT_NAMES[next - 1];
-    } catch (err) {
-      return INBOX_SLOT_NAMES[0];
+  // Decision 30/31 (mod side) -- a fixed set of inbox names the mod
+  // checks in one press. blueprint_import.lua is slot 1 (unchanged, so
+  // a single download or a hand-shared file still works exactly as
+  // before); this cycles through the rest for consecutive downloads.
+  // Unlike stage 30, this does NOT wrap silently at the end: the
+  // counter blocks further downloads at 10 and asks the player to
+  // move the files in and reset, rather than quietly overwriting slot
+  // 1's still-unimported file. Falls back to unlimited slot-1 reuse if
+  // sessionStorage is unavailable (private browsing etc.) -- worst
+  // case, back to today's one-at-a-time behaviour, never a broken
+  // filename and never a false block.
+  const INBOX_SLOT_COUNT = 10;
+  const INBOX_KEY = "bpxInboxSlot";
+  const hasSessionStorage = (() => {
+    try { sessionStorage.setItem("bpxTest", "1"); sessionStorage.removeItem("bpxTest"); return true; }
+    catch (err) { return false; }
+  })();
+
+  function inboxSlotsUsed() {
+    if (!hasSessionStorage) return 0;
+    return Number(sessionStorage.getItem(INBOX_KEY) || "0");
+  }
+
+  function inboxSlotName(n) {
+    return n === 1 ? "blueprint_import.lua" : `blueprint_import_${n}.lua`;
+  }
+
+  // Returns the filename to use, or null if all 10 slots are already
+  // spoken for (caller must not download in that case).
+  function claimNextInboxSlot() {
+    if (!hasSessionStorage) return inboxSlotName(1);
+    const used = inboxSlotsUsed();
+    if (used >= INBOX_SLOT_COUNT) return null;
+    const next = used + 1;
+    sessionStorage.setItem(INBOX_KEY, String(next));
+    updateInboxIndicator();
+    return inboxSlotName(next);
+  }
+
+  function resetInboxSlots() {
+    if (hasSessionStorage) sessionStorage.removeItem(INBOX_KEY);
+    updateInboxIndicator();
+  }
+
+  function updateInboxIndicator() {
+    const used = inboxSlotsUsed();
+    const statusEl = document.getElementById("inboxStatus");
+    const blockedEl = document.getElementById("inboxBlocked");
+    if (!statusEl || !blockedEl) return;
+    if (used >= INBOX_SLOT_COUNT && hasSessionStorage) {
+      statusEl.hidden = true;
+      blockedEl.hidden = false;
+    } else {
+      blockedEl.hidden = true;
+      statusEl.hidden = used === 0;
+      statusEl.textContent = used > 0 ? `${used} / ${INBOX_SLOT_COUNT} downloads ready to move in.` : "";
     }
   }
+
+  document.getElementById("inboxResetBtn")?.addEventListener("click", resetInboxSlots);
 
   let all = [];
 
@@ -303,6 +346,15 @@
   document.getElementById("grid").addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-id]");
     if (!btn) return;
+
+    // Block BEFORE spending a download -- all 10 known slots are
+    // already claimed this session; nothing to write the file as.
+    if (inboxSlotsUsed() >= INBOX_SLOT_COUNT && hasSessionStorage) {
+      updateInboxIndicator();
+      document.getElementById("inboxBlocked").scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     btn.disabled = true;
     const row = all.find((b) => String(b.id) === btn.dataset.id) || {};
     const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
@@ -312,9 +364,17 @@
     // (it can't list a folder, only open a name it's told about) --
     // consecutive downloads in this browser session cycle through them,
     // so grabbing several before importing doesn't collide in Downloads.
-    // The mod sweeps all of them on one press of Import a download.
+    // The mod sweeps all of them on one press of Import downloads.
     const fileBase = sanitize(btn.dataset.name);
-    const fileName = nextInboxSlotName();
+    const fileName = claimNextInboxSlot();
+    if (fileName === null) {
+      // Claimed the last slot between the check above and now (e.g. a
+      // second tab in the same session) -- extremely unlikely, but
+      // never hand out an unnamed file.
+      updateInboxIndicator();
+      alert("All 10 download slots are full in this session -- move the files in and press \"I've moved them\" before downloading more.");
+      return;
+    }
     const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
@@ -427,6 +487,7 @@
   });
 
   load();
+  updateInboxIndicator();
 </script>
 
 <script>
