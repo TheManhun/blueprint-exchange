@@ -295,12 +295,18 @@
     const statusEl = document.getElementById("inboxStatus");
     const blockedEl = document.getElementById("inboxBlocked");
     if (!statusEl || !blockedEl) return;
+    // Inline style.display, not the `hidden` attribute -- .msg.bad
+    // sets display:block unconditionally in this page's own CSS,
+    // which beats the browser's default `[hidden]{display:none}`
+    // rule (author styles always win over user-agent ones). Toggling
+    // `hidden` alone left this banner stuck visible after Reset even
+    // though the counter really had cleared underneath.
     if (used >= INBOX_SLOT_COUNT && hasSessionStorage) {
-      statusEl.hidden = true;
-      blockedEl.hidden = false;
+      statusEl.style.display = "none";
+      blockedEl.style.display = "block";
     } else {
-      blockedEl.hidden = true;
-      statusEl.hidden = used === 0;
+      blockedEl.style.display = "none";
+      statusEl.style.display = used === 0 ? "none" : "block";
       statusEl.textContent = used > 0 ? `${used} / ${INBOX_SLOT_COUNT} downloads ready to move in.` : "";
     }
   }
