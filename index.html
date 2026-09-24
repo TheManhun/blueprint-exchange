@@ -315,9 +315,14 @@
     const requires = { constructions: [...reqBlock.matchAll(/"([^"]+\.con)"/g)].map((m) => m[1]) };
     const name = (text.match(/^-- Name: (.*)$/m) || [, ""])[1].trim();
     const blueprintId = (text.match(/\bblueprintId = "([0-9a-f]+)"/) || [, null])[1];
+    // Ownership proof (Decision 28 on the mod side): only ever read
+    // here to send alongside the upload -- never shown, never stored
+    // in this page, and bp_upload strips it from the file text before
+    // it's saved, so it can't ride along into anyone else's download.
+    const ownerSecret = (text.match(/\bownerSecret = "([0-9a-f]+)"/) || [, null])[1];
     const author = (text.match(/\bauthor = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
     const description = (text.match(/\bdescription = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
-    return { constructions: Number(constructions), edges, requires, name, blueprintId, author, description };
+    return { constructions: Number(constructions), edges, requires, name, blueprintId, ownerSecret, author, description };
   }
 
   // Lua %q-style string literal.
@@ -383,7 +388,7 @@
       p_description: document.getElementById("desc").value.trim() || null,
       p_content: pending.text, p_constructions: pending.constructions, p_edges: pending.edges,
       p_requires: pending.requires, p_blueprint_id: pending.blueprintId,
-      p_thumbnail_url: thumbnailUrl,
+      p_thumbnail_url: thumbnailUrl, p_owner_secret: pending.ownerSecret,
     });
     if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
     const version = (result && result.version) || 1;

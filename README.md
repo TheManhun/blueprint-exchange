@@ -20,3 +20,16 @@ URL is stored in Supabase, as `thumbnail_url` -- no image data and no
 R2 credentials ever touch this repo or the Supabase database directly.
 Blueprints without a preview work exactly as before; browse cards show
 a plain placeholder instead of a broken-image icon.
+
+## Ownership (why one uploader can't overwrite another's blueprint)
+
+Every card is tied to a hidden `blueprintId`, set once by the mod at
+capture and permanent from then on -- re-uploading the same design
+updates its existing card; a different id makes a new one. Since that
+id is plain text in the file, the mod also writes an `ownerSecret`
+into the same personal file (never shown in game, never printed in
+the file's own header comment). The first upload of an id claims it
+by storing a hash of that secret; any later upload of the same id
+must match it or is rejected. Downloads never carry the secret --
+`bp_upload` strips it from the stored text before anyone else can see
+the file.

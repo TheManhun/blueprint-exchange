@@ -184,3 +184,97 @@ begin
 end;
 $$;
 grant execute on function public.bp_upload(text, text, text, text, int, int, jsonb, text, text) to anon;
+
+-- Fifth migration ("blue_print_library_owner_secret"): a blueprintId
+-- is plain text in the file's own header comment, so anyone could
+-- copy it into their own upload and overwrite someone else's card
+-- (bp_list only ever shows the latest version of an id). The mod now
+-- also writes an ownerSecret into every captured file (never shown in
+-- game, never printed in the header). bp_upload takes it as a 10th
+-- argument: the FIRST upload of a blueprintId claims it by storing a
+-- SHA-256 hash of the secret in bp_blueprint_owners (RLS on, no
+-- policies -- only this security-definer function touches it); any
+-- later upload of the same id must hash to the same value or the
+-- whole upload is rejected with a plain-English error. The raw
+-- secret is never returned, never listed, and bp_upload strips any
+-- "ownerSecret = ..." field out of the content before it's stored, so
+-- it can never ride along into a download even if a client forgot to
+-- omit it.
+--
+-- NOTE: pgcrypto lives in the `extensions` schema on this project --
+-- digest() needed `extensions` added to this function's search_path,
+-- not just `public`, or it fails with "function digest does not
+-- exist".
+--
+-- Known accepted gap: a player can still hand their personal
+-- blueprint_<name>.lua straight to a friend (the mod supports this --
+-- see Decision 24), and that file carries the real ownerSecret in the
+-- clear, unlike a website download, which never gets it. Low stakes
+-- for a small hobby community; revisit only if it's ever actually
+-- abused.
+create table if not exists public.bp_blueprint_owners (
+  blueprint_id text primary key,
+  secret_hash text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.bp_blueprint_owners enable row level security;
+
+drop function if exists public.bp_upload(text, text, text, text, int, int, jsonb, text, text);
+
+create or replace function public.bp_upload(
+  p_name text, p_author text, p_description text, p_content text,
+  p_constructions int, p_edges int, p_requires jsonb, p_blueprint_id text,
+  p_thumbnail_url text default null, p_owner_secret text default null
+)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_display text;
+  v_official boolean := false;
+  v_author text := nullif(trim(p_author), '');
+  v_version int := 1;
+  v_id bigint;
+  v_thumb text := nullif(trim(coalesce(p_thumbnail_url, '')), '');
+  v_secret text := nullif(trim(coalesce(p_owner_secret, '')), '');
+  v_secret_hash text;
+  v_existing_hash text;
+  v_content text := p_content;
+begin
+  select display_name into v_display from public.bp_official_keys where passphrase = trim(p_author) limit 1;
+  if v_display is not null then
+    v_official := true;
+    v_author := v_display;
+  end if;
+
+  if v_thumb is not null and v_thumb !~ '^https://pub-ea55f87d66c04139a2a7ac3704e9c05e\.r2\.dev/blueprints/[a-zA-Z0-9-]+\.webp$' then
+    v_thumb := null;
+  end if;
+
+  if p_blueprint_id is not null then
+
+    select coalesce(max(version), 0) + 1 into v_version from public.bp_blueprints where blueprint_id = p_blueprint_id;
+    select secret_hash into v_existing_hash from public.bp_blueprint_owners where blueprint_id = p_blueprint_id;
+
+    if v_existing_hash is null then
+      if v_secret is not null then
+        insert into public.bp_blueprint_owners (blueprint_id, secret_hash)
+        values (p_blueprint_id, encode(extensions.digest(v_secret, 'sha256'), 'hex'));
+      end if;
+    else
+      v_secret_hash := case when v_secret is not null then encode(extensions.digest(v_secret, 'sha256'), 'hex') else null end;
+      if v_secret_hash is null or v_secret_hash <> v_existing_hash then
+        raise exception 'This blueprint was already uploaded by someone else -- only the original uploader''s own file can update it.';
+      end if;
+    end if;
+
+  end if;
+
+  v_content := regexp_replace(v_content, 'ownerSecret\s*=\s*"[^"]*"\s*,?\s*', '', 'g');
+
+  insert into public.bp_blueprints (name, author, description, content, constructions, edges, requires, blueprint_id, version, official, thumbnail_url)
+  values (p_name, v_author, nullif(trim(p_description), ''), v_content, coalesce(p_constructions, 0), coalesce(p_edges, 0), p_requires, p_blueprint_id, v_version, v_official, v_thumb)
+  returning id into v_id;
+
+  return jsonb_build_object('id', v_id, 'version', v_version, 'official', v_official, 'author', v_author, 'thumbnail_url', v_thumb);
+end;
+$$;
+grant execute on function public.bp_upload(text, text, text, text, int, int, jsonb, text, text, text) to anon;
