@@ -112,3 +112,9 @@ per page load to `bp_track_visit`; `bp_visit_days` keeps a
 one-row-per-visitor-per-day history for a future chart, queryable via
 `bp_visit_stats`. No direct table access from the page -- both go
 through security-definer functions only.
+
+## Support
+
+A Buy Me a Coffee button (the official CDN-hosted badge, no login
+needed to embed it) sits at the bottom of the page, linking to
+https://buymeacoffee.com/epodtheman5.
