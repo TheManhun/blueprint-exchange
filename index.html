@@ -71,6 +71,7 @@
 
   /* Thumbnail field + cropper (stage 1: local only, no upload) */
   #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
+  #thumbFormPlaceholder { display: block; width: 100%; max-width: 320px; border-radius: 8px; margin: 0 0 12px; }
   #thumbReady { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
   #thumbReady img { width: 240px; height: 135px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); }
   #thumbReady .hint { max-width: 32ch; }
@@ -151,6 +152,7 @@
 
     <label>Preview image (optional)</label>
     <div id="thumbField">
+      <img id="thumbFormPlaceholder" src="drop-placeholder.webp" alt="">
       <button type="button" id="addThumbBtn">Add a preview image</button>
       <p class="hint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
       <div id="thumbReady" hidden>
@@ -245,6 +247,8 @@
     if (readyImgEl) readyImgEl.removeAttribute("src");
     if (readyBox) readyBox.hidden = true;
     if (addBtn) addBtn.hidden = false;
+    const placeholderEl = document.getElementById("thumbFormPlaceholder");
+    if (placeholderEl) placeholderEl.hidden = false;
   }
 
   // Same rule as the mod's bp_files.sanitizeName, so the file name the
@@ -646,6 +650,7 @@
     readyImg.removeAttribute("src"); // same fix as clearThumbnail -- never leave a dead blob: URL sitting in src
     readyBox.hidden = true;
     addBtn.hidden = false;
+    document.getElementById("thumbFormPlaceholder").hidden = false;
   });
 
   cancelBtn.addEventListener("click", closeDialog);
@@ -781,6 +786,8 @@
 
     readyBox.hidden = false;
     addBtn.hidden = true;
+    const formPlaceholderEl = document.getElementById("thumbFormPlaceholder");
+    if (formPlaceholderEl) formPlaceholderEl.hidden = true;
     closeDialog();
   });
 

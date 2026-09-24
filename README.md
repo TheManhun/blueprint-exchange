@@ -64,3 +64,10 @@ uploaded preview, instead of the old plain gradient -- a real image,
 never a broken-link icon. `drop-placeholder.webp` illustrates the
 empty state of the upload dialog's paste/choose-a-file box, before an
 image is loaded.
+
+## Placeholder art on the share form itself
+
+`drop-placeholder.webp` now also shows on the Share a blueprint form's
+Preview image field by default, before Add a preview image is ever
+pressed -- not just inside the popup dialog. It hides once an image is
+chosen and reappears if that image is removed.
