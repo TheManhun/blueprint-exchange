@@ -56,3 +56,11 @@ downloads" button, rather than silently wrapping and overwriting an
 unimported file. Slot-counting logic was unit-tested with a mock
 sessionStorage before commit (sequential 1..10 naming, 11th blocked
 without incrementing, reset returns to slot 1).
+
+## Placeholder art
+
+Epod's `card-noimage.webp` shows on every browse card that has no
+uploaded preview, instead of the old plain gradient -- a real image,
+never a broken-link icon. `drop-placeholder.webp` illustrates the
+empty state of the upload dialog's paste/choose-a-file box, before an
+image is loaded.

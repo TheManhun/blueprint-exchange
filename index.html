@@ -37,7 +37,6 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
   .thumb { width: calc(100% + 32px); margin: -16px -16px 0; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
-  .thumb-placeholder { background: linear-gradient(135deg, var(--surface-2), var(--accent-soft)); }
   .card h3 { font-size: 22px; margin: 0; }
   .card.official { border-color: var(--accent); }
   .badge { display: inline-block; vertical-align: middle; font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 4px 6px; margin-left: 8px; }
@@ -77,6 +76,7 @@
   #thumbReady .hint { max-width: 32ch; }
   dialog#thumbDlg { max-width: 560px; width: calc(100% - 32px); }
   #thumbDropZone { border: 2px dashed var(--line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: text; color: var(--ink-2); }
+  #thumbDropArt { display: block; width: 100%; max-width: 360px; margin: 0 auto 14px; border-radius: 10px; }
   #thumbDropZone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   #thumbDropZone input[type=file] { display: block; margin: 12px auto 0; }
   #thumbCropWindow { width: 100%; aspect-ratio: 16 / 9; background: var(--surface-2); border-radius: 8px; overflow: hidden; touch-action: none; }
@@ -172,6 +172,7 @@
   <h2>Add a preview image</h2>
   <p class="hint">Paste a screenshot (Ctrl+V) or choose an image file. Drag to position it, use the slider to zoom, then press Use image.</p>
   <div id="thumbDropZone" tabindex="0">
+    <img id="thumbDropArt" src="drop-placeholder.webp" alt="" aria-hidden="true">
     <p id="thumbDropHint">Click here, then paste a screenshot &mdash; or choose a file below.</p>
     <input type="file" id="thumbFileInput" accept="image/png,image/jpeg,image/webp">
   </div>
@@ -330,7 +331,7 @@
       const req = (b.requires && b.requires.constructions) || [];
       const thumb = b.thumbnail_url
         ? `<img class="thumb" src="${esc(b.thumbnail_url)}" alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">`
-        : `<div class="thumb thumb-placeholder" aria-hidden="true"></div>`;
+        : `<img class="thumb thumb-placeholder" src="card-noimage.webp" alt="No preview image supplied for ${esc(b.name)}" width="480" height="270" loading="lazy">`;
       return `<article class="card${b.official ? " official" : ""}">
         ${thumb}
         <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}</h3>
