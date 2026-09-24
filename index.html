@@ -262,7 +262,7 @@
     pending = { text, ...r };
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB.`;
     const nameField = document.getElementById("name");
-    if (!nameField.value && r.name) nameField.value = r.name;
+    if (!nameField.value && r.name) nameField.value = r.name.replace(/_+/g, " ").trim();
     const authorField = document.getElementById("author");
     if (!authorField.value && r.author) authorField.value = r.author;
     const descField = document.getElementById("desc");
