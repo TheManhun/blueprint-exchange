@@ -67,6 +67,21 @@
   .empty { color: var(--ink-2); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
   .search { margin: 0 0 14px; }
   @media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
+
+  /* Thumbnail field + cropper (stage 1: local only, no upload) */
+  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
+  #thumbReady { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  #thumbReady img { width: 240px; height: 135px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); }
+  #thumbReady .hint { max-width: 32ch; }
+  dialog#thumbDlg { max-width: 560px; width: calc(100% - 32px); }
+  #thumbDropZone { border: 2px dashed var(--line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: text; color: var(--ink-2); }
+  #thumbDropZone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #thumbDropZone input[type=file] { display: block; margin: 12px auto 0; }
+  #thumbCropWindow { width: 100%; aspect-ratio: 16 / 9; background: var(--surface-2); border-radius: 8px; overflow: hidden; touch-action: none; }
+  #thumbCanvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  #thumbCanvas:active { cursor: grabbing; }
+  #thumbZoom { width: 100%; margin: 10px 0 0; }
+  #thumbCropStage label { margin: 14px 0 2px; }
 </style>
 </head>
 <body>
@@ -126,12 +141,46 @@
     <input type="text" id="author" maxlength="60">
     <label for="desc">Description (optional)</label>
     <textarea id="desc" maxlength="600" placeholder="What it is, what mods it needs, where it fits&hellip;"></textarea>
+
+    <label>Preview image (optional)</label>
+    <div id="thumbField">
+      <button type="button" id="addThumbBtn">Add a preview image</button>
+      <p class="hint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
+      <div id="thumbReady" hidden>
+        <img id="thumbReadyImg" alt="Preview thumbnail" width="240" height="135">
+        <p class="hint">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a> &mdash; local test only, not uploaded yet.</p>
+        <button type="button" id="changeThumbBtn">Change image</button>
+        <button type="button" id="removeThumbBtn">Remove image</button>
+      </div>
+    </div>
+
     <div class="row" style="margin-top:14px">
       <button class="primary" id="upload" disabled>Upload to the library</button>
       <span class="hint">Uploads are public and permanent.</span>
     </div>
     <div class="msg" id="uploadMsg"></div>
   </section>
+
+<dialog id="thumbDlg">
+  <h2>Add a preview image</h2>
+  <p class="hint">Paste a screenshot (Ctrl+V) or choose an image file. Drag to position it, use the slider to zoom, then press Use image.</p>
+  <div id="thumbDropZone" tabindex="0">
+    <p id="thumbDropHint">Click here, then paste a screenshot &mdash; or choose a file below.</p>
+    <input type="file" id="thumbFileInput" accept="image/png,image/jpeg,image/webp">
+  </div>
+  <div id="thumbCropStage" hidden>
+    <div id="thumbCropWindow">
+      <canvas id="thumbCanvas" width="480" height="270"></canvas>
+    </div>
+    <label for="thumbZoom">Zoom</label>
+    <input type="range" id="thumbZoom" min="100" max="400" value="100" step="1">
+  </div>
+  <p class="hint" id="thumbMsg" style="min-height:1.4em"></p>
+  <div class="row" style="margin-top:14px">
+    <button type="button" id="thumbUseBtn" class="primary" disabled>Use image</button>
+    <button type="button" id="thumbCancelBtn">Cancel</button>
+  </div>
+</dialog>
 
 
   <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
@@ -296,6 +345,278 @@
   });
 
   load();
+</script>
+
+<script>
+// ============================================================
+// Preview image cropper -- STAGE 1 ONLY.
+// Paste / choose an image, position + zoom it in a fixed 16:9 window,
+// export a 480x270 WebP entirely client-side. Nothing here talks to
+// R2 or Supabase yet -- "Use image" just stores the blob in memory
+// (window.bpThumbnail) and shows a Download link so the output can be
+// checked by hand before any upload wiring is built. Deliberately its
+// own <script>, independent of the upload flow above: stage 2 will
+// read window.bpThumbnail (or null) when the blueprint is submitted,
+// nothing here needs to change for that.
+(function () {
+
+  const OUT_W = 480, OUT_H = 270;
+
+  const addBtn = document.getElementById("addThumbBtn");
+  const changeBtn = document.getElementById("changeThumbBtn");
+  const removeBtn = document.getElementById("removeThumbBtn");
+  const readyBox = document.getElementById("thumbReady");
+  const readyImg = document.getElementById("thumbReadyImg");
+  const downloadLink = document.getElementById("thumbDownloadLink");
+
+  const dlg = document.getElementById("thumbDlg");
+  const dropZone = document.getElementById("thumbDropZone");
+  const dropHint = document.getElementById("thumbDropHint");
+  const fileInput = document.getElementById("thumbFileInput");
+  const cropStage = document.getElementById("thumbCropStage");
+  const canvas = document.getElementById("thumbCanvas");
+  const ctx = canvas.getContext("2d");
+  const zoomSlider = document.getElementById("thumbZoom");
+  const useBtn = document.getElementById("thumbUseBtn");
+  const cancelBtn = document.getElementById("thumbCancelBtn");
+  const msg = document.getElementById("thumbMsg");
+
+  // Public hook for the upload step (stage 2): null until "Use image".
+  window.bpThumbnail = null; // { blob, url }
+
+  let img = null;         // the loaded HTMLImageElement
+  let minScale = 1;        // scale at which the image just covers the 480x270 window
+  let scale = 1;
+  let offX = 0, offY = 0;  // image-space offset of the window's top-left corner, at scale=1 (pre-scale coords)
+  let dragging = false, dragStartX = 0, dragStartY = 0, offStartX = 0, offStartY = 0;
+
+  function setMsg(text, bad) {
+    msg.textContent = text || "";
+    msg.style.color = bad ? "var(--bad)" : "var(--ink-2)";
+  }
+
+  function resetDialogState() {
+    img = null;
+    cropStage.hidden = true;
+    dropZone.hidden = false;
+    dropHint.textContent = "Click here, then paste a screenshot — or choose a file below.";
+    fileInput.value = "";
+    useBtn.disabled = true;
+    setMsg("");
+  }
+
+  function clampOffset() {
+    // Image-space (pre-scale) window size at current scale.
+    const winW = OUT_W / scale, winH = OUT_H / scale;
+    const maxX = img.naturalWidth - winW;
+    const maxY = img.naturalHeight - winH;
+    offX = Math.min(Math.max(offX, 0), Math.max(0, maxX));
+    offY = Math.min(Math.max(offY, 0), Math.max(0, maxY));
+  }
+
+  function draw() {
+    if (!img) return;
+    clampOffset();
+    ctx.clearRect(0, 0, OUT_W, OUT_H);
+    ctx.drawImage(
+      img,
+      offX, offY, OUT_W / scale, OUT_H / scale,
+      0, 0, OUT_W, OUT_H
+    );
+  }
+
+  function loadImage(source) {
+    const el = new Image();
+    el.onload = function () {
+      if (el.naturalWidth < 40 || el.naturalHeight < 40) {
+        setMsg("That image is too small to use.", true);
+        return;
+      }
+      img = el;
+      minScale = Math.max(OUT_W / img.naturalWidth, OUT_H / img.naturalHeight);
+      scale = minScale;
+      offX = (img.naturalWidth - OUT_W / scale) / 2;
+      offY = (img.naturalHeight - OUT_H / scale) / 2;
+      zoomSlider.min = "100";
+      zoomSlider.max = "400";
+      zoomSlider.value = "100";
+      dropZone.hidden = true;
+      cropStage.hidden = false;
+      useBtn.disabled = false;
+      setMsg("Drag the image to reposition it, use the slider to zoom.");
+      draw();
+    };
+    el.onerror = function () {
+      setMsg("Couldn't read that image.", true);
+    };
+    el.src = source;
+  }
+
+  function loadFromFile(file) {
+    if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) {
+      setMsg("Choose a PNG, JPG or WebP image.", true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function () { loadImage(reader.result); };
+    reader.readAsDataURL(file);
+  }
+
+  // ---- opening / closing the dialog ----
+
+  function openDialog() {
+    resetDialogState();
+    if (typeof dlg.showModal === "function") {
+      dlg.showModal();
+    } else {
+      dlg.setAttribute("open", "");
+    }
+    dropZone.focus();
+  }
+
+  function closeDialog() {
+    if (typeof dlg.close === "function" && dlg.open) dlg.close();
+    else dlg.removeAttribute("open");
+  }
+
+  addBtn.addEventListener("click", openDialog);
+  changeBtn.addEventListener("click", openDialog);
+
+  removeBtn.addEventListener("click", function () {
+    if (window.bpThumbnail && window.bpThumbnail.url) {
+      URL.revokeObjectURL(window.bpThumbnail.url);
+    }
+    window.bpThumbnail = null;
+    readyBox.hidden = true;
+    addBtn.hidden = false;
+  });
+
+  cancelBtn.addEventListener("click", closeDialog);
+
+  dlg.addEventListener("cancel", function () {
+    // native Esc close -- nothing to clean up, dialog state resets on next open
+  });
+
+  // ---- getting an image in: paste or file picker ----
+
+  dropZone.addEventListener("click", function () { dropZone.focus(); });
+
+  dropZone.addEventListener("paste", function (e) {
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (const item of items) {
+      if (item.kind === "file" && /^image\//.test(item.type)) {
+        const file = item.getAsFile();
+        if (file) { loadFromFile(file); e.preventDefault(); return; }
+      }
+    }
+    setMsg("No image found on the clipboard. Copy a screenshot first, then paste here.", true);
+  });
+
+  fileInput.addEventListener("change", function () {
+    if (fileInput.files && fileInput.files[0]) loadFromFile(fileInput.files[0]);
+  });
+
+  // ---- zoom + drag ----
+
+  zoomSlider.addEventListener("input", function () {
+    if (!img) return;
+    const pct = Number(zoomSlider.value) / 100; // 1.0 .. 4.0
+    // Keep the window's centre point fixed in image space while zooming.
+    const cx = offX + (OUT_W / scale) / 2;
+    const cy = offY + (OUT_H / scale) / 2;
+    scale = minScale * pct;
+    offX = cx - (OUT_W / scale) / 2;
+    offY = cy - (OUT_H / scale) / 2;
+    draw();
+  });
+
+  canvas.addEventListener("pointerdown", function (e) {
+    if (!img) return;
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    offStartX = offX; offStartY = offY;
+  });
+
+  canvas.addEventListener("pointermove", function (e) {
+    if (!dragging || !img) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = OUT_W / rect.width, scaleY = OUT_H / rect.height;
+    const dxCanvas = (e.clientX - dragStartX) * scaleX;
+    const dyCanvas = (e.clientY - dragStartY) * scaleY;
+    offX = offStartX - dxCanvas / scale;
+    offY = offStartY - dyCanvas / scale;
+    draw();
+  });
+
+  function endDrag(e) {
+    if (dragging) {
+      dragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+    }
+  }
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+
+  // ---- export: 480x270 WebP, target ~0.8 quality, nudged down toward <100KB ----
+
+  function canvasToBlob(c, type, quality) {
+    return new Promise(function (resolve) {
+      c.toBlob(resolve, type, quality);
+    });
+  }
+
+  async function exportThumbnail() {
+    let quality = 0.8;
+    let blob = await canvasToBlob(canvas, "image/webp", quality);
+
+    if (!blob) {
+      setMsg("This browser can't export WebP images.", true);
+      return null;
+    }
+
+    const targetBytes = 100 * 1024;
+    let tries = 0;
+    while (blob.size > targetBytes && quality > 0.4 && tries < 5) {
+      quality -= 0.1;
+      blob = await canvasToBlob(canvas, "image/webp", quality);
+      tries++;
+    }
+
+    return blob;
+  }
+
+  useBtn.addEventListener("click", async function () {
+    if (!img) return;
+    useBtn.disabled = true;
+    setMsg("Processing…");
+
+    const blob = await exportThumbnail();
+
+    if (!blob) {
+      useBtn.disabled = false;
+      return;
+    }
+
+    if (window.bpThumbnail && window.bpThumbnail.url) {
+      URL.revokeObjectURL(window.bpThumbnail.url);
+    }
+
+    const url = URL.createObjectURL(blob);
+    window.bpThumbnail = { blob: blob, url: url };
+
+    readyImg.src = url;
+    downloadLink.href = url;
+    const kb = Math.round(blob.size / 1024);
+    downloadLink.download = "blueprint-preview.webp";
+    setMsg(`Preview ready — ${kb} KB.`);
+
+    readyBox.hidden = false;
+    addBtn.hidden = true;
+    closeDialog();
+  });
+
+})();
 </script>
 </body>
 </html>
