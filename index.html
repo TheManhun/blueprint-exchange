@@ -70,11 +70,14 @@
   @media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
 
   /* Thumbnail field + cropper (stage 1: local only, no upload) */
-  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
-  #thumbFormPlaceholder { display: block; width: 100%; max-width: 320px; border-radius: 8px; margin: 0 0 12px; }
-  #thumbReady { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
-  #thumbReady img { width: 240px; height: 135px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); }
-  #thumbReady .hint { max-width: 32ch; }
+  /* Decision -- one persistent image slot, always populated (placeholder
+     art or the real crop), sitting right beside the button/text instead
+     of a separate banner above a box that could show broken. */
+  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  #thumbSlotImg { display: block; width: 240px; height: 135px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); flex: none; }
+  #thumbSlotSide { flex: 1 1 220px; min-width: 220px; }
+  #thumbSlotSide .hint { max-width: 32ch; margin-top: 0; }
+  #thumbReadyActions:not([hidden]) { display: flex; gap: 10px; margin-top: 10px; }
   dialog#thumbDlg { max-width: 560px; width: calc(100% - 32px); }
   #thumbDropZone { border: 2px dashed var(--line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: text; color: var(--ink-2); }
   #thumbDropArt { display: block; width: 100%; max-width: 360px; margin: 0 auto 14px; border-radius: 10px; }
@@ -152,14 +155,16 @@
 
     <label>Preview image (optional)</label>
     <div id="thumbField">
-      <img id="thumbFormPlaceholder" src="drop-placeholder.webp" alt="">
-      <button type="button" id="addThumbBtn">Add a preview image</button>
-      <p class="hint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
-      <div id="thumbReady" hidden>
-        <img id="thumbReadyImg" alt="Preview thumbnail" width="240" height="135">
-        <p class="hint" id="thumbReadyMsg">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
-        <button type="button" id="changeThumbBtn">Change image</button>
-        <button type="button" id="removeThumbBtn">Remove image</button>
+      <img id="thumbSlotImg" src="drop-placeholder.webp" alt="" width="240" height="135">
+      <div id="thumbSlotSide">
+        <button type="button" id="addThumbBtn">Add a preview image</button>
+        <p class="hint" id="thumbEmptyHint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
+        <p class="hint" id="thumbReadyMsg" hidden>Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
+        <p class="hint" id="thumbReadyError" hidden></p>
+        <div id="thumbReadyActions" hidden>
+          <button type="button" id="changeThumbBtn">Change image</button>
+          <button type="button" id="removeThumbBtn">Remove image</button>
+        </div>
       </div>
     </div>
 
@@ -234,21 +239,27 @@
     return data.url;
   }
 
+  // One persistent image slot (#thumbSlotImg) -- always shows either the
+  // placeholder art or the real crop, never blank, never a broken icon.
+  function resetThumbSlot() {
+    const slotImg = document.getElementById("thumbSlotImg");
+    const addBtn = document.getElementById("addThumbBtn");
+    const emptyHint = document.getElementById("thumbEmptyHint");
+    const readyMsg = document.getElementById("thumbReadyMsg");
+    const readyError = document.getElementById("thumbReadyError");
+    const readyActions = document.getElementById("thumbReadyActions");
+    if (slotImg) slotImg.src = "drop-placeholder.webp";
+    if (addBtn) addBtn.hidden = false;
+    if (emptyHint) emptyHint.hidden = false;
+    if (readyMsg) readyMsg.hidden = true;
+    if (readyError) readyError.hidden = true;
+    if (readyActions) readyActions.hidden = true;
+  }
+
   function clearThumbnail() {
     if (window.bpThumbnail && window.bpThumbnail.url) URL.revokeObjectURL(window.bpThumbnail.url);
     window.bpThumbnail = null;
-    const readyBox = document.getElementById("thumbReady");
-    const addBtn = document.getElementById("addThumbBtn");
-    const readyImgEl = document.getElementById("thumbReadyImg");
-    // The revoked URL above still sits in the <img>'s src otherwise --
-    // if this box is ever shown again without a fresh image, it shows
-    // a broken icon instead of just being empty (Epod: "I was
-    // expecting to see the Upload your image pic there").
-    if (readyImgEl) readyImgEl.removeAttribute("src");
-    if (readyBox) readyBox.hidden = true;
-    if (addBtn) addBtn.hidden = false;
-    const placeholderEl = document.getElementById("thumbFormPlaceholder");
-    if (placeholderEl) placeholderEl.hidden = false;
+    resetThumbSlot();
   }
 
   // Same rule as the mod's bp_files.sanitizeName, so the file name the
@@ -525,8 +536,10 @@
   const addBtn = document.getElementById("addThumbBtn");
   const changeBtn = document.getElementById("changeThumbBtn");
   const removeBtn = document.getElementById("removeThumbBtn");
-  const readyBox = document.getElementById("thumbReady");
-  const readyImg = document.getElementById("thumbReadyImg");
+  const slotImg = document.getElementById("thumbSlotImg");
+  const emptyHint = document.getElementById("thumbEmptyHint");
+  const readyMsg = document.getElementById("thumbReadyMsg");
+  const readyActions = document.getElementById("thumbReadyActions");
   const downloadLink = document.getElementById("thumbDownloadLink");
 
   const dlg = document.getElementById("thumbDlg");
@@ -647,10 +660,12 @@
       URL.revokeObjectURL(window.bpThumbnail.url);
     }
     window.bpThumbnail = null;
-    readyImg.removeAttribute("src"); // same fix as clearThumbnail -- never leave a dead blob: URL sitting in src
-    readyBox.hidden = true;
+    slotImg.src = "drop-placeholder.webp";
     addBtn.hidden = false;
-    document.getElementById("thumbFormPlaceholder").hidden = false;
+    emptyHint.hidden = false;
+    readyMsg.hidden = true;
+    document.getElementById("thumbReadyError").hidden = true;
+    readyActions.hidden = true;
   });
 
   cancelBtn.addEventListener("click", closeDialog);
@@ -767,27 +782,27 @@
     const url = URL.createObjectURL(blob);
     window.bpThumbnail = { blob: blob, url: url };
 
-    // Epod: "the 2nd image is not showing" -- a blob: URL assigned to
-    // img.src showed broken even on a fresh page load, not just stale
-    // state. Swapping the VISIBLE thumbnail to a data: URI (the
-    // upload/download paths still use the real Blob/object URL)
-    // sidesteps whatever that lifecycle issue was; onerror logs the
-    // real reason to the console if this ever fails again.
-    readyImg.onerror = function () {
+    // A blob: URL assigned to img.src showed broken in earlier testing,
+    // even on a fresh page load. A data: URI sidesteps whatever that
+    // lifecycle issue was; onerror logs the real reason to the console
+    // if this ever fails again, without blanking the slot.
+    const readyError = document.getElementById("thumbReadyError");
+    readyError.hidden = true;
+    slotImg.onerror = function () {
       console.error("Blueprint Exchange: preview thumbnail failed to render -- blob type:", blob.type, "size:", blob.size, "bytes");
-      const readyMsg = document.getElementById("thumbReadyMsg");
-      if (readyMsg) readyMsg.textContent = `Preview processed (${Math.round(blob.size / 1024)} KB) but couldn't be shown here -- it will still upload fine.`;
+      readyError.textContent = `Preview processed (${Math.round(blob.size / 1024)} KB) but couldn't be shown here -- it will still upload fine.`;
+      readyError.hidden = false;
     };
-    readyImg.src = canvas.toDataURL("image/webp", 0.8);
+    slotImg.src = canvas.toDataURL("image/webp", 0.8);
     downloadLink.href = url;
     const kb = Math.round(blob.size / 1024);
     downloadLink.download = "blueprint-preview.webp";
     setMsg(`Preview ready — ${kb} KB.`);
 
-    readyBox.hidden = false;
     addBtn.hidden = true;
-    const formPlaceholderEl = document.getElementById("thumbFormPlaceholder");
-    if (formPlaceholderEl) formPlaceholderEl.hidden = true;
+    emptyHint.hidden = true;
+    readyMsg.hidden = false;
+    readyActions.hidden = false;
     closeDialog();
   });
 

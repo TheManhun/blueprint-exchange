@@ -89,3 +89,17 @@ before the fix a card rendered at ratio 1.18 (should be 1.78); after,
 undistorted 480x270 -- confirmed against two real uploads in
 production -- so no crop/export logic needed to change, only the
 card's own display CSS.
+
+## One preview-image slot, not two
+
+Rebuilt the Preview image field to a single persistent slot (240x135,
+right beside the Add a preview image button) instead of a separate
+placeholder banner above a hideable "ready" box -- the two-box layout
+could show its ready box (with a dead blob: src) at the same time as
+the empty-state button, looking broken. Now there is exactly one
+`<img>`, always populated: placeholder art by default, the real crop
+once chosen, back to placeholder on Remove. Also caught the same
+CSS trap as the download-block banner earlier: `#thumbReadyActions`
+had an unconditional `display: flex` that beat the `hidden` attribute,
+so Change/Remove image showed even in the empty state -- guarded with
+`:not([hidden])`.
