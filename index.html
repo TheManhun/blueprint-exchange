@@ -37,6 +37,8 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
   .card h3 { font-size: 22px; margin: 0; }
+  .card.official { border-color: var(--accent); }
+  .badge { display: inline-block; vertical-align: middle; font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 4px 6px; margin-left: 8px; }
   .meta { color: var(--ink-2); font-size: 14px; }
   .desc { margin: 0; min-height: 1.5em; }
   .req { font: 12px/1.4 "JetBrains Mono", monospace; color: var(--ink-2); word-break: break-all; }
@@ -151,8 +153,8 @@
     const rows = all.filter((b) => !q || [b.name, b.author, b.description, JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q));
     grid.innerHTML = rows.map((b) => {
       const req = (b.requires && b.requires.constructions) || [];
-      return `<article class="card">
-        <h3>${esc(b.name)}</h3>
+      return `<article class="card${b.official ? " official" : ""}">
+        <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}</h3>
         <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
         <p class="desc">${esc(b.description || "")}</p>
         <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>
@@ -220,9 +222,9 @@
   // origin/author/description/version keys are replaced.
   function stampCommunity(text, row) {
     let out = text.replace(/\b(origin|author|description|version) = (?:"(?:[^"\\]|\\.)*"|\d+|nil)\s*,?\s*/g, "");
-    const stamp = `origin = "community", version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, `;
+    const stamp = `origin = ${row.official ? '"official"' : '"community"'}, version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, `;
     out = out.replace(/return\s*\{/, "return {" + stamp);
-    return out.replace(/^-- Origin: .*$/m, `-- Origin: community | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
+    return out.replace(/^-- Origin: .*$/m, `-- Origin: ${row.official ? "official" : "community"} | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
   }
 
   document.getElementById("file").addEventListener("change", async (e) => {
@@ -253,20 +255,20 @@
     if (!name) { msg.className = "msg bad"; msg.textContent = "Give it a name."; return; }
     const btn = document.getElementById("upload");
     btn.disabled = true;
-    // Same blueprintId seen before -> the next version of it, not a duplicate.
-    let version = 1;
-    if (pending.blueprintId) {
-      const { data: v } = await sb.rpc("bp_next_version", { p_blueprint_id: pending.blueprintId });
-      version = Number(v) || 1;
-    }
-    const { error } = await sb.from("bp_blueprints").insert({
-      name, author: document.getElementById("author").value.trim() || null,
-      description: document.getElementById("desc").value.trim() || null,
-      content: pending.text, constructions: pending.constructions, edges: pending.edges, requires: pending.requires,
-      blueprint_id: pending.blueprintId, version,
+    // Server-side upload: versioning by blueprintId and the "official"
+    // check (a pass-phrase typed as the author name, compared inside the
+    // database -- never in this page) both happen in bp_upload.
+    const { data: result, error } = await sb.rpc("bp_upload", {
+      p_name: name, p_author: document.getElementById("author").value.trim() || null,
+      p_description: document.getElementById("desc").value.trim() || null,
+      p_content: pending.text, p_constructions: pending.constructions, p_edges: pending.edges,
+      p_requires: pending.requires, p_blueprint_id: pending.blueprintId,
     });
     if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
-    msg.className = "msg ok"; msg.textContent = version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`;
+    const version = (result && result.version) || 1;
+    msg.className = "msg ok";
+    msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`);
+    document.getElementById("author").value = "";
     pending = null; document.getElementById("file").value = "";
     load();
   });

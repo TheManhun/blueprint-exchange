@@ -86,3 +86,23 @@ returns int language sql security definer set search_path = public as $$
   select coalesce(max(version), 0) + 1 from public.bp_blueprints where blueprint_id = p_blueprint_id;
 $$;
 grant execute on function public.bp_next_version(text) to anon;
+
+-- Third migration ("blue_print_library_official"): official uploads.
+-- A PRIVATE pass-phrase table (RLS on, no policies -- only security-
+-- definer functions read it) and bp_upload(), which every upload now
+-- goes through: if the author field equals a pass-phrase the row is
+-- marked official and the public author becomes that key's display
+-- name. The direct anon INSERT policy is dropped (it could have set
+-- official = true). Change the pass-phrase in the SQL editor:
+--   update public.bp_official_keys set passphrase = '...' where display_name = 'Epod';
+alter table public.bp_blueprints add column if not exists official boolean not null default false;
+create table if not exists public.bp_official_keys (
+  id bigint generated always as identity primary key,
+  passphrase text not null,
+  display_name text not null
+);
+alter table public.bp_official_keys enable row level security;
+-- bp_upload(p_name, p_author, p_description, p_content, p_constructions, p_edges, p_requires, p_blueprint_id)
+--   -> { id, version, official, author }; see the live function for the body.
+drop policy if exists "Allow anonymous blueprint uploads" on public.bp_blueprints;
+-- bp_list() now also returns `official` and sorts official rows first.
