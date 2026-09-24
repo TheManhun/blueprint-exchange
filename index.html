@@ -155,7 +155,7 @@
       <p class="hint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
       <div id="thumbReady" hidden>
         <img id="thumbReadyImg" alt="Preview thumbnail" width="240" height="135">
-        <p class="hint">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
+        <p class="hint" id="thumbReadyMsg">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
         <button type="button" id="changeThumbBtn">Change image</button>
         <button type="button" id="removeThumbBtn">Remove image</button>
       </div>
@@ -762,7 +762,18 @@
     const url = URL.createObjectURL(blob);
     window.bpThumbnail = { blob: blob, url: url };
 
-    readyImg.src = url;
+    // Epod: "the 2nd image is not showing" -- a blob: URL assigned to
+    // img.src showed broken even on a fresh page load, not just stale
+    // state. Swapping the VISIBLE thumbnail to a data: URI (the
+    // upload/download paths still use the real Blob/object URL)
+    // sidesteps whatever that lifecycle issue was; onerror logs the
+    // real reason to the console if this ever fails again.
+    readyImg.onerror = function () {
+      console.error("Blueprint Exchange: preview thumbnail failed to render -- blob type:", blob.type, "size:", blob.size, "bytes");
+      const readyMsg = document.getElementById("thumbReadyMsg");
+      if (readyMsg) readyMsg.textContent = `Preview processed (${Math.round(blob.size / 1024)} KB) but couldn't be shown here -- it will still upload fine.`;
+    };
+    readyImg.src = canvas.toDataURL("image/webp", 0.8);
     downloadLink.href = url;
     const kb = Math.round(blob.size / 1024);
     downloadLink.download = "blueprint-preview.webp";
