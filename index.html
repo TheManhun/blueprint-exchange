@@ -106,8 +106,8 @@
   <section class="panel">
     <h2>How to use a downloaded blueprint</h2>
     <ol class="steps">
-      <li>Put the downloaded <code>blueprint_&lt;name&gt;.lua</code> file <strong>next to the game's executable</strong> &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (or <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code> on another drive). In Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it for you.</li>
-      <li>In game, click <strong>BP</strong> in the bottom bar, type the blueprint's name (the part after <code>blueprint_</code>) and click <strong>[ Import File ]</strong>.</li>
+      <li>Put the downloaded <code>blueprint_import.lua</code> file <strong>next to the game's executable</strong> &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (or <code>&lt;drive&gt;:\SteamLibrary\steamapps\common\Transport Fever 2</code> on another drive). In Steam: right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it for you.</li>
+      <li>In game, click <strong>BP</strong> in the bottom bar, then <strong>[ Import ]</strong> &mdash; the mod reads the inbox file and files the blueprint into your library under its own name. One download at a time: import before downloading the next.</li>
       <li>Click <strong>[ Place ]</strong>, aim the blue outline at flat, clear ground, rotate if you like, and left-click. If it needs mods you don't have, the status line names them.</li>
     </ol>
   </section>
@@ -118,8 +118,8 @@
   <p id="dlgBody"></p>
   <ol class="steps">
     <li>Move <code id="dlgFile"></code> into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it).</li>
-    <li>In game: <strong>BP</strong> &rarr; type <code id="dlgName"></code> &rarr; <strong>[ Import File ]</strong>.</li>
-    <li><strong>[ Place ]</strong>, aim, click.</li>
+    <li>In game: <strong>BP</strong> &rarr; <strong>[ Import ]</strong>. It lands in your library as <code id="dlgName"></code>.</li>
+    <li><strong>[ Place ]</strong>, aim, click. (Import each download before grabbing the next &mdash; the inbox holds one file.)</li>
   </ol>
   <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
 </dialog>
@@ -176,8 +176,10 @@
     const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
     btn.disabled = false;
     if (error || !content) { alert("Download failed -- try again in a moment."); return; }
+    // One fixed inbox name: the mod's [ Import ] reads exactly this file
+    // and stores the blueprint under the name inside it -- no typing.
     const fileBase = sanitize(btn.dataset.name);
-    const fileName = `blueprint_${fileBase}.lua`;
+    const fileName = "blueprint_import.lua";
     const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
