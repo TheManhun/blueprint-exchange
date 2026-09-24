@@ -9,3 +9,14 @@ Blueprint files are stored in Supabase (see `supabase_setup.sql`), not in this r
 ## Credit
 
 Inspired by [Copy It! by okeating](https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461) -- its approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.
+
+## Preview images (optional)
+
+Uploaders can attach a screenshot: pasted or chosen in the browser,
+cropped to 16:9 and re-encoded to a small WebP client-side (never the
+original file), then uploaded through a Cloudflare Worker (`worker/`
+in this repo) straight into an R2 bucket. Only the resulting public
+URL is stored in Supabase, as `thumbnail_url` -- no image data and no
+R2 credentials ever touch this repo or the Supabase database directly.
+Blueprints without a preview work exactly as before; browse cards show
+a plain placeholder instead of a broken-image icon.

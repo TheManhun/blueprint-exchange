@@ -106,3 +106,81 @@ alter table public.bp_official_keys enable row level security;
 --   -> { id, version, official, author }; see the live function for the body.
 drop policy if exists "Allow anonymous blueprint uploads" on public.bp_blueprints;
 -- bp_list() now also returns `official` and sorts official rows first.
+
+-- Fourth migration ("blue_print_library_thumbnail"): optional preview
+-- image. The image itself lives in Cloudflare R2 (bucket
+-- blueprint-thumbnails, worker/ in this repo writes it there) -- this
+-- table only ever stores the resulting public R2 URL, never image
+-- data. bp_upload() now takes a 9th argument, p_thumbnail_url, and
+-- only accepts a URL matching this project's own R2 public base +
+-- /blueprints/<uuid>.webp -- anything else is silently dropped to
+-- null, since this is a security-definer function a caller could in
+-- principle call directly. bp_list() returns thumbnail_url (null for
+-- every blueprint uploaded before this migration) and now also
+-- returns `official` explicitly and sorts official rows first.
+--
+-- NOTE: `create or replace function` with a DIFFERENT argument list
+-- creates a new overload rather than replacing the old one -- the
+-- pre-thumbnail 8-argument bp_upload was dropped explicitly so the
+-- frontend's named-parameter RPC call resolves to exactly one
+-- function. If you ever add another bp_upload parameter, drop the
+-- old signature the same way.
+alter table public.bp_blueprints
+  add column if not exists thumbnail_url text
+    check (thumbnail_url is null or char_length(thumbnail_url) <= 300);
+
+drop function if exists public.bp_upload(text, text, text, text, int, int, jsonb, text);
+
+create or replace function public.bp_list()
+returns jsonb language sql security definer set search_path = public as $$
+  with latest as (
+    select distinct on (coalesce(blueprint_id, id::text)) *
+    from public.bp_blueprints
+    order by coalesce(blueprint_id, id::text), version desc, created_at desc
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id, 'created_at', created_at, 'name', name, 'author', author,
+    'description', description, 'game', game, 'constructions', constructions,
+    'edges', edges, 'requires', requires, 'downloads', downloads,
+    'size', char_length(content), 'blueprint_id', blueprint_id, 'version', version,
+    'official', official, 'thumbnail_url', thumbnail_url
+  ) order by official desc, created_at desc), '[]'::jsonb)
+  from latest;
+$$;
+
+create or replace function public.bp_upload(
+  p_name text, p_author text, p_description text, p_content text,
+  p_constructions int, p_edges int, p_requires jsonb, p_blueprint_id text,
+  p_thumbnail_url text default null
+)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_display text;
+  v_official boolean := false;
+  v_author text := nullif(trim(p_author), '');
+  v_version int := 1;
+  v_id bigint;
+  v_thumb text := nullif(trim(coalesce(p_thumbnail_url, '')), '');
+begin
+  select display_name into v_display from public.bp_official_keys where passphrase = trim(p_author) limit 1;
+  if v_display is not null then
+    v_official := true;
+    v_author := v_display;
+  end if;
+
+  if v_thumb is not null and v_thumb !~ '^https://pub-ea55f87d66c04139a2a7ac3704e9c05e\.r2\.dev/blueprints/[a-zA-Z0-9-]+\.webp$' then
+    v_thumb := null;
+  end if;
+
+  if p_blueprint_id is not null then
+    select coalesce(max(version), 0) + 1 into v_version from public.bp_blueprints where blueprint_id = p_blueprint_id;
+  end if;
+
+  insert into public.bp_blueprints (name, author, description, content, constructions, edges, requires, blueprint_id, version, official, thumbnail_url)
+  values (p_name, v_author, nullif(trim(p_description), ''), p_content, coalesce(p_constructions, 0), coalesce(p_edges, 0), p_requires, p_blueprint_id, v_version, v_official, v_thumb)
+  returning id into v_id;
+
+  return jsonb_build_object('id', v_id, 'version', v_version, 'official', v_official, 'author', v_author, 'thumbnail_url', v_thumb);
+end;
+$$;
+grant execute on function public.bp_upload(text, text, text, text, int, int, jsonb, text, text) to anon;

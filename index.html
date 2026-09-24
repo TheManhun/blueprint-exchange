@@ -35,7 +35,9 @@
   .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-width: 150px; }
   .stat b { display: block; font-size: 26px; font-family: "Barlow Condensed", sans-serif; font-variant-numeric: tabular-nums; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+  .thumb { width: calc(100% + 32px); margin: -16px -16px 0; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .thumb-placeholder { background: linear-gradient(135deg, var(--surface-2), var(--accent-soft)); }
   .card h3 { font-size: 22px; margin: 0; }
   .card.official { border-color: var(--accent); }
   .badge { display: inline-block; vertical-align: middle; font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 4px 6px; margin-left: 8px; }
@@ -82,7 +84,6 @@
   #thumbCanvas:active { cursor: grabbing; }
   #thumbZoom { width: 100%; margin: 10px 0 0; }
   #thumbCropStage label { margin: 14px 0 2px; }
-  #r2TestPanel { flex-basis: 100%; border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
 </style>
 </head>
 <body>
@@ -149,17 +150,9 @@
       <p class="hint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
       <div id="thumbReady" hidden>
         <img id="thumbReadyImg" alt="Preview thumbnail" width="240" height="135">
-        <p class="hint">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a> &mdash; local test only, not uploaded yet.</p>
+        <p class="hint">Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
         <button type="button" id="changeThumbBtn">Change image</button>
         <button type="button" id="removeThumbBtn">Remove image</button>
-        <!-- Stage 2 dev panel: uploads to the Worker/R2 in isolation, no
-             Supabase call. Remove this block (and r2TestPanel's script
-             further down) once stage 3 wires thumbnail_url into the
-             real submit and this manual check is no longer needed. -->
-        <div id="r2TestPanel">
-          <button type="button" id="r2TestBtn">Test R2 upload</button>
-          <p class="hint" id="r2TestMsg"></p>
-        </div>
       </div>
     </div>
 
@@ -212,6 +205,36 @@
   const SUPABASE_ANON_KEY = "sb_publishable_R3nt2zIP1QF6iJiGfJ220A_zX3JTQ0_";
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Stage 3 -- the preview image, if any: the cropper (further down)
+  // stores its WebP blob on window.bpThumbnail; this Worker writes it
+  // to R2 and hands back the public URL that gets saved as
+  // thumbnail_url. Proven working stage 2 (browser -> Worker -> R2 ->
+  // public URL) before this was wired in.
+  const THUMB_WORKER_URL = "https://blueprint-exchange-thumbnails.blueprint-exchange.workers.dev";
+
+  async function uploadThumbnailIfAny() {
+    if (!window.bpThumbnail || !window.bpThumbnail.blob) return null;
+    const res = await fetch(THUMB_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "image/webp" },
+      body: window.bpThumbnail.blob,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) {
+      throw new Error((data && data.error) || ("thumbnail upload failed (HTTP " + res.status + ")"));
+    }
+    return data.url;
+  }
+
+  function clearThumbnail() {
+    if (window.bpThumbnail && window.bpThumbnail.url) URL.revokeObjectURL(window.bpThumbnail.url);
+    window.bpThumbnail = null;
+    const readyBox = document.getElementById("thumbReady");
+    const addBtn = document.getElementById("addThumbBtn");
+    if (readyBox) readyBox.hidden = true;
+    if (addBtn) addBtn.hidden = false;
+  }
+
   // Same rule as the mod's bp_files.sanitizeName, so the file name the
   // page hands out is exactly what [ Import File ] expects.
   const sanitize = (s) => (s || "").replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 60);
@@ -233,7 +256,11 @@
     const rows = all.filter((b) => !q || [b.name, b.author, b.description, JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q));
     grid.innerHTML = rows.map((b) => {
       const req = (b.requires && b.requires.constructions) || [];
+      const thumb = b.thumbnail_url
+        ? `<img class="thumb" src="${esc(b.thumbnail_url)}" alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">`
+        : `<div class="thumb thumb-placeholder" aria-hidden="true"></div>`;
       return `<article class="card${b.official ? " official" : ""}">
+        ${thumb}
         <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}</h3>
         <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
         <p class="desc">${esc(b.description || "")}</p>
@@ -335,6 +362,19 @@
     if (!name) { msg.className = "msg bad"; msg.textContent = "Give it a name."; return; }
     const btn = document.getElementById("upload");
     btn.disabled = true;
+
+    // Preview image, if one was cropped: uploaded to R2 through the
+    // Worker first, so bp_upload only ever receives a URL, never image
+    // data. A failure here does not block the blueprint upload itself
+    // -- it goes up without a thumbnail and says so.
+    let thumbnailUrl = null;
+    let thumbWarning = "";
+    try {
+      thumbnailUrl = await uploadThumbnailIfAny();
+    } catch (thumbErr) {
+      thumbWarning = " (preview image failed to upload: " + thumbErr.message + ")";
+    }
+
     // Server-side upload: versioning by blueprintId and the "official"
     // check (a pass-phrase typed as the author name, compared inside the
     // database -- never in this page) both happen in bp_upload.
@@ -343,13 +383,15 @@
       p_description: document.getElementById("desc").value.trim() || null,
       p_content: pending.text, p_constructions: pending.constructions, p_edges: pending.edges,
       p_requires: pending.requires, p_blueprint_id: pending.blueprintId,
+      p_thumbnail_url: thumbnailUrl,
     });
     if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
     const version = (result && result.version) || 1;
     msg.className = "msg ok";
-    msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`);
+    msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
     document.getElementById("author").value = "";
     pending = null; document.getElementById("file").value = "";
+    clearThumbnail();
     load();
   });
 
@@ -628,76 +670,5 @@
 })();
 </script>
 
-<script>
-// ============================================================
-// STAGE 2 dev-only check: POST window.bpThumbnail.blob (set by the
-// stage 1 cropper above) to the Cloudflare Worker and show whatever
-// it returns. Deliberately isolated -- it does not touch the
-// blueprint upload button, does not call Supabase, and saves nothing.
-// Its only job is proving the Worker writes to R2 and hands back a
-// URL that actually loads an image, before stage 3 wires this into
-// the real submit. Delete this block (and the #r2TestPanel markup)
-// once that's done.
-(function () {
-
-  // Fill in after `wrangler deploy` -- see worker/DEPLOY.md. Left blank
-  // on purpose: the panel below refuses to run until this is set, so
-  // there's no way to silently POST to the wrong place.
-  const WORKER_UPLOAD_URL = "https://blueprint-exchange-thumbnails.blueprint-exchange.workers.dev";
-
-  const btn = document.getElementById("r2TestBtn");
-  const msg = document.getElementById("r2TestMsg");
-
-  if (!btn) return;
-
-  btn.addEventListener("click", async function () {
-
-    if (!WORKER_UPLOAD_URL) {
-      msg.textContent = "WORKER_UPLOAD_URL isn't set yet -- deploy the Worker, then paste its URL into the script (see worker/DEPLOY.md).";
-      msg.style.color = "var(--bad)";
-      return;
-    }
-
-    if (!window.bpThumbnail || !window.bpThumbnail.blob) {
-      msg.textContent = "No processed thumbnail yet -- use the cropper above first.";
-      msg.style.color = "var(--bad)";
-      return;
-    }
-
-    btn.disabled = true;
-    msg.style.color = "var(--ink-2)";
-    msg.textContent = "Uploading to the Worker…";
-
-    try {
-
-      const res = await fetch(WORKER_UPLOAD_URL, {
-        method: "POST",
-        headers: { "Content-Type": "image/webp" },
-        body: window.bpThumbnail.blob,
-      });
-
-      const data = await res.json().catch(function () { return null; });
-
-      if (!res.ok || !data || !data.ok) {
-        const reason = (data && data.error) || ("HTTP " + res.status);
-        msg.textContent = "Worker rejected the upload: " + reason;
-        msg.style.color = "var(--bad)";
-        return;
-      }
-
-      msg.innerHTML = "Uploaded. Public URL: <a href=\"" + data.url + "\" target=\"_blank\" rel=\"noopener\">" + data.url + "</a> -- open it to confirm the image loads.";
-      msg.style.color = "var(--ok)";
-
-    } catch (err) {
-      msg.textContent = "Request failed: " + err.message + " (check the Worker's CORS origin and that it's deployed).";
-      msg.style.color = "var(--bad)";
-    } finally {
-      btn.disabled = false;
-    }
-
-  });
-
-})();
-</script>
 </body>
 </html>
