@@ -23,6 +23,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const TF2_APP_ID = 1066780;
 
 const ALLOWED_ORIGINS = new Set([
+  "https://tfbpx.com",
+  "https://www.tfbpx.com",
   "https://themanhun.github.io",
   "http://127.0.0.1:8765", // local testing of the page
   "http://localhost:8765",

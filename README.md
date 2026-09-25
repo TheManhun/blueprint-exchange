@@ -228,7 +228,7 @@ only the numeric item id; the `plug-my-mod` Edge Function
 - rate limits by salted hash of the caller's IP (raw IPs are never
   stored): 20 lookups/hour, 5 submissions/day per caller, 200 new
   listings/day overall; duplicates are refused;
-- only accepts requests from this site (CORS allow-list).
+- only accepts requests from this site (CORS allow-list: tfbpx.com, www.tfbpx.com, the old github.io address, and local test ports).
 
 Listings are approved automatically. To take one down:
 
