@@ -351,7 +351,12 @@
     if (f.size > 4000000) { say("That file is too big to be a blueprint.", true); return; }
     const own = bpxReadOwnership(await f.text());
     const sorry = "That file doesn't match this blueprint. Use the original .lua the mod saved on your PC -- a copy downloaded from the library won't work.";
-    if (!own.ownerSecret || own.blueprintId !== id) { say(sorry, true); return; }
+    if (!own.ownerSecret) {
+      // Says something about the file the person chose, nothing about the stored key.
+      say("That file has no ownership key in it. Files captured before ownership keys existed (or copies downloaded from the library) can't prove ownership. Capture the design again with the current mod, or choose a different original file.", true);
+      return;
+    }
+    if (own.blueprintId !== id) { say(sorry, true); return; }
     document.getElementById("recoverBtn").disabled = true;
     const r = await bpxClaim(id, own.ownerSecret);
     document.getElementById("recoverBtn").disabled = false;
