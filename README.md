@@ -130,7 +130,7 @@ page's intro line; links back to the library and the guide.
 The "Make Your Own Blueprint Importer" panel builds a small Windows
 `.bat` in the browser (no server call) that moves `blueprint_import*.lua`
 from the player's Downloads folder into the Transport Fever 2 folder,
-where the mod's ten inbox slots live. Two ways to get it: Copy BAT Code
+where the mod's ten inbox slots live. The Downloads folder box is optional (tucked under "My Downloads folder is somewhere else"): left blank, the script uses `%USERPROFILE%\Downloads`, so most people only confirm the game folder. The script prints the folder it searched, and its "nothing found" message points people with a moved Downloads folder back to that box. Two ways to get it: Copy BAT Code
 (shown in a code box with Notepad save-as steps, copied with real CRLF
 line endings) or Download My Blueprint Importer.
 

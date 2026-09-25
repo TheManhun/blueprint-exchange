@@ -104,6 +104,8 @@
   #importer pre { background: var(--code-ground); color: var(--code-ink); font: 13px/1.5 "JetBrains Mono", monospace; padding: 14px 16px; border-radius: 8px; overflow: auto; margin: 10px 0 12px; white-space: pre; max-height: 420px; }
   #importer h3 { font-size: 20px; margin: 22px 0 0; }
   #importer code { overflow-wrap: anywhere; }
+  #importer summary { cursor: pointer; font-weight: 600; margin: 16px 0 4px; }
+  #importer details[open] summary { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -153,7 +155,7 @@
 
   <section class="panel" id="importer">
     <h2>Make Your Own Blueprint Importer</h2>
-    <p class="lede">Tired of moving files by hand? Build a one-click importer. Tell us where your Downloads folder is and where Transport Fever 2 lives, and we&rsquo;ll make a tiny Windows file that moves your downloaded blueprints to the right place for you.</p>
+    <p class="lede">Tired of moving files by hand? Build a one-click importer. Check where Transport Fever 2 lives (it&rsquo;s filled in for you), and we&rsquo;ll make a tiny Windows file that moves your downloaded blueprints from your Downloads folder to the right place.</p>
     <ol class="steps">
       <li>Download blueprints from the library.</li>
       <li>Double-click <strong>Blueprint_Importer.bat</strong>.</li>
@@ -162,13 +164,17 @@
       <li>Enjoy your new layout from the community.</li>
     </ol>
 
-    <label for="impSource">Your Downloads folder</label>
-    <input type="text" id="impSource" placeholder="C:\Users\YourName\Downloads" autocomplete="off" spellcheck="false">
-    <p class="hint">Tip: open your Downloads folder in File Explorer, click the address bar at the top, and copy what it says.</p>
-
     <label for="impDest">Your Transport Fever 2 folder (the one with TransportFever2.exe)</label>
     <input type="text" id="impDest" value="C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2" autocomplete="off" spellcheck="false">
     <p class="hint">That&rsquo;s the usual place, so it&rsquo;s filled in for you. If your game lives on another drive it looks like <code>D:\SteamLibrary\steamapps\common\Transport Fever 2</code>. In Steam, right-click the game &rarr; Manage &rarr; Browse local files opens the right folder.</p>
+
+    <details id="impAdvanced">
+      <summary>My Downloads folder is somewhere else</summary>
+      <p class="hint">Most people can skip this. The importer looks in your standard Windows Downloads folder on its own. If your browser saves files somewhere else, paste that folder here. Your browser&rsquo;s Settings &rarr; Downloads shows where it saves.</p>
+      <label for="impSource">Your Downloads folder (optional)</label>
+      <input type="text" id="impSource" placeholder="C:\Users\YourName\Downloads" autocomplete="off" spellcheck="false">
+      <p class="hint">Easiest way to get the full path: in File Explorer, right-click the folder and choose <strong>Copy as path</strong> (hold Shift as you right-click if you don&rsquo;t see it), then paste it here. File Explorer sometimes shows only the word &ldquo;Downloads&rdquo; &mdash; that&rsquo;s normal, but the importer needs the full path.</p>
+    </details>
 
     <div class="msg" id="impMsg" role="status"></div>
 
@@ -928,6 +934,7 @@
   const srcEl = $("impSource"), dstEl = $("impDest"), msgEl = $("impMsg");
   const codeBox = $("impCodeBox"), codeEl = $("impCode"), doneEl = $("impDone");
   const copyState = $("impCopyState");
+  const advEl = $("impAdvanced");
   if (!srcEl || !dstEl || !msgEl || !codeBox || !codeEl || !doneEl) return;
 
   const FILE_NAME = "Blueprint_Importer.bat";
@@ -967,33 +974,41 @@
     return { value: s };
   }
 
-  // Both paths, checked. Returns null (after showing why) if anything is off.
+  // Both paths, checked. The Downloads folder is optional: left blank,
+  // the script uses the standard Windows one (%USERPROFILE%\Downloads),
+  // so most people only ever fill in the game folder. Returns null
+  // (after showing why) if anything is off.
   function gather() {
     hideResults();
-    const s = cleanPath(srcEl.value, "your Downloads folder");
-    if (s.error) { showMsg(s.error, "bad"); srcEl.focus(); return null; }
     const d = cleanPath(dstEl.value, "your Transport Fever 2 folder");
     if (d.error) { showMsg(d.error, "bad"); dstEl.focus(); return null; }
-    if (s.value.toLowerCase() === d.value.toLowerCase()) {
-      showMsg("Those two folders are the same. The first is where your browser saves downloads, the second is your Transport Fever 2 folder.", "bad");
-      return null;
+    let source = null;
+    if (srcEl.value.trim() !== "") {
+      const s = cleanPath(srcEl.value, "your Downloads folder");
+      if (s.error) { if (advEl) advEl.open = true; showMsg(s.error, "bad"); srcEl.focus(); return null; }
+      if (s.value.toLowerCase() === d.value.toLowerCase()) {
+        if (advEl) advEl.open = true;
+        showMsg("Those two folders are the same. The first is where your browser saves downloads, the second is your Transport Fever 2 folder.", "bad");
+        return null;
+      }
+      source = s.value;
     }
     showMsg("", "");
     const note = /transport fever 2$/i.test(d.value)
       ? ""
-      : "Heads up: the second folder doesn't end in \"Transport Fever 2\". It should be the folder with TransportFever2.exe in it. You can carry on if you're sure.";
-    return { source: s.value, dest: d.value, note: note };
+      : "Heads up: the Transport Fever 2 folder doesn't end in \"Transport Fever 2\". It should be the folder with TransportFever2.exe in it. You can carry on if you're sure.";
+    return { source: source, dest: d.value, note: note };
   }
 
   function buildBat(source, dest) {
     // Paths with accents or other non-ASCII letters need the console switched to UTF-8 first.
-    const needsUtf8 = /[^\x00-\x7f]/.test(source + dest);
+    const needsUtf8 = /[^\x00-\x7f]/.test((source || "") + dest);
     const lines = ["@echo off"];
     if (needsUtf8) lines.push("chcp 65001 >nul");
     lines.push(
       "title Blueprint Exchange - Blueprint Importer",
       "",
-      'set "SOURCE=' + source + '"',
+      source ? 'set "SOURCE=' + source + '"' : 'set "SOURCE=%USERPROFILE%\\Downloads"',
       'set "DEST=' + dest + '"',
       "",
       "echo ==========================================",
@@ -1001,10 +1016,12 @@
       "echo ==========================================",
       "echo.",
       "echo Looking for downloaded blueprints...",
+      'echo Folder: "%SOURCE%"',
       "echo.",
       "",
       'if not exist "%SOURCE%\\blueprint_import*.lua" (',
       "    echo No Blueprint Exchange blueprint files were found.",
+      "    echo If your browser saves downloads somewhere else, make a new importer and fill in the Downloads folder box.",
       "    echo.",
       "    echo Nothing was moved.",
       "    echo.",
