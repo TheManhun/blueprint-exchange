@@ -64,6 +64,8 @@
       <div class="row" style="margin-top:10px"><button id="inboxResetBtn">I&rsquo;ve moved them &mdash; reset downloads</button></div>
     </div>
 
+    <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
+    <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" hidden>Nothing matches that &mdash; try a different search, or <a href="upload.html">be the first to share one</a>.</div>
 
@@ -176,6 +178,7 @@
   // ---- the library ----
   let all = [];
   let filterMode = "all";
+  let catFilter = ""; // "" = every type
   let ownedIds = new Set(); // blueprints this browser has proved it owns (Edit button)
 
   const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
@@ -190,15 +193,36 @@
     const { data, error } = await sb.rpc("bp_list");
     if (error) { console.error(error); return; }
     all = data || [];
+    buildCatChips();
     render();
   }
+
+  // One chip per type that at least one blueprint has, with how many.
+  function buildCatChips() {
+    const counts = {};
+    all.forEach((b) => (b.categories || []).forEach((c) => { counts[c] = (counts[c] || 0) + 1; }));
+    const wrap = document.getElementById("catChips");
+    const kinds = BPX_CATEGORY_ORDER.filter((c) => counts[c]).concat(Object.keys(counts).filter((c) => BPX_CATEGORY_ORDER.indexOf(c) === -1));
+    if (catFilter && !counts[catFilter]) catFilter = "";
+    wrap.hidden = kinds.length < 2;
+    wrap.innerHTML = [["", `All types`]].concat(kinds.map((c) => [c, `${c} (${counts[c]})`]))
+      .map(([c, label]) => `<button type="button" data-cat="${esc(c)}" aria-pressed="${c === catFilter}">${esc(label)}</button>`).join("");
+  }
+  document.getElementById("catChips").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-cat]");
+    if (!btn) return;
+    catFilter = btn.dataset.cat;
+    document.querySelectorAll("#catChips button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+    render();
+  });
 
   function render() {
     const q = document.getElementById("search").value.trim().toLowerCase();
     const sortKey = document.getElementById("sort").value;
     const rows = all
       .filter((b) => filterMode === "all" || (filterMode === "official" ? b.official : !b.official))
-      .filter((b) => !q || [b.name, b.author, b.description, JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
+      .filter((b) => !catFilter || (b.categories || []).includes(catFilter))
+      .filter((b) => !q || [b.name, b.author, b.description, (b.categories || []).join(" "), JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
       .sort(sorters[sortKey] || byNewest);
     document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
     document.getElementById("empty").hidden = rows.length > 0;

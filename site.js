@@ -49,6 +49,31 @@ async function trackVisit() {
   } catch (err) { /* never break the page over this */ }
 }
 
+// Blueprint types, worked out from the blueprint's own data (what it places
+// and which street/track/bridge types it lists) -- never typed in. The
+// database does the same in bp_categories() (supabase/migrations/
+// bp_categories.sql): keep the two in step. The order is the display order.
+const BPX_CATEGORY_ORDER = ["Truck station", "Bus station", "Rail station", "Airport", "Harbour", "Depot", "Road network", "Rail network", "Bridges & tunnels", "Other"];
+
+function bpxCategories(text) {
+  const t = String(text || "");
+  const cats = [];
+  const streetStation = /fileName = "station\/street\//.test(t);
+  if (streetStation && /station\/street\/(cargo_platform|era_[a-z]_cargo_building)/.test(t)) cats.push("Truck station");
+  if (streetStation && /station\/street\/(passenger_platform|era_[a-z]_passenger_building)/.test(t)) cats.push("Bus station");
+  if (/fileName = "station\/rail\//.test(t)) cats.push("Rail station");
+  if (/fileName = "station\/air\//.test(t)) cats.push("Airport");
+  if (/fileName = "station\/water\//.test(t)) cats.push("Harbour");
+  if (/fileName = "depot\//.test(t)) cats.push("Depot");
+  // plain infrastructure only when nothing station-like (even an unrecognised one) is placed
+  if (cats.length === 0 && !/fileName = "(station|depot)\//.test(t)) {
+    if (/streets = \{"/.test(t)) cats.push("Road network");
+    if (/tracks = \{"/.test(t)) cats.push("Rail network");
+  }
+  if (/bridges = \{"/.test(t) || /tunnels = \{"/.test(t)) cats.push("Bridges & tunnels");
+  return cats.length ? cats : ["Other"];
+}
+
 // One blueprint card, used by the library and by the live preview on the
 // upload page, so what people see there is exactly what they will get.
 function blueprintCardHtml(b, opts) {
@@ -65,6 +90,7 @@ function blueprintCardHtml(b, opts) {
     ${thumb}
     <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}</h3>
     <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
+    ${(b.categories || []).length ? `<div class="cats">${b.categories.map((c) => `<span class="cat">${esc(c)}</span>`).join("")}</div>` : ""}
     <p class="desc">${esc(b.description || "")}</p>
     <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>
     ${req.length ? `<div class="req">needs: ${esc(req.join(", "))}</div>` : ""}

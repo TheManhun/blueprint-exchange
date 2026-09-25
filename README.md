@@ -287,3 +287,27 @@ recovered; the one such row in the library is unaffected.
 The functions were exercised inside a transaction that was rolled back
 (wrong/missing/other-blueprint keys, stranger uploads, revocation, rate
 limiting), so no test data was left in production.
+
+## Automatic categories
+
+Each blueprint's type is worked out from its own data, not typed in.
+`bp_categories(content)` (migration `supabase/migrations/bp_categories.sql`)
+is run by `bp_upload` on every upload and stored in `bp_blueprints.categories`;
+`bp_list` returns it, and the library page shows a badge per type, a chip
+per type with counts, and a filter. The upload page shows the detected type
+before you publish, using the same rules in `site.js` (`bpxCategories`).
+
+| Type | Detected from |
+| --- | --- |
+| Truck station | places `station/street/*` with cargo modules |
+| Bus station | places `station/street/*` with passenger modules |
+| Rail station | places `station/rail/*` |
+| Airport / Harbour / Depot | places `station/air/*`, `station/water/*`, `depot/*` |
+| Road network / Rail network | no station-like construction, and the file lists street / track types |
+| Bridges & tunnels | the file lists bridge or tunnel types |
+| Other | nothing recognised |
+
+A blueprint can have several (a station on a bridge, a road-over-rail
+crossing). The SQL and JS rules were checked against each other on 16
+sample blueprints. Trains depots built from the modular station are
+currently "Rail station" -- the data has no separate marker for them.

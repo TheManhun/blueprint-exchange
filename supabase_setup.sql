@@ -360,3 +360,4 @@ grant execute on function public.bp_visit_stats() to anon;
 --                    browser tokens), bp_recovery_attempts, bp_claim_browser(),
 --                    bp_my_blueprints(), bp_edit(), bp_revoke_browser(), and bp_upload()
 --                    now verifies the public copy carries no ownership data.
+--   bp_categories -- see supabase/migrations/bp_categories.sql: bp_blueprints.categories, bp_categories(), bp_list()/bp_upload() updated.

@@ -151,8 +151,8 @@
     const text = await f.text();
     const r = inspect(text);
     if (r.err) { info.textContent = r.err; return; }
-    pending = { text, ...r };
-    info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB.`;
+    pending = { text, ...r, categories: bpxCategories(text) };
+    info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
     const needs = (r.requires && r.requires.constructions) || [];
     document.getElementById("fileReq").textContent = needs.length ? "Needs this content installed: " + needs.join(", ") : "";
     const nameField = document.getElementById("name");
@@ -333,6 +333,7 @@
       edges: pending.edges,
       size: pending.text.length,
       requires: pending.requires,
+      categories: pending.categories,
       official: false,
       thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src : null,
     };

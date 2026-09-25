@@ -125,9 +125,10 @@ a.btn.big, button.big { font-size: 17px; padding: 11px 20px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin: 0 0 16px; }
 .toolbar .search { flex: 1 1 260px; margin: 0; }
 .toolbar label { display: inline; margin: 0 6px 0 0; font-weight: 500; color: var(--ink-2); font-size: 14px; }
-.chips { display: flex; gap: 6px; }
-.chips button { padding: 6px 12px; border-radius: 999px; font-size: 14px; }
-.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chips, .catchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.catchips { margin: 0 0 16px; }
+.chips button, .catchips button { padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+.chips button[aria-pressed="true"], .catchips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
 /* guide index cards and troubleshooting */
 .guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 0 0 8px; }
@@ -180,3 +181,6 @@ a.btn.big, button.big { font-size: 17px; padding: 11px 20px; }
 .ownedlist .card .row { flex-wrap: wrap; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; font: inherit; cursor: pointer; }
 select { max-width: 100%; }
+
+.cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+.cat { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .03em; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); border-radius: 999px; padding: 4px 9px; }
