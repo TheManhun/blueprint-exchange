@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Plug My Mod</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Made something for Transport Fever 2? Show it to the BPX community.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .lookup { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .lookup .field { flex: 1 1 260px; }
+  .lookup input[type=text] { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+  .modpreview { max-width: 400px; margin-top: 16px; }
+  .checkrow { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; }
+  .checkrow input { margin-top: 5px; flex: none; }
+  .checkrow label { margin: 0; font-weight: 500; }
+  .count { float: right; font-size: 13px; color: var(--ink-2); font-weight: 400; }
+  .modgrid .card .btnrow a.btn { width: 100%; text-align: center; }
+  .examplebox { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; max-width: 70ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:plug-->
+
+  <div class="page-head">
+    <h1>Plug My Mod</h1>
+    <p class="sub">Made something for Transport Fever 2? Show it to the BPX community.</p>
+  </div>
+
+  <section class="panel" id="submit">
+    <h2>Add your Workshop item</h2>
+    <p>Enter your Steam Workshop item number. BPX will fetch the title, image and Workshop link automatically.</p>
+    <div class="examplebox">
+      <strong>Example: <code>3800813265</code></strong><br>
+      It&rsquo;s the number at the end of your item&rsquo;s Steam address, after <code>id=</code>. Enter <em>just the number</em> &mdash; not the whole link.
+    </div>
+
+    <div class="lookup">
+      <div class="field">
+        <label for="modId">Steam Workshop item ID</label>
+        <input type="text" id="modId" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="e.g. 3800813265">
+      </div>
+      <button type="button" class="primary big" id="findBtn">Find My Mod</button>
+    </div>
+    <div class="msg" id="modMsg" role="status"></div>
+
+    <div id="found" hidden>
+      <h3 class="section-title">Is this your mod?</h3>
+      <div class="modpreview" id="foundCard"></div>
+
+      <label for="modDesc">A short description (optional) <span class="count" id="descCount">0 / 200</span></label>
+      <textarea id="modDesc" maxlength="200" placeholder="One or two plain sentences about what it does."></textarea>
+      <p class="hint">Plain text only, up to 200 characters.</p>
+
+      <div class="checkrow">
+        <input type="checkbox" id="consent">
+        <label for="consent">By submitting a Workshop item, you confirm you have permission to promote it here and allow BPX to cache its Steam preview image for display.</label>
+      </div>
+
+      <div class="row" style="margin-top:16px">
+        <button type="button" class="primary big" id="submitBtn" disabled>Submit Mod</button>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="section-title">Community mods</h2>
+  <div class="toolbar">
+    <div>
+      <label for="modSort">Sort</label>
+      <select id="modSort">
+        <option value="newest">Newest submitted</option>
+        <option value="az">A&ndash;Z</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid modgrid" id="modGrid"></div>
+  <div class="empty" id="modEmpty" hidden>No mods here yet &mdash; be the first to plug one above.</div>
+
+<!--FOOTER-->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  const FN_URL = SUPABASE_URL + "/functions/v1/plug-my-mod";
+  const $ = (id) => document.getElementById(id);
+
+  // Everything shown is rebuilt from validated pieces -- the link from the
+  // digits, the image from a path that must look exactly like ours -- so
+  // nothing a server or submitter sends can smuggle in another address.
+  const steamLink = (id) => "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id;
+  const cachedImage = (path) => /^mods\/[0-9]+\.(jpg|png|gif|webp)$/.test(path || "")
+    ? SUPABASE_URL + "/storage/v1/object/public/plug-my-mod/" + path : null;
+  const isId = (s) => /^[0-9]{6,12}$/.test(s);
+
+  function showMsg(text, kind) {
+    const el = $("modMsg");
+    el.className = text ? "msg " + kind : "msg";
+    el.textContent = text || "";
+  }
+
+  async function callFn(payload) {
+    let res;
+    try {
+      res = await fetch(FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY },
+        body: JSON.stringify(payload),
+      });
+    } catch (e) {
+      return { ok: false, error: "Couldn't reach the server. Check your connection and try again." };
+    }
+    try { return await res.json(); }
+    catch (e) { return { ok: false, error: "The server sent back something unexpected. Please try again." }; }
+  }
+
+  function modCardHtml(m, opts) {
+    const img = opts.image
+      ? `<img class="thumb" src="${esc(opts.image)}" alt="Preview of ${esc(m.title)}" width="480" height="270" loading="lazy"${opts.noReferrer ? ' referrerpolicy="no-referrer"' : ""}>`
+      : `<img class="thumb" src="card-noimage.webp" alt="No preview image for ${esc(m.title)}" width="480" height="270" loading="lazy">`;
+    return `<article class="card">
+      ${img}
+      <h3>${esc(m.title)}</h3>
+      <div class="meta">${m.author ? "by " + esc(m.author) + " &middot; " : ""}Workshop item ${esc(m.workshopId)}</div>
+      ${m.description ? `<p class="desc">${esc(m.description)}</p>` : ""}
+      <div class="row btnrow"><a class="btn primary" href="${esc(steamLink(m.workshopId))}" target="_blank" rel="noopener noreferrer">View on Steam Workshop</a></div>
+    </article>`;
+  }
+
+  // ---- the list of approved mods ----
+  let mods = [];
+  async function loadMods() {
+    const { data, error } = await sb.rpc("pm_list");
+    if (error) { console.error(error); return; }
+    mods = (data || []).filter((m) => /^[0-9]+$/.test(String(m.workshop_id)));
+    renderMods();
+  }
+  function renderMods() {
+    const sorted = mods.slice();
+    if ($("modSort").value === "az") sorted.sort((a, b) => String(a.title).localeCompare(String(b.title), undefined, { sensitivity: "base" }));
+    $("modGrid").innerHTML = sorted.map((m) => modCardHtml(
+      { title: m.title, author: m.author, description: m.description, workshopId: String(m.workshop_id) },
+      { image: cachedImage(m.image_path) }
+    )).join("");
+    $("modEmpty").hidden = mods.length > 0;
+  }
+  $("modSort").addEventListener("change", renderMods);
+
+  // ---- step 1: find the mod ----
+  let found = null;
+  function resetFound() {
+    found = null;
+    $("found").hidden = true;
+    $("consent").checked = false;
+    $("modDesc").value = "";
+    $("descCount").textContent = "0 / 200";
+    $("submitBtn").disabled = true;
+  }
+
+  $("modId").addEventListener("input", () => { resetFound(); showMsg("", ""); });
+  $("modId").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("findBtn").click(); } });
+
+  $("findBtn").addEventListener("click", async () => {
+    const id = $("modId").value.trim();
+    resetFound();
+    if (!isId(id)) {
+      showMsg("Enter just the Workshop item number: digits only, no link. It's the number at the end of the item's Steam address.", "bad");
+      return;
+    }
+    $("findBtn").disabled = true;
+    showMsg("Looking it up on Steam…", "ok");
+    const r = await callFn({ action: "lookup", workshopId: id });
+    $("findBtn").disabled = false;
+    if (!r || !r.ok) { showMsg((r && r.error) || "Something went wrong. Please try again.", "bad"); return; }
+
+    found = r.mod;
+    $("foundCard").innerHTML = modCardHtml(
+      { title: found.title, author: found.author, description: "", workshopId: id },
+      { image: typeof found.previewUrl === "string" && found.previewUrl.startsWith("https://") ? found.previewUrl : null, noReferrer: true }
+    );
+    // if Steam's picture won't load, fall back to the placeholder
+    const pic = $("foundCard").querySelector("img.thumb");
+    if (pic) pic.addEventListener("error", () => { pic.src = "card-noimage.webp"; }, { once: true });
+    $("found").hidden = false;
+    if (found.alreadyListed) {
+      showMsg("That Workshop item is already on the list. Thanks for checking!", "ok");
+      $("submitBtn").disabled = true;
+    } else {
+      showMsg("Found it. Check it's the right one, then submit.", "ok");
+      $("submitBtn").disabled = !$("consent").checked;
+    }
+  });
+
+  $("modDesc").addEventListener("input", () => { $("descCount").textContent = $("modDesc").value.length + " / 200"; });
+  $("consent").addEventListener("change", () => {
+    $("submitBtn").disabled = !(found && !found.alreadyListed && $("consent").checked);
+  });
+
+  // ---- step 2: submit ----
+  $("submitBtn").addEventListener("click", async () => {
+    if (!found || !$("consent").checked) return;
+    $("submitBtn").disabled = true;
+    showMsg("Adding it to the list…", "ok");
+    const r = await callFn({ action: "submit", workshopId: found.workshopId, description: $("modDesc").value, consent: true });
+    if (!r || !r.ok) {
+      showMsg((r && r.error) || "Something went wrong. Please try again.", "bad");
+      $("submitBtn").disabled = !$("consent").checked || (r && r.code === "already_listed");
+      return;
+    }
+    const title = r.mod.title;
+    resetFound();
+    $("modId").value = "";
+    showMsg(`Thanks! "${title}" is now on the list below.`, "ok");
+    await loadMods();
+    $("modGrid").scrollIntoView({ block: "start" });
+  });
+
+  loadMods();
+  trackVisit();
+</script>
+</body>
+</html>

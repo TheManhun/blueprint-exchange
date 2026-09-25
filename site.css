@@ -1,0 +1,144 @@
+/* Blueprint Exchange -- shared styles for every page.
+   Page-specific styles (upload cropper, importer builder, plug-my-mod)
+   live in each page's own <style>. Keep this file to what several
+   pages genuinely share. */
+
+:root {
+  --ground: #eef1f4; --surface: #ffffff; --surface-2: #e2e7ec; --ink: #1b2430; --ink-2: #5b6876;
+  --line: #cfd6de; --accent: #2b6cb0; --accent-ink: #ffffff; --accent-soft: #dbe8f7;
+  --ok: #2f8f57; --bad: #c23f2a; --bad-soft: #f9e1dc; --code-ground: #1b1f24; --code-ink: #e6e1d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+    --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+    --ok: #55b87c; --bad: #e0634f; --bad-soft: #3d2320; --code-ground: #0d1116; --code-ink: #e6e1d6;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+  --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+  --ok: #55b87c; --bad: #e0634f; --bad-soft: #3d2320; --code-ground: #0d1116; --code-ink: #e6e1d6;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.55 Barlow, system-ui, sans-serif; }
+.wrap { max-width: 1060px; margin: 0 auto; padding-block: 24px 56px; padding-inline: 16px; }
+h1, h2, h3 { font-family: "Barlow Condensed", Barlow, sans-serif; text-wrap: balance; margin: 0 0 .3em; }
+h1 { font-size: 44px; line-height: 1; }
+h2 { font-size: 28px; }
+h3 { font-size: 21px; }
+p { max-width: 70ch; }
+a { color: var(--accent); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.lede { color: var(--ink-2); max-width: 66ch; margin: 0 0 24px; }
+.hint { color: var(--ink-2); font-size: 14px; margin: 4px 0 0; }
+
+/* ---------- header, navigation, footer (same on every page) ---------- */
+.masthead { display: block; margin: 0 0 14px; font-size: 0; line-height: 0; }
+.masthead img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
+.site-nav { display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 0 0 28px; }
+.navbtn { position: relative; display: block; height: 52px; border-radius: 10px; }
+.navbtn img { display: block; width: auto; height: 52px; }
+.navbtn img.on { position: absolute; inset: 0; opacity: 0; }
+.navbtn:hover img.on, .navbtn:focus-visible img.on, .navbtn[aria-current="page"] img.on { opacity: 1; }
+.navbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) { .navbtn img.on { transition: opacity .12s; } }
+@media (max-width: 560px) { .navbtn, .navbtn img { height: 44px; } .site-nav { gap: 6px 8px; } }
+
+.site-footer { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
+.site-footer p { margin: 0 0 8px; }
+.site-footer #bmcRow { margin: 18px 0 0;  }
+.site-footer #bmcRow img { display: inline-block; border-radius: 6px; }
+.site-footer #bmcNote { margin-top: 8px; }
+
+/* ---------- page heads and sections ---------- */
+.page-head { margin: 0 0 22px; }
+.page-head h1 { margin-bottom: .2em; }
+.page-head .sub { color: var(--ink-2); font-size: 18px; margin: 0; max-width: 66ch; }
+section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 0 0 24px; }
+.section-title { margin: 30px 0 12px; }
+
+/* ---------- stats ---------- */
+.stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 24px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; min-width: 150px; }
+@media (max-width: 560px) { .stats { display: grid; grid-template-columns: 1fr 1fr; } .stat { min-width: 0; } }
+.stat b { display: block; font-size: 26px; font-family: "Barlow Condensed", sans-serif; font-variant-numeric: tabular-nums; }
+
+/* ---------- cards ---------- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.thumb { width: calc(100% + 32px); height: auto; margin: -16px -16px 0; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+.card h3 { font-size: 22px; margin: 0; }
+.card.official { border-color: var(--accent); }
+.badge { display: inline-block; vertical-align: middle; font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 4px 6px; margin-left: 8px; }
+.meta { color: var(--ink-2); font-size: 14px; }
+.desc { margin: 0; min-height: 1.5em; overflow-wrap: anywhere; }
+.req { font: 12px/1.4 "JetBrains Mono", monospace; color: var(--ink-2); word-break: break-all; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: auto; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
+.empty { color: var(--ink-2); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
+
+/* ---------- buttons, forms, messages ---------- */
+button, .btn { font: 600 15px Barlow, sans-serif; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 6px; padding: 8px 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+button.primary, a.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:focus-visible, a.btn:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: .55; cursor: default; }
+label { display: block; font-weight: 600; margin: 12px 0 4px; }
+input[type=text], textarea, select { width: 100%; font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); }
+select { width: auto; }
+textarea { min-height: 70px; resize: vertical; }
+.msg { padding: 10px 14px; border-radius: 6px; margin: 12px 0 0; display: none; }
+.msg.ok { display: block; background: var(--accent-soft); }
+.msg.bad { display: block; background: var(--bad-soft); color: var(--bad); }
+code { font: 13px "JetBrains Mono", monospace; background: var(--code-ground); color: var(--code-ink); padding: 2px 6px; border-radius: 4px; }
+dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); max-width: 560px; padding: 24px; }
+dialog::backdrop { background: rgba(0,0,0,.5); }
+
+/* ---------- steps, figures, callouts ---------- */
+.steps { counter-reset: s; padding: 0; margin: 12px 0 0; list-style: none; }
+.steps li { counter-increment: s; padding-left: 38px; position: relative; margin: 0 0 12px; max-width: 70ch; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 14px/26px "Barlow Condensed", sans-serif; text-align: center; }
+figure { margin: 18px 0 0; }
+figure img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+figcaption { color: var(--ink-2); font-size: 14px; margin-top: 8px; }
+.callout { background: var(--accent-soft); border-radius: 8px; padding: 14px 18px; max-width: 70ch; margin: 0 0 1em; }
+.callout p { margin: 0 0 .7em; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* four compact step cards */
+.stepcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0 0 26px; padding: 0; list-style: none; }
+.stepcards li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.stepcards .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 15px/1 "Barlow Condensed", sans-serif; margin-bottom: 8px; }
+.stepcards h3 { font-size: 20px; margin: 0 0 4px; }
+.stepcards p { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+/* call-to-action strip */
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 26px 0 0; }
+.cta h2 { font-size: 26px; margin: 0; }
+.cta p { margin: 4px 0 0; color: var(--ink-2); }
+.cta .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+a.btn.big, button.big { font-size: 17px; padding: 11px 20px; }
+
+/* search / sort / filter bar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin: 0 0 16px; }
+.toolbar .search { flex: 1 1 260px; margin: 0; }
+.toolbar label { display: inline; margin: 0 6px 0 0; font-weight: 500; color: var(--ink-2); font-size: 14px; }
+.chips { display: flex; gap: 6px; }
+.chips button { padding: 6px 12px; border-radius: 999px; font-size: 14px; }
+.chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* guide index cards and troubleshooting */
+.guide-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 0 0 8px; }
+.guide-cards a { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; text-decoration: none; color: var(--ink); }
+.guide-cards a:hover, .guide-cards a:focus-visible { border-color: var(--accent); }
+.guide-cards strong { display: block; font: 700 21px/1.15 "Barlow Condensed", sans-serif; color: var(--accent); margin-bottom: 4px; }
+.guide-cards span { color: var(--ink-2); font-size: 15px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; margin: 0 0 8px; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq details[open] summary { margin-bottom: 6px; }
+.faq details p { margin: 0 0 .6em; }
+.guide-section { scroll-margin-top: 16px; }
+
+@media (max-width: 600px) { h1 { font-size: 38px; } }

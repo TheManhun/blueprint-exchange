@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Upload My Blueprint</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Share your Transport Fever 2 layout with the Blueprint Exchange community.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  /* Thumbnail field + cropper (stage 1: local only, no upload) */
+  /* One persistent image slot, always populated (placeholder art or
+     the real crop), stacked above the button -- the placeholder art
+     has its own arrow pointing up at where the button sits, so the
+     button has to stay below it, not next to it (Epod: "why move the
+     button the image points UP to where the button was"). */
+  #thumbField { border: 1px dashed var(--line); border-radius: 8px; padding: 12px; margin-top: 4px; }
+  /* Exact order: button, then a small gap, then the placeholder image
+     fully unobstructed, then helper text below -- button centered
+     above the image, never on top of it. */
+  #thumbSlotWrap { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 320px; margin: 0 0 12px; }
+  #thumbSlotWrap #addThumbBtn { margin: 0 0 10px; }
+  #thumbSlotImg { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
+  #thumbSlotSide { max-width: 320px; }
+  #thumbSlotSide .hint { max-width: 32ch; margin-top: 0; }
+  #thumbReadyActions:not([hidden]) { display: flex; gap: 10px; margin-top: 10px; }
+  dialog#thumbDlg { max-width: 560px; width: calc(100% - 32px); }
+  #thumbDropZone { border: 2px dashed var(--line); border-radius: 8px; padding: 28px 16px; text-align: center; cursor: text; color: var(--ink-2); }
+  #thumbDropArt { display: block; width: 100%; max-width: 360px; margin: 0 auto 14px; border-radius: 10px; }
+  #thumbDropZone:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #thumbDropZone input[type=file] { display: block; margin: 12px auto 0; }
+  #thumbCropWindow { width: 100%; aspect-ratio: 16 / 9; background: var(--surface-2); border-radius: 8px; overflow: hidden; touch-action: none; }
+  #thumbCanvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  #thumbCanvas:active { cursor: grabbing; }
+  #thumbZoom { width: 100%; margin: 10px 0 0; }
+  #thumbCropStage label { margin: 14px 0 2px; }
+  .previewcard { max-width: 380px; margin-top: 8px; }
+  #fileReq { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="125" height="52" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="125" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload" aria-current="page"><img src="nav-upload.png" width="119" height="52" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="119" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="101" height="52" alt="Guides"><img class="on" src="nav-guides-on.png" width="101" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="98" height="52" alt="Tools"><img class="on" src="nav-tools-on.png" width="98" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="123" height="52" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="123" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="101" height="52" alt="About"><img class="on" src="nav-about-on.png" width="101" height="52" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <h1>Upload My Blueprint</h1>
+    <p class="sub">Share your Transport Fever 2 layout with the Blueprint Exchange community.</p>
+  </div>
+
+  <ol class="stepcards">
+    <li><span class="n">1</span><h3>Build it</h3><p>Create your station, junction, hub or layout in Transport Fever 2.</p></li>
+    <li><span class="n">2</span><h3>Capture it</h3><p>Use Blueprint Exchange in-game to capture the layout.</p></li>
+    <li><span class="n">3</span><h3>Find the file</h3><p>BPX creates a <code>blueprint_&lt;name&gt;.lua</code> file.</p></li>
+    <li><span class="n">4</span><h3>Upload it</h3><p>Add the file, screenshot and details below.</p></li>
+  </ol>
+
+  <section class="panel" id="share">
+    <h2>Your blueprint</h2>
+    <p class="hint">Files are checked before upload &mdash; only real Blueprint Exchange files, plain data, no code. The mod saves your capture next to <code>TransportFever2.exe</code>, in the Transport Fever 2 game folder.</p>
+
+    <label for="file">Blueprint file (.lua)</label>
+    <input type="file" id="file" accept=".lua,text/plain">
+    <p class="hint" id="fileInfo"></p>
+    <p class="hint" id="fileReq"></p>
+
+    <label for="name">Title</label>
+    <input type="text" id="name" maxlength="60" placeholder="e.g. Four-platform through station">
+
+    <label for="author">Your name (optional)</label>
+    <input type="text" id="author" maxlength="60">
+
+    <label for="desc">Description (optional)</label>
+    <textarea id="desc" maxlength="600" placeholder="What it is, what mods it needs, where it fits&hellip;"></textarea>
+
+    <label>Screenshot (optional)</label>
+    <div id="thumbField">
+      <div id="thumbSlotWrap">
+        <button type="button" id="addThumbBtn">Add a preview image</button>
+        <img id="thumbSlotImg" src="drop-placeholder.webp" alt="" width="240" height="135">
+      </div>
+      <div id="thumbSlotSide">
+        <p class="hint" id="thumbEmptyHint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
+        <p class="hint" id="thumbReadyMsg" hidden>Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
+        <p class="hint" id="thumbReadyError" hidden></p>
+        <div id="thumbReadyActions" hidden>
+          <button type="button" id="changeThumbBtn">Change image</button>
+          <button type="button" id="removeThumbBtn">Remove image</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title">How your card will look</h3>
+    <div class="previewcard" id="previewCard" aria-live="polite"></div>
+
+    <div class="row" style="margin-top:18px">
+      <button class="primary big" id="upload" disabled>Upload Blueprint</button>
+      <span class="hint">Uploads are public and permanent.</span>
+    </div>
+    <div class="msg" id="uploadMsg"></div>
+  </section>
+
+  <section class="panel" id="update">
+    <h2>Uploading a new version of an existing blueprint?</h2>
+    <p>If the system recognises the same blueprint entry, it can be published as v2, v3 and so on. Every blueprint the mod captures carries a hidden identity, so uploading the file from a later capture of the <em>same</em> design updates its card. The version counter goes up by itself and only the latest version is shown.</p>
+    <p>New versions are checked against a hidden key inside the file the mod saved on your PC, so only the original uploader can update a blueprint. Keep your own blueprint files safe.</p>
+  </section>
+
+  <div class="cta">
+    <div>
+      <h2>Not sure how to capture a blueprint?</h2>
+      <p>The capture guide walks through it step by step, with pictures.</p>
+    </div>
+    <div class="btns"><a class="btn primary big" href="guides.html#capture">View Capture Guide</a></div>
+  </div>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange is a fan-made community project for Transport Fever 2 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange is free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+
+<dialog id="thumbDlg">
+  <h2>Add a preview image</h2>
+  <p class="hint">Paste a screenshot (Ctrl+V) or choose an image file. Drag to position it, use the slider to zoom, then press Use image.</p>
+  <div id="thumbDropZone" tabindex="0">
+    <img id="thumbDropArt" src="drop-placeholder.webp" alt="" aria-hidden="true">
+    <p id="thumbDropHint">Click here, then paste a screenshot &mdash; or choose a file below.</p>
+    <input type="file" id="thumbFileInput" accept="image/png,image/jpeg,image/webp">
+  </div>
+  <div id="thumbCropStage" hidden>
+    <div id="thumbCropWindow">
+      <canvas id="thumbCanvas" width="480" height="270"></canvas>
+    </div>
+    <label for="thumbZoom">Zoom</label>
+    <input type="range" id="thumbZoom" min="100" max="400" value="100" step="1">
+  </div>
+  <p class="hint" id="thumbMsg" style="min-height:1.4em"></p>
+  <div class="row" style="margin-top:14px">
+    <button type="button" id="thumbUseBtn" class="primary" disabled>Use image</button>
+    <button type="button" id="thumbCancelBtn">Cancel</button>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  // Stage 3 -- the preview image, if any: the cropper (further down)
+  // stores its WebP blob on window.bpThumbnail; this Worker writes it
+  // to R2 and hands back the public URL that gets saved as
+  // thumbnail_url. Proven working stage 2 (browser -> Worker -> R2 ->
+  // public URL) before this was wired in.
+  const THUMB_WORKER_URL = "https://blueprint-exchange-thumbnails.blueprint-exchange.workers.dev";
+
+  async function uploadThumbnailIfAny() {
+    if (!window.bpThumbnail || !window.bpThumbnail.blob) return null;
+    const res = await fetch(THUMB_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "image/webp" },
+      body: window.bpThumbnail.blob,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) {
+      throw new Error((data && data.error) || ("thumbnail upload failed (HTTP " + res.status + ")"));
+    }
+    return data.url;
+  }
+
+  // One persistent image slot (#thumbSlotImg) -- always shows either the
+  // placeholder art or the real crop, never blank, never a broken icon.
+  function resetThumbSlot() {
+    const slotImg = document.getElementById("thumbSlotImg");
+    const addBtn = document.getElementById("addThumbBtn");
+    const emptyHint = document.getElementById("thumbEmptyHint");
+    const readyMsg = document.getElementById("thumbReadyMsg");
+    const readyError = document.getElementById("thumbReadyError");
+    const readyActions = document.getElementById("thumbReadyActions");
+    if (slotImg) slotImg.src = "drop-placeholder.webp";
+    if (addBtn) addBtn.hidden = false;
+    if (emptyHint) emptyHint.hidden = false;
+    if (readyMsg) readyMsg.hidden = true;
+    if (readyError) readyError.hidden = true;
+    if (readyActions) readyActions.hidden = true;
+  }
+
+  function clearThumbnail() {
+    if (window.bpThumbnail && window.bpThumbnail.url) URL.revokeObjectURL(window.bpThumbnail.url);
+    window.bpThumbnail = null;
+    resetThumbSlot();
+    window.dispatchEvent(new Event("bpx:thumbchange"));
+  }
+
+  // ---- Upload: validate the file as a REAL Blueprint Exchange data file.
+  let pending = null;
+
+  function inspect(text) {
+    if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blueprint Exchange file (it must start with a comment header and 'return {')." };
+    if (!/\bblueprint\s*=\s*1\b/.test(text)) return { err: "Not a Blueprint Exchange file (no 'blueprint = 1' version field)." };
+    if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text)) return { err: "This file contains code, not just layout data -- refused." };
+    const constructions = (text.match(/^-- Constructions: (\d+)/m) || [, "0"])[1];
+    const edges = (text.match(/\bn0 = \d+/g) || []).length;
+    const reqBlock = (text.match(/requires = \{([\s\S]*?)\}\s*,\s*constructions = \{/) || [, ""])[1];
+    const requires = { constructions: [...reqBlock.matchAll(/"([^"]+\.con)"/g)].map((m) => m[1]) };
+    const name = (text.match(/^-- Name: (.*)$/m) || [, ""])[1].trim();
+    const blueprintId = (text.match(/\bblueprintId = "([0-9a-f]+)"/) || [, null])[1];
+    // Ownership proof (Decision 28 on the mod side): only ever read
+    // here to send alongside the upload -- never shown, never stored
+    // in this page, and bp_upload strips it from the file text before
+    // it's saved, so it can't ride along into anyone else's download.
+    const ownerSecret = (text.match(/\bownerSecret = "([0-9a-f]+)"/) || [, null])[1];
+    const author = (text.match(/\bauthor = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
+    const description = (text.match(/\bdescription = "((?:[^"\\]|\\.)*)"/) || [, ""])[1];
+    return { constructions: Number(constructions), edges, requires, name, blueprintId, ownerSecret, author, description };
+  }
+
+  document.getElementById("file").addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    const info = document.getElementById("fileInfo");
+    pending = null;
+    document.getElementById("upload").disabled = true;
+    document.getElementById("fileReq").textContent = "";
+    if (!f) return;
+    if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; return; }
+    const text = await f.text();
+    const r = inspect(text);
+    if (r.err) { info.textContent = r.err; return; }
+    pending = { text, ...r };
+    info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB.`;
+    const needs = (r.requires && r.requires.constructions) || [];
+    document.getElementById("fileReq").textContent = needs.length ? "Needs this content installed: " + needs.join(", ") : "";
+    const nameField = document.getElementById("name");
+    if (!nameField.value && r.name) nameField.value = r.name.replace(/_+/g, " ").trim();
+    const authorField = document.getElementById("author");
+    if (!authorField.value && r.author) authorField.value = r.author;
+    const descField = document.getElementById("desc");
+    if (!descField.value && r.description) descField.value = r.description;
+    document.getElementById("upload").disabled = false;
+  });
+
+  document.getElementById("upload").addEventListener("click", async () => {
+    const msg = document.getElementById("uploadMsg");
+    const name = document.getElementById("name").value.trim();
+    if (!pending) return;
+    if (!name) { msg.className = "msg bad"; msg.textContent = "Give it a name."; return; }
+    const btn = document.getElementById("upload");
+    btn.disabled = true;
+
+    // Preview image, if one was cropped: uploaded to R2 through the
+    // Worker first, so bp_upload only ever receives a URL, never image
+    // data. A failure here does not block the blueprint upload itself
+    // -- it goes up without a thumbnail and says so.
+    let thumbnailUrl = null;
+    let thumbWarning = "";
+    try {
+      thumbnailUrl = await uploadThumbnailIfAny();
+    } catch (thumbErr) {
+      thumbWarning = " (preview image failed to upload: " + thumbErr.message + ")";
+    }
+
+    // Server-side upload: versioning by blueprintId and the "official"
+    // check (a pass-phrase typed as the author name, compared inside the
+    // database -- never in this page) both happen in bp_upload.
+    const { data: result, error } = await sb.rpc("bp_upload", {
+      p_name: name, p_author: document.getElementById("author").value.trim() || null,
+      p_description: document.getElementById("desc").value.trim() || null,
+      p_content: pending.text, p_constructions: pending.constructions, p_edges: pending.edges,
+      p_requires: pending.requires, p_blueprint_id: pending.blueprintId,
+      p_thumbnail_url: thumbnailUrl, p_owner_secret: pending.ownerSecret,
+    });
+    if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
+    const version = (result && result.version) || 1;
+    msg.className = "msg ok";
+    msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
+    document.getElementById("author").value = "";
+    pending = null; document.getElementById("file").value = "";
+    clearThumbnail();
+    updatePreviewCard();
+  });
+
+  // ---- live preview of the card, so people see what they will publish ----
+  function currentPreviewBlueprint() {
+    if (!pending) return null;
+    return {
+      id: 0,
+      name: document.getElementById("name").value.trim() || "Your blueprint",
+      author: document.getElementById("author").value.trim() || "you",
+      description: document.getElementById("desc").value.trim(),
+      created_at: new Date().toISOString(),
+      version: 1,
+      downloads: 0,
+      constructions: pending.constructions,
+      edges: pending.edges,
+      size: pending.text.length,
+      requires: pending.requires,
+      official: false,
+      thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src : null,
+    };
+  }
+
+  function updatePreviewCard() {
+    const b = currentPreviewBlueprint();
+    document.getElementById("previewCard").innerHTML = b
+      ? blueprintCardHtml(b, { preview: true })
+      : '<p class="hint">Choose a blueprint file above and your card appears here as you fill in the details.</p>';
+  }
+
+  ["name", "author", "desc", "file"].forEach((id) => {
+    document.getElementById(id).addEventListener(id === "file" ? "change" : "input", () => setTimeout(updatePreviewCard, 0));
+  });
+  window.addEventListener("bpx:thumbchange", updatePreviewCard);
+  updatePreviewCard();
+
+  trackVisit();
+</script>
+
+<script>
+
+// ============================================================
+// Preview image cropper -- STAGE 1 ONLY.
+// Paste / choose an image, position + zoom it in a fixed 16:9 window,
+// export a 480x270 WebP entirely client-side. Nothing here talks to
+// R2 or Supabase yet -- "Use image" just stores the blob in memory
+// (window.bpThumbnail) and shows a Download link so the output can be
+// checked by hand before any upload wiring is built. Deliberately its
+// own <script>, independent of the upload flow above: stage 2 will
+// read window.bpThumbnail (or null) when the blueprint is submitted,
+// nothing here needs to change for that.
+(function () {
+
+  const OUT_W = 480, OUT_H = 270;
+
+  const addBtn = document.getElementById("addThumbBtn");
+  const changeBtn = document.getElementById("changeThumbBtn");
+  const removeBtn = document.getElementById("removeThumbBtn");
+  const slotImg = document.getElementById("thumbSlotImg");
+  const emptyHint = document.getElementById("thumbEmptyHint");
+  const readyMsg = document.getElementById("thumbReadyMsg");
+  const readyActions = document.getElementById("thumbReadyActions");
+  const downloadLink = document.getElementById("thumbDownloadLink");
+
+  const dlg = document.getElementById("thumbDlg");
+  const dropZone = document.getElementById("thumbDropZone");
+  const dropHint = document.getElementById("thumbDropHint");
+  const fileInput = document.getElementById("thumbFileInput");
+  const cropStage = document.getElementById("thumbCropStage");
+  const canvas = document.getElementById("thumbCanvas");
+  const ctx = canvas.getContext("2d");
+  const zoomSlider = document.getElementById("thumbZoom");
+  const useBtn = document.getElementById("thumbUseBtn");
+  const cancelBtn = document.getElementById("thumbCancelBtn");
+  const msg = document.getElementById("thumbMsg");
+
+  // Public hook for the upload step (stage 2): null until "Use image".
+  window.bpThumbnail = null; // { blob, url }
+
+  let img = null;         // the loaded HTMLImageElement
+  let minScale = 1;        // scale at which the image just covers the 480x270 window
+  let scale = 1;
+  let offX = 0, offY = 0;  // image-space offset of the window's top-left corner, at scale=1 (pre-scale coords)
+  let dragging = false, dragStartX = 0, dragStartY = 0, offStartX = 0, offStartY = 0;
+
+  function setMsg(text, bad) {
+    msg.textContent = text || "";
+    msg.style.color = bad ? "var(--bad)" : "var(--ink-2)";
+  }
+
+  function resetDialogState() {
+    img = null;
+    cropStage.hidden = true;
+    dropZone.hidden = false;
+    dropHint.textContent = "Click here, then paste a screenshot — or choose a file below.";
+    fileInput.value = "";
+    useBtn.disabled = true;
+    setMsg("");
+  }
+
+  function clampOffset() {
+    // Image-space (pre-scale) window size at current scale.
+    const winW = OUT_W / scale, winH = OUT_H / scale;
+    const maxX = img.naturalWidth - winW;
+    const maxY = img.naturalHeight - winH;
+    offX = Math.min(Math.max(offX, 0), Math.max(0, maxX));
+    offY = Math.min(Math.max(offY, 0), Math.max(0, maxY));
+  }
+
+  function draw() {
+    if (!img) return;
+    clampOffset();
+    ctx.clearRect(0, 0, OUT_W, OUT_H);
+    ctx.drawImage(
+      img,
+      offX, offY, OUT_W / scale, OUT_H / scale,
+      0, 0, OUT_W, OUT_H
+    );
+  }
+
+  function loadImage(source) {
+    const el = new Image();
+    el.onload = function () {
+      if (el.naturalWidth < 40 || el.naturalHeight < 40) {
+        setMsg("That image is too small to use.", true);
+        return;
+      }
+      img = el;
+      minScale = Math.max(OUT_W / img.naturalWidth, OUT_H / img.naturalHeight);
+      scale = minScale;
+      offX = (img.naturalWidth - OUT_W / scale) / 2;
+      offY = (img.naturalHeight - OUT_H / scale) / 2;
+      zoomSlider.min = "100";
+      zoomSlider.max = "400";
+      zoomSlider.value = "100";
+      dropZone.hidden = true;
+      cropStage.hidden = false;
+      useBtn.disabled = false;
+      setMsg("Drag the image to reposition it, use the slider to zoom.");
+      draw();
+    };
+    el.onerror = function () {
+      setMsg("Couldn't read that image.", true);
+    };
+    el.src = source;
+  }
+
+  function loadFromFile(file) {
+    if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) {
+      setMsg("Choose a PNG, JPG or WebP image.", true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function () { loadImage(reader.result); };
+    reader.readAsDataURL(file);
+  }
+
+  // ---- opening / closing the dialog ----
+
+  function openDialog() {
+    resetDialogState();
+    if (typeof dlg.showModal === "function") {
+      dlg.showModal();
+    } else {
+      dlg.setAttribute("open", "");
+    }
+    dropZone.focus();
+  }
+
+  function closeDialog() {
+    if (typeof dlg.close === "function" && dlg.open) dlg.close();
+    else dlg.removeAttribute("open");
+  }
+
+  addBtn.addEventListener("click", openDialog);
+  changeBtn.addEventListener("click", openDialog);
+
+  removeBtn.addEventListener("click", function () {
+    if (window.bpThumbnail && window.bpThumbnail.url) {
+      URL.revokeObjectURL(window.bpThumbnail.url);
+    }
+    window.bpThumbnail = null;
+    slotImg.src = "drop-placeholder.webp";
+    addBtn.hidden = false;
+    emptyHint.hidden = false;
+    readyMsg.hidden = true;
+    document.getElementById("thumbReadyError").hidden = true;
+    readyActions.hidden = true;
+    window.dispatchEvent(new Event("bpx:thumbchange"));
+  });
+
+  cancelBtn.addEventListener("click", closeDialog);
+
+  dlg.addEventListener("cancel", function () {
+    // native Esc close -- nothing to clean up, dialog state resets on next open
+  });
+
+  // ---- getting an image in: paste or file picker ----
+
+  dropZone.addEventListener("click", function () { dropZone.focus(); });
+
+  dropZone.addEventListener("paste", function (e) {
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (const item of items) {
+      if (item.kind === "file" && /^image\//.test(item.type)) {
+        const file = item.getAsFile();
+        if (file) { loadFromFile(file); e.preventDefault(); return; }
+      }
+    }
+    setMsg("No image found on the clipboard. Copy a screenshot first, then paste here.", true);
+  });
+
+  fileInput.addEventListener("change", function () {
+    if (fileInput.files && fileInput.files[0]) loadFromFile(fileInput.files[0]);
+  });
+
+  // ---- zoom + drag ----
+
+  zoomSlider.addEventListener("input", function () {
+    if (!img) return;
+    const pct = Number(zoomSlider.value) / 100; // 1.0 .. 4.0
+    // Keep the window's centre point fixed in image space while zooming.
+    const cx = offX + (OUT_W / scale) / 2;
+    const cy = offY + (OUT_H / scale) / 2;
+    scale = minScale * pct;
+    offX = cx - (OUT_W / scale) / 2;
+    offY = cy - (OUT_H / scale) / 2;
+    draw();
+  });
+
+  canvas.addEventListener("pointerdown", function (e) {
+    if (!img) return;
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    offStartX = offX; offStartY = offY;
+  });
+
+  canvas.addEventListener("pointermove", function (e) {
+    if (!dragging || !img) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = OUT_W / rect.width, scaleY = OUT_H / rect.height;
+    const dxCanvas = (e.clientX - dragStartX) * scaleX;
+    const dyCanvas = (e.clientY - dragStartY) * scaleY;
+    offX = offStartX - dxCanvas / scale;
+    offY = offStartY - dyCanvas / scale;
+    draw();
+  });
+
+  function endDrag(e) {
+    if (dragging) {
+      dragging = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+    }
+  }
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+
+  // ---- export: 480x270 WebP, target ~0.8 quality, nudged down toward <100KB ----
+
+  function canvasToBlob(c, type, quality) {
+    return new Promise(function (resolve) {
+      c.toBlob(resolve, type, quality);
+    });
+  }
+
+  async function exportThumbnail() {
+    let quality = 0.8;
+    let blob = await canvasToBlob(canvas, "image/webp", quality);
+
+    if (!blob) {
+      setMsg("This browser can't export WebP images.", true);
+      return null;
+    }
+
+    const targetBytes = 100 * 1024;
+    let tries = 0;
+    while (blob.size > targetBytes && quality > 0.4 && tries < 5) {
+      quality -= 0.1;
+      blob = await canvasToBlob(canvas, "image/webp", quality);
+      tries++;
+    }
+
+    return blob;
+  }
+
+  useBtn.addEventListener("click", async function () {
+    if (!img) return;
+    useBtn.disabled = true;
+    setMsg("Processing…");
+
+    const blob = await exportThumbnail();
+
+    if (!blob) {
+      useBtn.disabled = false;
+      return;
+    }
+
+    if (window.bpThumbnail && window.bpThumbnail.url) {
+      URL.revokeObjectURL(window.bpThumbnail.url);
+    }
+
+    const url = URL.createObjectURL(blob);
+    window.bpThumbnail = { blob: blob, url: url };
+
+    // A blob: URL assigned to img.src showed broken in earlier testing,
+    // even on a fresh page load. A data: URI sidesteps whatever that
+    // lifecycle issue was; onerror logs the real reason to the console
+    // if this ever fails again, without blanking the slot.
+    const readyError = document.getElementById("thumbReadyError");
+    readyError.hidden = true;
+    slotImg.onerror = function () {
+      console.error("Blueprint Exchange: preview thumbnail failed to render -- blob type:", blob.type, "size:", blob.size, "bytes");
+      readyError.textContent = `Preview processed (${Math.round(blob.size / 1024)} KB) but couldn't be shown here -- it will still upload fine.`;
+      readyError.hidden = false;
+    };
+    slotImg.src = canvas.toDataURL("image/webp", 0.8);
+    downloadLink.href = url;
+    const kb = Math.round(blob.size / 1024);
+    downloadLink.download = "blueprint-preview.webp";
+    setMsg(`Preview ready — ${kb} KB.`);
+
+    addBtn.hidden = true;
+    emptyHint.hidden = true;
+    readyMsg.hidden = false;
+    readyActions.hidden = false;
+    window.dispatchEvent(new Event("bpx:thumbchange"));
+    closeDialog();
+  });
+
+})();
+</script>
+</body>
+</html>

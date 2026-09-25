@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Blueprint Exchange Guides</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Everything you need to capture, share, download and import Blueprint Exchange layouts for Transport Fever 2.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .guide-section h2 { margin-top: 0; }
+  .guide-section { margin-bottom: 36px; }
+  .guide-section h3 { margin-top: 22px; }
+  .guide-actions { margin: 18px 0 0; display: flex; flex-wrap: wrap; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:guides-->
+
+  <div class="page-head">
+    <h1>Blueprint Exchange Guides</h1>
+    <p class="sub">Everything you need to capture, share, download and import BPX layouts.</p>
+  </div>
+
+  <nav class="guide-cards" aria-label="Guides">
+    <a href="#download-import"><strong>Download &amp; Import Blueprints</strong><span>Get a community blueprint into your game.</span></a>
+    <a href="#capture"><strong>Capture Your Own Blueprint</strong><span>Turn something you built into a file.</span></a>
+    <a href="#upload-share"><strong>Upload &amp; Share</strong><span>Put it in the library for everyone.</span></a>
+    <a href="#find-folder"><strong>Find Your Transport Fever 2 Folder</strong><span>Where the files need to go.</span></a>
+    <a href="#dependencies"><strong>Dependencies</strong><span>What happens when a blueprint needs a mod.</span></a>
+    <a href="#troubleshooting"><strong>Troubleshooting</strong><span>Quick answers to common snags.</span></a>
+  </nav>
+
+  <!-- ============ DOWNLOAD & IMPORT ============ -->
+  <section class="panel guide-section" id="download-import">
+    <h2>Download &amp; Import Blueprints</h2>
+    <p class="lede">The game can&rsquo;t look inside its own folder, so a download only shows up after you move it there and press one button.</p>
+
+    <figure>
+      <img src="guide-import-steps.jpg" width="1672" height="941" loading="lazy" alt="How to import a downloaded blueprint in four steps: open your Downloads folder, find your blueprint_import files, run Blueprint_Importer.bat (recommended), then start Transport Fever 2 and press Import downloads. Manual option: move the blueprint_import files into your Transport Fever 2 folder yourself.">
+      <figcaption>The whole process in one picture. Recommended: run your own Blueprint Importer. Prefer to do it by hand? Move the files yourself.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li><strong>Download as many blueprints as you like</strong> from the <a href="./">library</a>, up to 10 at a time.</li>
+      <li>The files land in your Downloads folder named <code>blueprint_import.lua</code>, <code>blueprint_import_2.lua</code>, <code>blueprint_import_3.lua</code> and so on &mdash; each download gets the next name.</li>
+      <li><strong>Move them into the Transport Fever 2 folder</strong> (the one with <code>TransportFever2.exe</code>), <strong>or</strong> let a Blueprint Importer do the moving for you.</li>
+      <li>Start Transport Fever 2.</li>
+      <li>Click the <strong>BPX</strong> icon in the bottom bar.</li>
+      <li>Press <strong>Import downloads</strong>. One press brings in every blueprint you moved. Then choose one in the Library and press <strong>Place</strong>.</li>
+    </ol>
+
+    <div class="guide-actions">
+      <a class="btn primary big" href="tools.html">Build My Blueprint Importer</a>
+      <a class="btn big" href="#find-folder">Where is my Transport Fever 2 folder?</a>
+    </div>
+  </section>
+
+  <!-- ============ CAPTURE ============ -->
+  <section class="panel guide-section" id="capture">
+    <h2>Capture Your Own Blueprint</h2>
+    <p class="lede">Build it once, capture it, and place it on any map &mdash; yours or someone else&rsquo;s.</p>
+
+    <figure>
+      <img src="guide-capture.jpg" loading="lazy" alt="A long station and its track seen from above, covered by a chain of overlapping white capture circles">
+      <figcaption>Capture is a chain of circles. Each click on the map adds one; overlap them until the whole layout is inside. Anything the circles miss stays behind.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li><strong>Build your layout</strong> in a sandbox game. Flat ground is best &mdash; use the terrain tool to level a patch first, and your blueprint will place cleanly anywhere. (The map editor has no rails, so build in a game.)</li>
+      <li>Click the <strong>BPX</strong> icon in the bottom bar and open the <strong>Capture a design</strong> tab.</li>
+      <li><strong>Type a name</strong> in the box. The mod will not start a capture without one.</li>
+      <li>Press <strong>Capture</strong>, then <strong>click on the map</strong>. Every click adds a circle and the status line counts what it found. Keep clicking until every building, track and signal is inside a circle. The <strong>Circle size</strong> slider makes the circle bigger or smaller.</li>
+      <li>Press <strong>Save</strong>. Your blueprint is written as a file and appears in your library.</li>
+    </ol>
+
+    <h3>Check it before you share it</h3>
+    <ol class="steps">
+      <li>Press <strong>Place</strong> and move the mouse over the map: a blue shadow of the whole layout follows the cursor. Turn it with the slider or the <strong>-90</strong> and <strong>+90</strong> buttons, then click to build a test copy.</li>
+      <li>Look it over. Missed a bit? Press <strong>Undo &amp; capture again</strong>, which removes the test copy, then capture again under the same name with a wider chain of circles.</li>
+      <li>Happy with it? Press <strong>Keep blueprint</strong>. Changed your mind about where you put it later? <strong>Undo last blueprint placement</strong> removes everything the last placement built.</li>
+    </ol>
+
+    <div class="callout">
+      <p><strong>Where is the file?</strong> Your blueprint is saved as <code>blueprint_&lt;name&gt;.lua</code> in the Transport Fever 2 folder, right next to <code>TransportFever2.exe</code>. That is the file you upload.</p>
+      <p><strong>If the game refuses a spot,</strong> the status line says why in the game&rsquo;s own words (&ldquo;Collision&rdquo;, &ldquo;Too much slope&rdquo;) and nothing is built. Try flatter, clearer ground, or turn the layout &mdash; a long one needs room along its whole length.</p>
+    </div>
+
+    <h3>What gets captured</h3>
+    <p>Player-built constructions (stations, depots, assets) with their names, free-laid track and roads with their switches, bridges and tunnels, and signals. Industries and town buildings are never captured &mdash; the game can&rsquo;t rebuild those.</p>
+  </section>
+
+  <!-- ============ UPLOAD & SHARE ============ -->
+  <section class="panel guide-section" id="upload-share">
+    <h2>Upload &amp; Share</h2>
+    <ol class="steps">
+      <li>Go to <a href="upload.html">Upload My Blueprint</a>.</li>
+      <li>Choose your <code>blueprint_&lt;name&gt;.lua</code> file. It is checked in your browser first: only real Blueprint Exchange files, plain data, no code.</li>
+      <li>Add a screenshot if you like. Paste one with Ctrl+V or choose an image, then drag and zoom to frame it. It is cropped and shrunk in your browser before it is uploaded.</li>
+      <li>Check the title and description. A live preview shows exactly how your card will look.</li>
+      <li>Press <strong>Upload Blueprint</strong>. Uploads are public.</li>
+    </ol>
+    <p>Captured the same design again and want to publish an improved version? Upload the new file and it becomes v2, v3 and so on, with only the latest version shown.</p>
+    <div class="guide-actions"><a class="btn primary big" href="upload.html">Upload My Blueprint</a></div>
+  </section>
+
+  <!-- ============ FIND THE FOLDER ============ -->
+  <section class="panel guide-section" id="find-folder">
+    <h2>Find Your Transport Fever 2 Folder</h2>
+    <figure>
+      <img src="guide-game-folder.jpg" loading="lazy" alt="Three Steam screenshots: right-click Transport Fever 2, choose Manage then Properties, open Installed Files and click Browse">
+      <figcaption>Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li>Open Steam and find <strong>Transport Fever 2</strong> in your Library.</li>
+      <li>Right-click it, choose <strong>Manage</strong>, then <strong>Browse local files</strong>. (The Properties &rarr; Installed Files &rarr; Browse button gets you to the same place.)</li>
+      <li>A folder opens. That is your Transport Fever 2 folder &mdash; you will see <code>TransportFever2.exe</code> in it.</li>
+    </ol>
+    <p>The usual path is:</p>
+    <p><code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code></p>
+    <p>If your Steam library is on another drive, it looks more like <code>D:\SteamLibrary\steamapps\common\Transport Fever 2</code>. Use &ldquo;Browse local files&rdquo; and you never have to guess.</p>
+  </section>
+
+  <!-- ============ DEPENDENCIES ============ -->
+  <section class="panel guide-section" id="dependencies">
+    <h2>Dependencies</h2>
+    <p>A dependency is something a blueprint needs that isn&rsquo;t part of the base game &mdash; for example a station or signal that comes from a Workshop mod. If your layout uses mod content, its blueprint depends on that mod.</p>
+    <ul>
+      <li>Every blueprint records the content it uses: constructions, track and road types, bridges, tunnels and signal models.</li>
+      <li>Cards in the library list the construction files a blueprint needs, under &ldquo;needs:&rdquo;. Blueprints that only use base game content list nothing.</li>
+      <li>When you press <strong>Place</strong>, BPX checks each item against what is installed <em>before it builds anything</em>. If something is missing you get a message naming it, and nothing is built.</li>
+    </ul>
+    <p>To use a blueprint that needs a mod you don&rsquo;t have, subscribe to that mod on the Steam Workshop, load your game with it enabled, and try again. BPX never guesses or swaps in a substitute.</p>
+  </section>
+
+  <!-- ============ TROUBLESHOOTING ============ -->
+  <section class="panel guide-section" id="troubleshooting">
+    <h2>Troubleshooting</h2>
+    <div class="faq">
+      <details>
+        <summary>The Import downloads button sees nothing</summary>
+        <p>The files must be in the Transport Fever 2 folder itself &mdash; the one with <code>TransportFever2.exe</code> &mdash; not a subfolder and not Downloads. The names must be exact: <code>blueprint_import.lua</code>, <code>blueprint_import_2.lua</code> and so on up to <code>_10</code>.</p>
+        <p>A name like <code>blueprint_import (1).lua</code> is not recognised &mdash; rename it to remove the <code>(1)</code>. You don&rsquo;t need to restart the game: put the files in, then press Import downloads again.</p>
+      </details>
+      <details>
+        <summary>I downloaded more than one blueprint</summary>
+        <p>That&rsquo;s fine. Each download gets its own numbered name, up to 10 at a time; the counter on the library page tells you how many are waiting. Move them all into the game folder, then press Import downloads once and they all come in together.</p>
+        <p>At 10 the site pauses further downloads so it can&rsquo;t overwrite a file you haven&rsquo;t imported. Move the files in, then press &ldquo;I&rsquo;ve moved them &mdash; reset downloads&rdquo;.</p>
+      </details>
+      <details>
+        <summary>Where did my file go?</summary>
+        <p>Downloads go to wherever your browser saves files &mdash; usually your Downloads folder. Your browser&rsquo;s Settings &rarr; Downloads shows where.</p>
+        <p>After a successful import the mod saves the blueprint under its own name as <code>blueprint_&lt;name&gt;.lua</code> in the game folder and empties the import file. A tiny import file afterwards is normal.</p>
+      </details>
+      <details>
+        <summary>Windows saved my .bat as .txt</summary>
+        <p>In Notepad&rsquo;s Save As box set <strong>Save as type</strong> to <strong>All Files</strong> and type the full name <code>Blueprint_Importer.bat</code>. Already saved as <code>.txt</code>? Turn on <strong>View &rarr; Show &rarr; File name extensions</strong> in File Explorer and rename it. Or use <strong>Download My Blueprint Importer</strong> on the <a href="tools.html">Tools</a> page for the file directly.</p>
+      </details>
+      <details>
+        <summary>The blueprint uses a mod I don&rsquo;t have</summary>
+        <p>BPX refuses to place it, tells you which content is missing, and builds nothing. Install the mod that provides it, enable it in your game, and try again. See <a href="#dependencies">Dependencies</a>.</p>
+      </details>
+      <details>
+        <summary>My imported layout looks different</summary>
+        <p>Place it on flat, clear ground. A blueprint captured on almost level ground is flattened so it fits anywhere; one with deliberate slopes, bridges or tunnels keeps its heights, so it needs ground that suits it. If the game refuses a spot it says why and builds nothing.</p>
+        <p>Not right after placing? <strong>Undo last blueprint placement</strong> takes back everything that placement built. If a layout doesn&rsquo;t capture or rebuild correctly, that&rsquo;s useful to know &mdash; BPX is a public beta and unusual layouts are exactly what it needs testing on.</p>
+      </details>
+    </div>
+  </section>
+
+<!--FOOTER-->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  trackVisit();
+</script>
+</body>
+</html>

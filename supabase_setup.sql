@@ -342,3 +342,16 @@ returns jsonb language sql security definer set search_path = public as $$
   );
 $$;
 grant execute on function public.bp_visit_stats() to anon;
+
+-- Later migrations (see the live project / README for the bodies):
+--   owner_secret  -- bp_blueprint_owners: ownership proof for updating a blueprint
+--   visitors      -- bp_visits, bp_visit_days, bp_track_visit(), bp_visit_stats()
+--   plug_my_mod   -- pm_mods (one row per listed Workshop item; canonical-URL CHECK),
+--                    pm_rate_events (salted IP hashes only), pm_secrets (ip_salt),
+--                    pm_list() security-definer read granted to anon, and the public
+--                    Storage bucket `plug-my-mod` (3 MB, jpeg/png/gif/webp) holding the
+--                    cached Steam preview images. All tables: RLS on, no policies.
+--                    Written to only by the `plug-my-mod` Edge Function
+--                    (supabase/functions/plug-my-mod/index.ts).
+-- Moderation for Plug My Mod:
+--   update public.pm_mods set status = 'hidden' where workshop_id = <id>;

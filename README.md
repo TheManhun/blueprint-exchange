@@ -178,3 +178,62 @@ POST requests. It is an approximation: the logs do not hold the
 anonymous id, so a returning visitor is counted once more under their
 real id. Lesson: check the request logs before deleting anything
 assumed to be test data."
+
+## Site structure (restructure, 25 Sep 2026)
+
+Six pages share one header (banner + nav buttons cut from
+`documents/web_buttons.png` in the mod repo: dark = normal, blue =
+hover / current page) and one footer (fan-made disclaimer, Copy It!
+credit, back link, coffee button):
+
+| Page | File | What lives there |
+| --- | --- | --- |
+| Community Blueprints | `index.html` | stats, search / Official-Community filter / sort, card grid, download |
+| Upload My Blueprint | `upload.html` | step cards, upload form, cropper, live preview card |
+| Guides | `guides.html` | download & import, capture, upload, find folder, dependencies, troubleshooting |
+| Tools | `tools.html` | Blueprint Importer Builder (.bat generator) |
+| Plug My Mod | `plug-my-mod.html` | Workshop item lookup + community mod grid |
+| About | `about.html` | the story, credit, public beta, disclaimer |
+
+**`src/` is the source of truth.** Edit `src/*.html`, `src/_header.html`,
+`src/_footer.html`, then run `python build.py` to regenerate the root
+pages (`python build.py --check` fails if they are stale). Shared
+styling is `site.css`; shared script (Supabase client, visitor
+tracking, card template) is `site.js`. Old links keep working:
+`guide.html` redirects to `guides.html#capture`, and `index.html#share`,
+`#importer`, `#use` redirect to the new pages.
+
+Categories / tags / dependency filters were left out on purpose: they
+would need a schema change and a new `bp_upload` signature. Filters are
+Official / Community only.
+
+## Plug My Mod
+
+Anyone can list a Steam Workshop item for Transport Fever 2. They enter
+only the numeric item id; the `plug-my-mod` Edge Function
+(`supabase/functions/plug-my-mod/index.ts`) does the rest:
+
+- asks Steam's public `GetPublishedFileDetails` whether the item exists,
+  is public, isn't banned, is a Workshop item and belongs to TF2
+  (app 1066780); refuses anything else;
+- builds the canonical `https://steamcommunity.com/sharedfiles/filedetails/?id=<id>`
+  link itself (a DB CHECK constraint enforces the same shape) -- no
+  submitted links or images are ever stored or shown;
+- downloads Steam's preview image once (image-host allow-list, magic-byte
+  check, 3 MB cap, redirects re-validated) and stores it in the public
+  Storage bucket `plug-my-mod`; the grid shows that cached copy, so
+  Steam is not hit on every page view (the one-off "Is this your mod?"
+  confirmation card shows Steam's image directly, once per lookup);
+- description is optional plain text, HTML stripped, 200 characters max;
+- rate limits by salted hash of the caller's IP (raw IPs are never
+  stored): 20 lookups/hour, 5 submissions/day per caller, 200 new
+  listings/day overall; duplicates are refused;
+- only accepts requests from this site (CORS allow-list).
+
+Listings are approved automatically. To take one down:
+
+    update public.pm_mods set status = 'hidden' where workshop_id = <id>;
+
+`pm_list()` (security definer, granted to anon) is the only way the
+page reads the table. The tables have row-level security on with no
+policies, so nothing is reachable directly.

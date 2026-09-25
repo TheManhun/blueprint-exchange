@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>BPX Tools</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Small utilities to make Blueprint Exchange easier to use.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  /* Blueprint Importer generator */
+  #importer button.big { font-size: 17px; padding: 12px 20px; }
+  #importer pre { background: var(--code-ground); color: var(--code-ink); font: 13px/1.5 "JetBrains Mono", monospace; padding: 14px 16px; border-radius: 8px; overflow: auto; margin: 10px 0 12px; white-space: pre; max-height: 420px; }
+  #importer h3 { font-size: 20px; margin: 22px 0 0; }
+  #importer code { overflow-wrap: anywhere; }
+  #importer summary { cursor: pointer; font-weight: 600; margin: 16px 0 4px; }
+  #importer details[open] summary { margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:tools-->
+
+  <div class="page-head">
+    <h1>BPX Tools</h1>
+    <p class="sub">Small utilities to make Blueprint Exchange easier to use.</p>
+  </div>
+
+  <section class="panel" id="importer">
+    <h2>Blueprint Importer Builder</h2>
+    <p class="lede">Create a one-click Windows BAT file that moves downloaded BPX blueprints into your Transport Fever 2 folder. Check where Transport Fever 2 lives (it&rsquo;s filled in for you), and we&rsquo;ll make a tiny file that does the moving.</p>
+    <ol class="steps">
+      <li>Download blueprints from the library.</li>
+      <li>Double-click <strong>Blueprint_Importer.bat</strong>.</li>
+      <li>Load Transport Fever 2 and open <strong>BPX</strong> in the bottom bar.</li>
+      <li>Press <strong>Import downloads</strong>.</li>
+      <li>Enjoy your new layout from the community.</li>
+    </ol>
+
+    <label for="impDest">Your Transport Fever 2 folder (the one with TransportFever2.exe)</label>
+    <input type="text" id="impDest" value="C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2" autocomplete="off" spellcheck="false">
+    <p class="hint">That&rsquo;s the usual place, so it&rsquo;s filled in for you. If your game lives on another drive it looks like <code>D:\SteamLibrary\steamapps\common\Transport Fever 2</code>. In Steam, right-click the game &rarr; Manage &rarr; Browse local files opens the right folder.</p>
+
+    <details id="impAdvanced">
+      <summary>My Downloads folder is somewhere else</summary>
+      <p class="hint">Most people can skip this. The importer looks in your standard Windows Downloads folder on its own. If your browser saves files somewhere else, paste that folder here. Your browser&rsquo;s Settings &rarr; Downloads shows where it saves.</p>
+      <label for="impSource">Your Downloads folder (optional)</label>
+      <input type="text" id="impSource" placeholder="C:\Users\YourName\Downloads" autocomplete="off" spellcheck="false">
+      <p class="hint">Easiest way to get the full path: in File Explorer, right-click the folder and choose <strong>Copy as path</strong> (hold Shift as you right-click if you don&rsquo;t see it), then paste it here. File Explorer sometimes shows only the word &ldquo;Downloads&rdquo; &mdash; that&rsquo;s normal, but the importer needs the full path.</p>
+    </details>
+
+    <div class="msg" id="impMsg" role="status"></div>
+
+    <div class="row" style="margin-top:14px">
+      <button type="button" class="primary big" id="impCopyBtn">Copy BAT Code</button>
+      <button type="button" class="primary big" id="impDownloadBtn">Download My Blueprint Importer</button>
+    </div>
+
+    <div id="impCodeBox" hidden>
+      <h3>Your importer code</h3>
+      <pre id="impCode" tabindex="0" aria-label="Generated Blueprint Importer code"></pre>
+      <div class="row" style="margin-top:0">
+        <button type="button" id="impCopyNow">Copy Code</button>
+        <span class="hint" id="impCopyState" role="status"></span>
+      </div>
+      <p><strong>Turn it into a file:</strong></p>
+      <ol class="steps">
+        <li>Open Notepad and paste the code.</li>
+        <li>Choose <strong>File &gt; Save As</strong>.</li>
+        <li>File name: <code>Blueprint_Importer.bat</code></li>
+        <li>Save as type: <strong>All Files</strong>.</li>
+        <li>Save it somewhere convenient &mdash; your Downloads folder is ideal.</li>
+      </ol>
+    </div>
+
+    <div class="msg" id="impDone" role="status">
+      <strong>Blueprint_Importer.bat is ready.</strong><br>
+      From now on: download your blueprints &rarr; double-click Blueprint_Importer.bat &rarr; start Transport Fever 2 &rarr; open BPX &rarr; press Import downloads.<br>
+      You&rsquo;re welcome. ;)
+    </div>
+
+    <p class="hint">Blueprint_Importer.bat only moves files beginning with <code>blueprint_import</code> and ending in <code>.lua</code>. It will not move other files from your Downloads folder.</p>
+    <p class="hint">Windows or your browser may ask you to confirm the first time you save or run a .bat file. That&rsquo;s normal &mdash; Copy BAT Code shows you exactly what the file does before you run anything. If your browser won&rsquo;t keep the download, Copy BAT Code works too.</p>
+  </section>
+
+  <section class="panel" id="tools-help">
+    <h2>Help</h2>
+    <div class="faq">
+      <details>
+        <summary>How do I find my Downloads folder?</summary>
+        <p>Most people can leave that box empty &mdash; the importer looks in your standard Windows Downloads folder on its own, usually <code>C:\Users\YourName\Downloads</code>.</p>
+        <p>If your browser saves files somewhere else, open your browser&rsquo;s <strong>Settings &rarr; Downloads</strong> to see where. In File Explorer, right-click that folder and choose <strong>Copy as path</strong> (hold Shift as you right-click if you don&rsquo;t see it), then paste it into the optional Downloads box.</p>
+      </details>
+      <details>
+        <summary>How do I find my Transport Fever 2 folder?</summary>
+        <p>In Steam, right-click Transport Fever 2 &rarr; <strong>Manage</strong> &rarr; <strong>Browse local files</strong>. The window that opens is the folder you want &mdash; the one with <code>TransportFever2.exe</code> in it. The usual place is <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code>, or <code>D:\SteamLibrary\steamapps\common\Transport Fever 2</code> if your Steam library is on another drive. There is a picture of this in the <a href="guides.html#find-folder">guides</a>.</p>
+      </details>
+      <details>
+        <summary>What does the .bat file actually do?</summary>
+        <p>It looks in your Downloads folder for files whose names start with <code>blueprint_import</code> and end with <code>.lua</code> &mdash; the files this site names when you download a blueprint. It moves those into your Transport Fever 2 folder, replacing the empty placeholder files the mod leaves there, and shows you what it moved. It does not delete anything, does not touch any other file, and does not connect to the internet.</p>
+        <p>Click <strong>Copy BAT Code</strong> to read the exact commands before you use it.</p>
+      </details>
+      <details>
+        <summary>Windows saved my .bat as .txt</summary>
+        <p>In Notepad&rsquo;s <strong>Save As</strong> box, set <strong>Save as type</strong> to <strong>All Files</strong> and type the full name <code>Blueprint_Importer.bat</code>. Or skip Notepad and use <strong>Download My Blueprint Importer</strong>, which gives you the file directly. See the <a href="guides.html#troubleshooting">troubleshooting guide</a> for more.</p>
+      </details>
+    </div>
+  </section>
+
+  <!--
+    Room to grow. Future tools go in their own <section class="panel"> above
+    the Help panel, each with its own id. Ideas noted here, deliberately not
+    shown to visitors until they exist: blueprint validator, dependency
+    checker, metadata inspector, filename checker.
+  -->
+
+<!--FOOTER-->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  trackVisit();
+</script>
+<script>
+
+// Blueprint Importer generator. Builds a small Windows .bat that moves
+// downloaded blueprint_import*.lua files from the player's Downloads
+// folder into the Transport Fever 2 folder (where the mod looks for
+// them). Everything happens in the browser -- no server call. The two
+// folder paths are the only user input that ever reaches the .bat, and
+// they are validated hard first: no quotes, no % (no variable tricks),
+// no characters Windows forbids in folder names, a real drive-letter or
+// network path only. Inside `set "NAME=value"` a validated path is inert.
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const srcEl = $("impSource"), dstEl = $("impDest"), msgEl = $("impMsg");
+  const codeBox = $("impCodeBox"), codeEl = $("impCode"), doneEl = $("impDone");
+  const copyState = $("impCopyState");
+  const advEl = $("impAdvanced");
+  if (!srcEl || !dstEl || !msgEl || !codeBox || !codeEl || !doneEl) return;
+
+  const FILE_NAME = "Blueprint_Importer.bat";
+  let lastBat = "";
+
+  function showMsg(text, kind) {
+    msgEl.className = text ? "msg " + kind : "msg";
+    msgEl.textContent = text || "";
+  }
+
+  function hideResults() {
+    codeBox.hidden = true;
+    doneEl.className = "msg";
+    copyState.textContent = "";
+  }
+
+  const upperFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // Turns whatever was typed or pasted into a safe Windows folder path,
+  // or explains (in plain words) why it can't.
+  function cleanPath(raw, what) {
+    let s = String(raw == null ? "" : raw).trim();
+    if (/[\r\n]/.test(s)) return { error: upperFirst(what) + " needs to be on a single line." };
+    // Explorer's "Copy as path" wraps the path in quotes -- strip them, straight or curly.
+    s = s.replace(/^["\u201c\u201d]+/, "").replace(/["\u201c\u201d]+$/, "").trim();
+    if (!s) return { error: "Please fill in " + what + "." };
+    if (/["\u201c\u201d]/.test(s)) return { error: upperFirst(what) + " has quote marks in the middle of it. Paste just the folder path." };
+    if (s.indexOf("%") !== -1) return { error: upperFirst(what) + " contains a % sign. Shortcuts like %USERPROFILE% can't be used here, so paste the full path instead, starting with a drive letter such as C:\\" };
+    if (/[<>|?*\u0000-\u001f\u007f]/.test(s)) return { error: upperFirst(what) + " contains a character Windows doesn't allow in folder names (< > | ? *)." };
+    s = s.replace(/\//g, "\\").replace(/\\+$/, ""); // forward slashes -> backslashes; the script adds its own trailing one
+    if (!/^(?:[A-Za-z]:(?:\\|$)|\\\\[^\\]+\\[^\\]+)/.test(s)) {
+      return { error: upperFirst(what) + " should be a full path starting with a drive letter, like C:\\Users\\YourName\\Downloads" };
+    }
+    const rest = /^[A-Za-z]:/.test(s) ? s.slice(2) : s;
+    if (rest.indexOf(":") !== -1) return { error: upperFirst(what) + " has a stray colon in it. Only the drive letter (like C:) can have one." };
+    if (s.length > 240) return { error: upperFirst(what) + " is too long for Windows (over 240 characters)." };
+    return { value: s };
+  }
+
+  // Both paths, checked. The Downloads folder is optional: left blank,
+  // the script uses the standard Windows one (%USERPROFILE%\Downloads),
+  // so most people only ever fill in the game folder. Returns null
+  // (after showing why) if anything is off.
+  function gather() {
+    hideResults();
+    const d = cleanPath(dstEl.value, "your Transport Fever 2 folder");
+    if (d.error) { showMsg(d.error, "bad"); dstEl.focus(); return null; }
+    let source = null;
+    if (srcEl.value.trim() !== "") {
+      const s = cleanPath(srcEl.value, "your Downloads folder");
+      if (s.error) { if (advEl) advEl.open = true; showMsg(s.error, "bad"); srcEl.focus(); return null; }
+      if (s.value.toLowerCase() === d.value.toLowerCase()) {
+        if (advEl) advEl.open = true;
+        showMsg("Those two folders are the same. The first is where your browser saves downloads, the second is your Transport Fever 2 folder.", "bad");
+        return null;
+      }
+      source = s.value;
+    }
+    showMsg("", "");
+    const note = /transport fever 2$/i.test(d.value)
+      ? ""
+      : "Heads up: the Transport Fever 2 folder doesn't end in \"Transport Fever 2\". It should be the folder with TransportFever2.exe in it. You can carry on if you're sure.";
+    return { source: source, dest: d.value, note: note };
+  }
+
+  function buildBat(source, dest) {
+    // Paths with accents or other non-ASCII letters need the console switched to UTF-8 first.
+    const needsUtf8 = /[^\x00-\x7f]/.test((source || "") + dest);
+    const lines = ["@echo off"];
+    if (needsUtf8) lines.push("chcp 65001 >nul");
+    lines.push(
+      "title Blueprint Exchange - Blueprint Importer",
+      "",
+      source ? 'set "SOURCE=' + source + '"' : 'set "SOURCE=%USERPROFILE%\\Downloads"',
+      'set "DEST=' + dest + '"',
+      "",
+      "echo ==========================================",
+      "echo        Blueprint Exchange Importer",
+      "echo ==========================================",
+      "echo.",
+      "echo Looking for downloaded blueprints...",
+      'echo Folder: "%SOURCE%"',
+      "echo.",
+      "",
+      'if not exist "%SOURCE%\\blueprint_import*.lua" (',
+      "    echo No Blueprint Exchange blueprint files were found.",
+      "    echo If your browser saves downloads somewhere else, make a new importer and fill in the Downloads folder box.",
+      "    echo.",
+      "    echo Nothing was moved.",
+      "    echo.",
+      "    timeout /t 5 >nul",
+      "    exit",
+      ")",
+      "",
+      'if not exist "%DEST%" (',
+      "    echo The Transport Fever 2 folder could not be found.",
+      "    echo.",
+      "    echo Please check your Blueprint Importer setup.",
+      "    echo.",
+      "    pause",
+      "    exit",
+      ")",
+      "",
+      "echo Found:",
+      "echo.",
+      'dir /b "%SOURCE%\\blueprint_import*.lua"',
+      "echo.",
+      "echo Transferring blueprints...",
+      "echo.",
+      "",
+      'move /Y "%SOURCE%\\blueprint_import*.lua" "%DEST%\\"',
+      "",
+      "echo.",
+      "echo ==========================================",
+      "echo          Transfer complete!",
+      "echo ==========================================",
+      "echo.",
+      "echo Your blueprints are ready to import.",
+      "echo.",
+      "echo Now:",
+      "echo 1. Load Transport Fever 2",
+      "echo 2. Open Blueprint Exchange - the BPX button in the bottom bar",
+      "echo 3. Press Import downloads",
+      "echo 4. Enjoy your new community layout!",
+      "echo.",
+      "timeout /t 7 >nul"
+    );
+    return lines;
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) { /* fall through */ }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  function downloadBat(text) {
+    const blob = new Blob([text], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = FILE_NAME;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+
+  // Option 1 -- show the code and copy it.
+  $("impCopyBtn").addEventListener("click", async function () {
+    const g = gather();
+    if (!g) return;
+    const lines = buildBat(g.source, g.dest);
+    lastBat = lines.join("\r\n") + "\r\n"; // real Windows line endings for whatever Notepad saves
+    codeEl.textContent = lines.join("\n");
+    codeBox.hidden = false;
+    const ok = await copyText(lastBat);
+    copyState.textContent = ok ? "Copied!" : "";
+    showMsg((g.note ? g.note + " " : "") + (ok
+      ? "Copied to your clipboard. Now paste it into Notepad and save it as Blueprint_Importer.bat (steps below)."
+      : "Your code is ready below. Select it, press Ctrl+C, then follow the steps to save it."), "ok");
+    codeBox.scrollIntoView({ block: "nearest" });
+  });
+
+  $("impCopyNow").addEventListener("click", async function () {
+    const ok = await copyText(lastBat);
+    copyState.textContent = ok ? "Copied!" : "Couldn't copy automatically. Select the code and press Ctrl+C.";
+  });
+
+  // Option 2 -- make the file right here in the browser and download it.
+  $("impDownloadBtn").addEventListener("click", function () {
+    const g = gather();
+    if (!g) return;
+    downloadBat(buildBat(g.source, g.dest).join("\r\n") + "\r\n");
+    if (g.note) showMsg(g.note, "ok");
+    doneEl.className = "msg ok";
+  });
+
+  // Editing a path after generating makes any earlier result stale.
+  srcEl.addEventListener("input", function () { hideResults(); showMsg("", ""); });
+  dstEl.addEventListener("input", function () { hideResults(); showMsg("", ""); });
+})();
+</script>
+</body>
+</html>
