@@ -118,3 +118,33 @@ through security-definer functions only.
 A Buy Me a Coffee button (the official CDN-hosted badge, no login
 needed to embed it) sits at the bottom of the page, linking to
 https://buymeacoffee.com/epodtheman5.
+
+## About page
+
+`about.html` carries the full story (the Workshop/mod.io listing text)
+so the library page stays about the library. Linked from the front
+page's intro line; links back to the library and the guide.
+
+## Blueprint Importer generator
+
+The "Make Your Own Blueprint Importer" panel builds a small Windows
+`.bat` in the browser (no server call) that moves `blueprint_import*.lua`
+from the player's Downloads folder into the Transport Fever 2 folder,
+where the mod's ten inbox slots live. Two ways to get it: Copy BAT Code
+(shown in a code box with Notepad save-as steps, copied with real CRLF
+line endings) or Download My Blueprint Importer.
+
+Safety: the two folder paths are the only user input that reaches the
+.bat, and they are validated first -- surrounding quotes stripped, then
+anything with a quote, `%`, or a character Windows forbids in folder
+names (`< > | ? *`) is refused, and the path must be a real drive-letter
+or network path. Inside `set "NAME=value"` a validated path is inert. The
+script only ever names `blueprint_import*.lua` (never deletes, never
+touches other files); paths with non-ASCII letters get a `chcp 65001`
+line so accented Windows user names work.
+
+Tested by driving the real form in a browser, downloading the generated
+file, and running it with cmd.exe against sandbox folders: paths with
+spaces, `&` and parentheses; accented folder names; nothing-to-move;
+game folder missing; unrelated files left alone; the mod's placeholder
+slot file overwritten by the real download.

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>About Blueprint Exchange</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #eef1f4; --surface: #ffffff; --surface-2: #e2e7ec; --ink: #1b2430; --ink-2: #5b6876;
+    --line: #cfd6de; --accent: #2b6cb0; --accent-ink: #ffffff; --accent-soft: #dbe8f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+      --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #131820; --surface: #1c232c; --surface-2: #252d38; --ink: #e6eaef; --ink-2: #98a4b2;
+    --line: #313b47; --accent: #5b9be6; --accent-ink: #0f1520; --accent-soft: #22334a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.6 Barlow, system-ui, sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding-block: 32px 64px; padding-inline: 16px; }
+  h1, h2 { font-family: "Barlow Condensed", Barlow, sans-serif; text-wrap: balance; margin: 0 0 .3em; }
+  h1 { font-size: 48px; line-height: 1; }
+  h2 { font-size: 28px; margin-top: 1.6em; }
+  p, ul, ol { max-width: 66ch; }
+  p { margin: 0 0 .9em; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+  .eyebrow a { color: inherit; }
+  .tagline { font: 700 26px/1.15 "Barlow Condensed", sans-serif; color: var(--accent); margin: 0 0 18px; }
+  .intro { display: grid; grid-template-columns: 1fr 260px; gap: 28px; align-items: start; margin: 8px 0 8px; }
+  .intro img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
+  .nots { font-weight: 600; }
+  ul, ol { padding-left: 1.3em; margin: 0 0 1em; }
+  li { margin: 0 0 .25em; }
+  .callout { background: var(--accent-soft); border-radius: 8px; padding: 14px 18px; max-width: 66ch; margin: 0 0 1em; }
+  .callout p:last-child { margin-bottom: 0; }
+  a { color: var(--accent); }
+  @media (max-width: 720px) { .intro { grid-template-columns: 1fr; } .intro img { max-width: 320px; } h1 { font-size: 40px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="./">Blueprint Exchange</a> &middot; About</p>
+  <h1>Blueprint Exchange</h1>
+  <p class="tagline">Build it once. Share it forever.</p>
+
+  <div class="intro">
+    <div>
+      <p>Blueprint Exchange lets you capture layouts you build in Transport Fever 2, save them as portable blueprints, reuse them in other saves, and share them with other players.</p>
+      <p class="nots">No coding.<br>No Lua knowledge.<br>No Blender.<br>No modding experience required.</p>
+      <p>If you can build it in Transport Fever 2, you can share it.</p>
+      <p>That means every player can contribute to the modding community.</p>
+    </div>
+    <img src="about-hero.jpg" alt="A busy multi-platform station and its tracks, half solid and half drawn as a glowing blueprint, with an arrow lifting the blueprint into a file icon" width="640" height="640">
+  </div>
+
+  <p>Built a clever cargo terminal? Share it.<br>Made a clean station throat? Share it.<br>Designed a compact depot, junction, interchange or road layout? Share it.</p>
+  <p>This may be the easiest way to &ldquo;mod&rdquo; Transport Fever 2 ever. &#x1F604;</p>
+
+  <h2>What Blueprint Exchange does</h2>
+  <p>Capture an area of your map using the capture circles, save it as a blueprint, test-place it, rotate it and confirm it.</p>
+  <p>Your blueprint can then be reused in another save or uploaded to the community library for other players to download.</p>
+  <p>Blueprints can contain things such as:</p>
+  <ul>
+    <li>track layouts</li>
+    <li>roads</li>
+    <li>stations and constructions</li>
+    <li>signals</li>
+    <li>junctions</li>
+    <li>depots</li>
+    <li>complex combinations of the above</li>
+  </ul>
+  <p>Anything you want included must be covered by your capture circles.</p>
+
+  <h2>Share your own blueprints</h2>
+  <p>You can browse other players&rsquo; layouts or upload your own in the <a href="./">community library</a>.</p>
+  <p>Uploading is deliberately simple:</p>
+  <ol>
+    <li>Capture your layout in Blueprint Exchange.</li>
+    <li>Upload the blueprint file on the website.</li>
+    <li>Paste or choose a screenshot if you want a preview image.</li>
+    <li>Add a name and description.</li>
+    <li>Upload it.</li>
+  </ol>
+  <p>That&rsquo;s it.</p>
+  <p>The website even crops and prepares the preview image in your browser.</p>
+  <p>You do not need to make a traditional Transport Fever 2 mod just to share a useful design anymore. New to capturing? The <a href="guide.html">step-by-step guide</a> walks through it with pictures.</p>
+
+  <h2>Download several at once</h2>
+  <p>Blueprint Exchange supports batch importing.</p>
+  <p>Download several community blueprints, move the import files into your Transport Fever 2 folder, then press <strong>Import downloads</strong> in game.</p>
+  <p>The mod checks the known import slots and brings the blueprints into your library in one go. Prefer to skip the file moving? <a href="./#importer">Make your own one-click importer</a>.</p>
+
+  <h2>Designed to be safe to experiment with</h2>
+  <p>Blueprint Exchange includes a test-and-confirm workflow.</p>
+  <p>After capturing a design, place a test copy and inspect it.</p>
+  <p>If something was missed, remove the test placement, capture again and try again.</p>
+  <p>Once you&rsquo;re happy with it, confirm the blueprint and keep it in your library.</p>
+  <p>There is also an <strong>Undo last blueprint placement</strong> option for those inevitable &ldquo;That was not where I meant to put it.&rdquo; moments. &#x1F604;</p>
+
+  <h2>Mod dependencies</h2>
+  <p>Blueprint Exchange records the constructions and track components used by a blueprint.</p>
+  <p>If you download a blueprint that depends on another mod you don&rsquo;t have installed, Blueprint Exchange will tell you what is missing rather than silently failing.</p>
+
+  <h2>Community-made layouts</h2>
+  <p>This is the part I&rsquo;m most excited about.</p>
+  <p>You do not need to know how to write a Transport Fever 2 mod to make something worth sharing.</p>
+  <p>Some players are brilliant at coding.<br>Some are brilliant at modelling.<br>Some are brilliant at building ridiculous railway junctions at 2am.</p>
+  <p>Now all three can contribute.</p>
+  <p>A useful layout made by an ordinary player can be downloaded and used by thousands of other players just like a traditional mod.</p>
+  <p><strong>Your game. Your layout. Your contribution.</strong></p>
+
+  <h2>Credit</h2>
+  <div class="callout">
+    <p>Special thanks to okeating, creator of <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It!</a></p>
+    <p>Blueprint Exchange&rsquo;s capture and rebuild system follows the approach okeating worked out in Copy It! Reading how that mod captures constructions and track and rebuilds them was the foundation of this one.</p>
+    <p>Blueprint Exchange takes the idea in a different direction with portable files, sharing across saves and players, dependency checking, and a community blueprint library.</p>
+    <p>If you haven&rsquo;t tried Copy It!, do &mdash; it&rsquo;s one of the best TF2 utilities there is.</p>
+  </div>
+
+  <h2>Public Beta</h2>
+  <p>Blueprint Exchange is new, and Transport Fever 2 players are spectacularly talented at building things I never considered testing. &#x1F602;</p>
+  <p>If you find a layout that doesn&rsquo;t capture or rebuild correctly, let me know what you built and what happened.</p>
+  <p>The goal is simple:</p>
+  <p class="tagline">Build it once. Share it forever.</p>
+
+  <p class="eyebrow" style="margin-top:40px"><a href="./">&larr; Back to the library</a> &middot; <a href="guide.html">Guide</a></p>
+</div>
+</body>
+</html>
