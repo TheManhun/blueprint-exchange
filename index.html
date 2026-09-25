@@ -144,7 +144,7 @@
       <li>In game, click <strong>BPX</strong> in the bottom bar, then <strong>Import downloads</strong>. One press picks up everything you moved in and files each blueprint into your library under its own name.</li>
       <li>Press <strong>Place</strong>, aim the blue outline at flat, clear ground, turn it if you like, and left-click. If it needs a mod you don't have, the status line names it.</li>
     </ol>
-    <p class="hint">Up to 10 downloads can wait at once (see the counter above the list) &mdash; the site blocks the 11th until you say you've moved the files in.</p>
+    <p class="hint">Download as many blueprints as you like, up to 10 at a time (the counter above the list keeps track) &mdash; each one gets its own file name. Tired of moving them by hand? <a href="#importer">Make your own one-click importer</a> below and it moves every one of them into Transport Fever 2 for you.</p>
     <figure>
       <img src="guide-add-download.jpg" alt="Four File Explorer screenshots: open Downloads, find blueprint_import.lua, Cut it, Paste it into the Transport Fever 2 folder">
       <figcaption>Downloads to game folder: find blueprint_import.lua, Cut, then Paste into the Transport Fever 2 folder.</figcaption>
@@ -290,7 +290,7 @@
   <h2 id="dlgTitle">Downloaded</h2>
   <p id="dlgBody"></p>
   <ol class="steps">
-    <li>Move <code id="dlgFile"></code> into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it). Downloading more? Each one gets its own file name, so grab a few before moving them in.</li>
+    <li>Move <code id="dlgFile"></code> into your game folder &mdash; usually <code>C:\Program Files (x86)\Steam\steamapps\common\Transport Fever 2</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files opens it). Downloading more? Each one gets its own file name, so grab a few before moving them in. Or <a href="#importer" id="dlgImporterLink">make a one-click importer</a> that does the moving for you.</li>
     <li>In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong>. It lands in your library as <code id="dlgName"></code> &mdash; one press picks up everything you moved in, not just this one.</li>
     <li><strong>Place</strong>, aim, click.</li>
   </ol>
@@ -533,6 +533,7 @@
   });
 
   document.getElementById("dlgClose").addEventListener("click", () => document.getElementById("dlg").close());
+  document.getElementById("dlgImporterLink").addEventListener("click", () => document.getElementById("dlg").close()); // let the page scroll to the importer, not sit behind the pop-up
 
   // ---- Upload: validate the file as a REAL Blueprint Exchange data file.
   let pending = null;
