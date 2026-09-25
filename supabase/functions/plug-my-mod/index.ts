@@ -1,5 +1,6 @@
 // Plug My Mod -- Blueprint Exchange's community promotion of Transport
-// Fever 2 Steam Workshop items.
+// Fever 2 Steam Workshop items (and, via the `link` actions, the place where
+// blueprint uploads teach BPX which Workshop mod supplies which resource path).
 //
 // The browser sends only a Workshop item NUMBER (plus, on submit, a short
 // plain-text description and the permission tick). Everything else -- the
@@ -12,6 +13,8 @@
 //
 //   POST { action: "lookup", workshopId: "3800813265" }
 //   POST { action: "submit", workshopId, description?, consent: true }
+//   POST { action: "link", workshopId, source: "scan"|"manual", resources: [{type, path}] }
+//   POST { action: "bulk_link", mods: [{ workshopId, resources: [{type, path}] }] }   (optional community contribution)
 //
 // Public by design (anyone may plug a mod), so there is no login to check;
 // the protections are: origin allow-list, strict validation, per-caller
@@ -31,7 +34,8 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const STEAM_API = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
-const MAX_BODY_BYTES = 8192;
+const MAX_BODY_BYTES = 8192;          // every action except bulk_link
+const MAX_BULK_BODY_BYTES = 600_000;  // bulk_link: up to 60 mods / 3000 resources of ids + paths
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const MAX_DESCRIPTION = 200;
 
@@ -39,6 +43,9 @@ const LOOKUPS_PER_HOUR = 60;          // per caller (salted address hash), rolli
 const GLOBAL_LOOKUPS_PER_HOUR = 600;  // everyone together -- keeps Steam calls modest
 const SUBMITS_PER_DAY = 5;
 const LINKS_PER_HOUR = 40;            // per caller: resource -> Workshop mod links
+const BULK_MODS_MAX = 60;
+const BULK_RESOURCES_MAX = 3000;
+const BULKS_PER_DAY = 3;              // per caller
 const LINK_TYPES = new Set(["construction", "track", "street", "bridge", "model", "tunnel"]);
 const NEW_LISTINGS_PER_DAY = 200; // everyone together
 
@@ -148,7 +155,7 @@ async function ipSalt(): Promise<string> {
   return cachedSalt;
 }
 
-async function enforceLimit(ipHash: string, kind: "lookup" | "submit", limit: number, windowMs: number, message: string) {
+async function enforceLimit(ipHash: string, kind: "lookup" | "submit" | "link" | "bulk", limit: number, windowMs: number, message: string) {
   const since = new Date(Date.now() - windowMs).toISOString();
   const { count, error } = await db.from("pm_rate_events").select("id", { count: "exact", head: true })
     .eq("ip_hash", ipHash).eq("kind", kind).gte("at", since);
@@ -255,6 +262,50 @@ async function steamLookup(workshopId: string): Promise<SteamItem> {
   return { workshopId, title, creatorId, authorName, previewUrl };
 }
 
+// One Steam call for many Workshop ids; keeps only public, unbanned Transport Fever 2 mods.
+async function steamMany(ids: string[]): Promise<Map<string, { title: string; previewUrl: string | null }>> {
+  const out = new Map<string, { title: string; previewUrl: string | null }>();
+  const params: Record<string, string> = { itemcount: String(ids.length) };
+  ids.forEach((id, i) => { params["publishedfileids[" + i + "]"] = id; });
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(STEAM_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(params).toString(),
+    }, 10000);
+  } catch (_e) {
+    throw new HttpError(502, "steam_unavailable", "Steam didn't answer just now. Please try again in a minute.");
+  }
+  if (res.status === 429) {
+    const raw = res.headers.get("retry-after");
+    const secs = raw ? Number(raw) : NaN;
+    throw new HttpError(429, "steam_rate_limited", "Steam is asking us to slow down.", { retryAfter: Number.isFinite(secs) ? Math.ceil(secs) : null, source: "steam" });
+  }
+  if (!res.ok) throw new HttpError(502, "steam_unavailable", "Steam didn't answer just now. Please try again in a minute.");
+  let list: any[] = [];
+  try { list = (await res.json())?.response?.publishedfiledetails ?? []; } catch (_e) {
+    throw new HttpError(502, "steam_unavailable", "Steam sent back something unexpected. Please try again in a minute.");
+  }
+  for (const d of list) {
+    if (!d || Number(d.result) !== 1 || Number(d.consumer_app_id) !== TF2_APP_ID) continue;
+    if (d.banned && Number(d.banned) !== 0) continue;
+    if (d.visibility !== undefined && Number(d.visibility) !== 0) continue;
+    if (d.file_type !== undefined && d.file_type !== null && Number(d.file_type) !== 0) continue;
+    const title = cleanText(d.title, 120);
+    if (!title || typeof d.publishedfileid !== "string") continue;
+    let previewUrl: string | null = null;
+    try {
+      if (typeof d.preview_url === "string") {
+        const u = new URL(d.preview_url);
+        if (u.protocol === "https:" && imageHostAllowed(u.hostname)) previewUrl = u.toString();
+      }
+    } catch (_e) { /* no image */ }
+    out.set(d.publishedfileid, { title, previewUrl });
+  }
+  return out;
+}
+
 function sniffMatches(type: string, b: Uint8Array): boolean {
   if (type === "image/jpeg") return b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
   if (type === "image/png") return b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
@@ -302,7 +353,7 @@ async function fetchPreviewImage(url: string): Promise<{ bytes: Uint8Array; type
   return null;
 }
 
-// ---------- the two actions ----------
+// ---------- the actions ----------
 
 function publicMod(item: SteamItem, extra: Record<string, unknown> = {}) {
   return {
@@ -320,14 +371,60 @@ async function existing(workshopId: string) {
   return data;
 }
 
+// Optional community contribution: many mods' resource paths in one request.
+// Every Workshop id is verified with Steam in ONE call and anything that is not
+// a public Transport Fever 2 mod is dropped; base-game paths are dropped by the
+// database. Only ids and resource paths arrive here -- nothing else.
+async function bulkLink(req: Request, body: any, origin: string | null): Promise<Response> {
+  const mods = Array.isArray(body.mods) ? body.mods : [];
+  if (mods.length === 0 || mods.length > BULK_MODS_MAX) throw new HttpError(400, "bad_request", "That request wasn't understood.");
+  const clean: { id: string; resources: { type: string; path: string }[] }[] = [];
+  let total = 0;
+  for (const m of mods) {
+    const id = typeof m?.workshopId === "string" ? m.workshopId.trim() : "";
+    if (!/^[0-9]{6,12}$/.test(id) || !Array.isArray(m.resources)) throw new HttpError(400, "bad_request", "That request wasn't understood.");
+    const resources: { type: string; path: string }[] = [];
+    for (const r of m.resources) {
+      const type = typeof r?.type === "string" ? r.type : "";
+      const path = typeof r?.path === "string" ? r.path : "";
+      if (!LINK_TYPES.has(type) || !/^[A-Za-z0-9_.\/ -]{1,200}$/.test(path)) throw new HttpError(400, "bad_request", "That request wasn't understood.");
+      resources.push({ type, path });
+    }
+    total += resources.length;
+    if (total > BULK_RESOURCES_MAX) throw new HttpError(400, "bad_request", "That request was too large.");
+    clean.push({ id, resources });
+  }
+  const ipHash = await sha256Hex((await ipSalt()) + ":" + callerAddress(req));
+  await enforceLimit(ipHash, "bulk", BULKS_PER_DAY, 86400_000, "You've already shared a scan today. Thank you! Please try again tomorrow.");
+  const verified = await steamMany(clean.map((c) => c.id));
+  let modsLinked = 0, resourcesLinked = 0;
+  for (const c of clean) {
+    const info = verified.get(c.id);
+    if (!info || c.resources.length === 0) continue;
+    let did = 0;
+    for (let i = 0; i < c.resources.length; i += 100) {
+      const { data, error } = await db.rpc("bp_link_mod", {
+        p_ip_hash: ipHash, p_workshop_id: c.id, p_mod_name: info.title, p_preview_url: info.previewUrl,
+        p_source: "scan", p_resources: c.resources.slice(i, i + 100),
+      });
+      if (error) throw new Error("bulk link failed: " + error.message);
+      did += (data as number) ?? 0;
+    }
+    if (did > 0) { modsLinked++; resourcesLinked += did; }
+  }
+  return json(200, { ok: true, modsLinked, resourcesLinked, modsSkipped: clean.length - verified.size }, origin);
+}
+
 async function handle(req: Request, origin: string | null): Promise<Response> {
   const raw = await req.text();
-  if (raw.length > MAX_BODY_BYTES) throw new HttpError(413, "too_large", "That request was too large.");
+  if (raw.length > MAX_BULK_BODY_BYTES) throw new HttpError(413, "too_large", "That request was too large.");
   let body: any;
   try { body = JSON.parse(raw); } catch (_e) { throw new HttpError(400, "bad_request", "That request wasn't understood."); }
   if (!body || typeof body !== "object") throw new HttpError(400, "bad_request", "That request wasn't understood.");
 
   const action = body.action;
+  if (action !== "bulk_link" && raw.length > MAX_BODY_BYTES) throw new HttpError(413, "too_large", "That request was too large.");
+  if (action === "bulk_link") return await bulkLink(req, body, origin);
   if (action !== "lookup" && action !== "submit" && action !== "link") throw new HttpError(400, "bad_request", "That request wasn't understood.");
 
   const workshopId = typeof body.workshopId === "string" ? body.workshopId.trim() : "";

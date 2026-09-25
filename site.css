@@ -231,3 +231,9 @@ a.btn.small { font-size: 13px; padding: 3px 9px; }
 .reqs .reqhead { font-weight: 600; margin: 8px 0 2px; color: var(--ink-2); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
 .reqs ul { margin: 0; padding-left: 1.1em; }
 .reqs li { margin: 3px 0; overflow-wrap: anywhere; }
+
+.depsummary { list-style: none; padding: 0; margin: 6px 0 10px; }
+.depsummary li { margin: 2px 0; }
+.depreview { margin: 4px 0; }
+.depreview summary { cursor: pointer; font-weight: 600; }
+.depreview ul { margin: 4px 0 6px; padding-left: 1.2em; max-height: 220px; overflow: auto; }

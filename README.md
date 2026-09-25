@@ -365,3 +365,22 @@ and that mapping is now in the database.
 
 Moderation: `delete from public.bp_mod_resources where id = <id>;` removes a
 wrong mapping.
+
+### Optional full Workshop scan (community contribution)
+
+Once the current blueprint's dependencies are resolved, the upload page
+offers "Help improve BPX mod detection". *Scan My Workshop Mods* reads only
+file NAMES under the chosen `steamapps\workshop\content\1066780` folder, in the
+browser, and indexes what a layout can capture: constructions (`res/construction/**.con`),
+street / track / bridge / tunnel types (`res/config/**.lua`) and signal models.
+Trains, vehicles, sounds, UI, scripts and other models are ignored. The result
+is a report -- mods scanned, mods with relevant assets, mappings found, already
+known (`bp_known_resources`), new -- and **nothing is sent** until the uploader
+reviews the exact list and chooses *Submit Blueprint + Help TFBPX*. *Submit
+Blueprint Only* publishes the blueprint and shares nothing extra. Sharing goes
+through the Edge Function's `bulk_link` action: one Steam call verifies every
+Workshop id (public, Transport Fever 2), unknown or base-game paths are
+dropped, 3 shares per caller per day, at most 60 mods / 3000 resources per
+request. Only Workshop ids, resource types and resource paths are sent; the
+mod name comes from Steam. Station/platform *modules* are not indexed: a
+blueprint's `requires` block does not list them, so nothing could use them.

@@ -74,6 +74,8 @@
         <div class="row"><input type="text" id="depModId" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="e.g. 3800813265" style="max-width:260px"><button type="button" id="depModFind">Find</button></div>
       </div>
       <div id="depManualOut" aria-live="polite"></div>
+      <input type="file" id="depFullFolder" class="visually-hidden" webkitdirectory multiple aria-label="Choose your Workshop folder to scan">
+      <div class="depitem" id="depHelp" hidden aria-live="polite"></div>
     </div>
     <div class="callout" id="existingBox" hidden>
       <p id="existingText"></p>
@@ -119,6 +121,7 @@
     </div>
     <div class="msg" id="uploadMsg"></div>
     <div id="afterUpload"></div>
+    <div id="contribNote" aria-live="polite"></div>
   </section>
 
   <section class="panel" id="mine">
@@ -251,6 +254,14 @@
   showFeatures(null);
   bpxDeps.init();
   bpxDeps.onChange = () => { refreshUpload(); updatePreviewCard(); };
+  // "Submit Blueprint Only" / "Submit Blueprint + Help TFBPX" both publish the blueprint;
+  // the second one also shares the reviewed scan afterwards.
+  let contributeAfter = false;
+  bpxDeps.onSubmitChoice = (contribute) => {
+    if (document.getElementById("upload").disabled) return;
+    contributeAfter = !!contribute;
+    document.getElementById("upload").click();
+  };
 
   // The inspection status above the grid: waiting (grey), passed (green) or refused (red).
   function setInspect(state, text) {
@@ -359,10 +370,19 @@
     msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
     document.getElementById("author").value = "";
     const uploaded = pending;
+    // capture the reviewed scan before the form is reset; sent only if the uploader chose to
+    const contributing = contributeAfter && bpxDeps.hasContribution() ? bpxDeps.contribute() : null;
+    contributeAfter = false;
     pending = null; document.getElementById("file").value = "";
     document.getElementById("existingBox").hidden = true;
     bpxDeps.reset();
     showAfterUpload(uploaded);
+    if (contributing) contributing.then((r) => {
+      const note = document.createElement("p");
+      note.className = "msg " + (r.ok ? "ok" : "bad"); note.style.display = "block";
+      note.textContent = r.message + (r.error ? " " + r.error : "");
+      document.getElementById("contribNote").appendChild(note);
+    });
     clearThumbnail();
     updatePreviewCard();
   });

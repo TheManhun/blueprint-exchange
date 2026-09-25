@@ -16,6 +16,7 @@
 
 const bpxDeps = (() => {
   const $ = (id) => document.getElementById(id);
+  const fmt = (n) => Number(n || 0).toLocaleString();
 
   const GROUPS = [
     ["constructions", "construction", "construction"],
@@ -35,6 +36,10 @@ const bpxDeps = (() => {
   let state = { requires: null, report: [], checking: false, error: false };
   const justLinked = new Set(); // Workshop ids identified during this upload (worded "identified", not "recognised")
   let manual = null; // { mod } while a manually entered mod awaits confirmation
+  // Optional full Workshop scan (community contribution). Nothing is sent
+  // unless the uploader reviews the report and chooses "Blueprint + Help TFBPX".
+  let help = { dismissed: false, stage: "offer", full: null, sent: null, error: null };
+  let submitChoice = () => {};
   let onChange = () => {};
 
   const unresolved = () => state.report.filter((x) => x.status === "unknown");
@@ -67,9 +72,10 @@ const bpxDeps = (() => {
     if (!state.requires) {
       setStatus("idle", "Dependencies are checked once your blueprint passes inspection");
       hidePanels();
+      renderHelp();
       return;
     }
-    if (state.checking) { setStatus("idle", "Checking dependencies…"); return; }
+    if (state.checking) { setStatus("idle", "Checking dependencies\u2026"); return; }
     if (state.error) {
       setStatus("bad", "Couldn't check dependencies just now.");
       list.innerHTML = '<p class="hint">Please try again in a moment. <button type="button" class="linkbtn" id="depRetry">Check again</button></p>';
@@ -79,8 +85,9 @@ const bpxDeps = (() => {
     const ext = external();
     const unres = unresolved();
     if (ext.length === 0) {
-      setStatus("ok", "✓ No external mod dependencies detected.");
+      setStatus("ok", "\u2713 No external mod dependencies detected.");
       hidePanels();
+      renderHelp();
       return;
     }
     // resolved externals, grouped by Workshop mod
@@ -96,7 +103,7 @@ const bpxDeps = (() => {
       const pv = g.mod.preview_url;
       const img = typeof pv === "string" && pv.startsWith("https://")
         ? `<img src="${esc(pv)}" alt="" width="96" height="54" referrerpolicy="no-referrer" loading="lazy">` : "";
-      html += `<div class="depitem ok"><p class="depkind">${justLinked.has(id) ? "✓ Required mod identified" : "✓ Required mod recognised"}</p>
+      html += `<div class="depitem ok"><p class="depkind">${justLinked.has(id) ? "\u2713 Required mod identified" : "\u2713 Required mod recognised"}</p>
         <div class="depmod">${img}<div><div class="t">${esc(g.mod.name)}</div><div class="hint">Workshop #${esc(id)}</div>
         ${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View on Steam Workshop</a>` : ""}</div></div>
         <div class="hint">Provides: ${g.paths.map((p) => `<code>${esc(p)}</code>`).join(", ")}</div></div>`;
@@ -110,10 +117,150 @@ const bpxDeps = (() => {
       setStatus("warn", "External mod content detected.");
       actions.hidden = false;
     } else {
-      setStatus("ok", "✓ All external mod content is identified.");
+      setStatus("ok", "\u2713 All external mod content is identified.");
       hidePanels();
     }
     list.innerHTML = html;
+    renderHelp();
+  }
+
+  // ---- optional full scan of the Workshop folder ----
+  const FULL_RX = /(?:^|\/)([0-9]{6,12})\/res\/(.+)$/;
+  const FULL_KINDS = [
+    ["construction/", ".con", "construction"], ["config/street/", ".lua", "street"], ["config/track/", ".lua", "track"],
+    ["config/bridge/", ".lua", "bridge"], ["config/tunnel/", ".lua", "tunnel"], ["models/model/", ".mdl", "model"],
+  ];
+  const SAFE_PATH = /^[A-Za-z0-9_./ -]{1,200}$/;
+  const FULL_PER_MOD = 400, FULL_TOTAL = 4000;
+
+  function classifyFile(rest) {
+    const lc = rest.toLowerCase();
+    for (const [prefix, ext, type] of FULL_KINDS) {
+      if (!lc.startsWith(prefix) || !lc.endsWith(ext)) continue;
+      const path = rest.slice(prefix.length);
+      // "if BPX can capture it as part of a layout, it is relevant": constructions and
+      // road/track/bridge/tunnel types, plus signal models. Other models are props inside
+      // constructions, not things a blueprint lists.
+      if (type === "model" && !/signal/i.test(path)) return null;
+      return SAFE_PATH.test(path) ? { type, path } : null;
+    }
+    return null;
+  }
+
+  async function fullScan(fileList) {
+    help.stage = "scanning"; help.error = null; renderHelp();
+    const seen = new Set();
+    const index = new Map(); // workshop id -> [{type, path}]
+    let total = 0;
+    for (let i = 0; i < fileList.length; i++) {
+      const m = FULL_RX.exec(fileList[i].webkitRelativePath || "");
+      if (m) {
+        seen.add(m[1]);
+        const r = classifyFile(m[2]);
+        if (r && total < FULL_TOTAL) {
+          const list = index.get(m[1]) || [];
+          if (list.length < FULL_PER_MOD) { list.push(r); index.set(m[1], list); total++; }
+        }
+      }
+      if (i % 20000 === 19999) await new Promise((res) => setTimeout(res));
+    }
+    // which of these does BPX already know (base game or any mod)?
+    const flat = [];
+    for (const [id, list] of index) list.forEach((r) => flat.push({ id, ...r }));
+    const known = new Set();
+    let failed = false;
+    for (let i = 0; i < flat.length; i += 500) {
+      const chunk = flat.slice(i, i + 500).map((x) => ({ type: x.type, path: x.path }));
+      try {
+        const { data, error } = await sb.rpc("bp_known_resources", { p_items: chunk });
+        if (error || !Array.isArray(data)) { failed = true; break; }
+        data.forEach((k) => known.add(k));
+      } catch (e) { failed = true; break; }
+    }
+    if (failed) { help.stage = "offer"; help.error = "Couldn't compare the scan with the library just now. Please try again in a moment."; renderHelp(); return; }
+    const fresh = new Map();
+    let freshCount = 0;
+    for (const x of flat) {
+      if (known.has(x.type + ":" + x.path)) continue;
+      if (!fresh.has(x.id)) fresh.set(x.id, []);
+      fresh.get(x.id).push({ type: x.type, path: x.path });
+      freshCount++;
+    }
+    help.full = { scanned: seen.size, relevant: index.size, found: flat.length, known: flat.length - freshCount, fresh, freshCount, review: false };
+    help.stage = "report";
+    renderHelp();
+  }
+
+  function renderHelp() {
+    const box = $("depHelp");
+    const show = isResolved() && external().length > 0 && !help.dismissed;
+    box.hidden = !show;
+    if (!show) { box.innerHTML = ""; return; }
+    const f = help.full;
+    let html = "";
+    if (help.stage === "offer" || help.stage === "scanning") {
+      html = `<p class="depkind">Help improve BPX mod detection</p>
+        <p>BPX can scan the rest of your Transport Fever 2 Workshop folder for blueprint-relevant assets and help build the dependency database for future users.</p>
+        <p><strong>Your privacy, your control.</strong><br>The scan runs locally and is limited to your Transport Fever 2 Workshop folder.<br>Nothing extra is submitted automatically.<br>You will be shown a full report before deciding whether to contribute additional dependency data.</p>
+        ${help.error ? `<p class="msg bad" style="display:block">${esc(help.error)}</p>` : ""}
+        ${help.stage === "scanning" ? '<p class="hint">Scanning file names on your computer\u2026</p>'
+          : '<div class="row"><label class="btn primary" for="depFullFolder" style="cursor:pointer">Scan My Workshop Mods</label><button type="button" data-act="no">No Thanks</button></div>'}`;
+    } else if (help.stage === "report" && f) {
+      const names = mods().map((m) => esc(m.name)).join(", ");
+      html = `<p class="depkind">Scan complete \u2014 nothing extra has been submitted yet.</p>
+        <ul class="depsummary">
+          <li>${fmt(f.scanned)} Workshop mod${f.scanned === 1 ? "" : "s"} scanned</li>
+          <li>${fmt(f.relevant)} contain BPX-relevant assets</li>
+          <li>${fmt(f.found)} resource mapping${f.found === 1 ? "" : "s"} found</li>
+          <li>${fmt(f.known)} already known</li>
+          <li>${fmt(f.freshCount)} new mapping${f.freshCount === 1 ? "" : "s"} available</li>
+        </ul>
+        ${f.freshCount ? `<div class="row"><button type="button" data-act="review">${f.review ? "Hide Full Scan Data" : "Review Full Scan Data"}</button></div>` : ""}
+        ${f.review ? reviewHtml(f) : ""}
+        <p><strong>Required for this blueprint:</strong><br>\u2713 ${names || "your mods"} identified</p>
+        ${f.freshCount ? `<p><strong>Optional community contribution:</strong><br>${fmt(f.freshCount)} additional resource mapping${f.freshCount === 1 ? "" : "s"} could help future BPX users.</p>
+        <div class="row"><button type="button" class="primary" data-act="only">Submit Blueprint Only</button><button type="button" data-act="plus">Submit Blueprint + Help TFBPX</button></div>
+        <p class="hint">Blueprint Only sends just what this blueprint needs. Help TFBPX also sends the new mappings listed in the review: Workshop ID, resource type and resource path \u2014 nothing else.</p>` : '<p class="hint">Everything in your folder is already known to BPX \u2014 thank you for checking!</p>'}`;
+    } else if (help.stage === "sent") {
+      html = `<p class="depkind">${help.error ? "Thank you \u2014 part of the scan was shared" : "Thank you for helping TFBPX!"}</p><p>${esc(help.sent || "")}</p>${help.error ? `<p class="hint">${esc(help.error)}</p>` : ""}`;
+    }
+    box.innerHTML = html;
+  }
+
+  // Exactly what would be sent (grouped by Workshop id; the name is looked up from Steam on submit).
+  function reviewHtml(f) {
+    const rows = [...f.fresh].slice(0, 200).map(([id, list]) =>
+      `<details class="depreview"><summary>Workshop #${esc(id)} \u2014 ${list.length} new</summary><ul>${list.slice(0, 200).map((r) => `<li>${esc(r.type)}: <code>${esc(r.path)}</code></li>`).join("")}${list.length > 200 ? `<li class="hint">\u2026and ${list.length - 200} more</li>` : ""}</ul></details>`).join("");
+    return `<div class="depitem"><p class="depkind">This is exactly what would be sent</p>${rows}${f.fresh.size > 200 ? `<p class="hint">\u2026and ${f.fresh.size - 200} more mods</p>` : ""}<p class="hint">Only Workshop IDs, resource types and resource paths. No file contents, no folder locations, no account or user names.</p></div>`;
+  }
+
+  // Send the approved new mappings (called right after the blueprint uploaded).
+  async function contribute() {
+    const f = help.full;
+    if (!f || !f.freshCount) return { ok: true, message: "" };
+    const all = [...f.fresh].map(([id, resources]) => ({ workshopId: id, resources }));
+    const chunks = []; let cur = [], n = 0;
+    for (const m of all) {
+      if (cur.length && (cur.length >= 60 || n + m.resources.length > 3000)) { chunks.push(cur); cur = []; n = 0; }
+      cur.push(m); n += m.resources.length;
+    }
+    if (cur.length) chunks.push(cur);
+    let mappings = 0, modsCount = 0, err = null;
+    for (const chunk of chunks.slice(0, 3)) {
+      const r = await bpxModsCall({ action: "bulk_link", mods: chunk });
+      if (!r || !r.ok) { err = bpxFailText(r); break; }
+      mappings += r.resourcesLinked || 0; modsCount += r.modsLinked || 0;
+    }
+    if (chunks.length > 3 && !err) err = "Your scan was large, so only part of it was shared today.";
+    help.stage = "sent"; help.error = err;
+    help.sent = `${fmt(mappings)} new resource mapping${mappings === 1 ? "" : "s"} shared for ${fmt(modsCount)} Workshop mod${modsCount === 1 ? "" : "s"}.`;
+    return { ok: !err, message: help.sent, error: err };
+  }
+
+  function mods() {
+    const seen = new Map();
+    state.report.filter((x) => x.status === "mod" && x.mod).forEach((x) => seen.set(String(x.mod.workshop_id), { workshop_id: String(x.mod.workshop_id), name: x.mod.name }));
+    return [...seen.values()];
   }
 
   function hidePanels() {
@@ -143,6 +290,7 @@ const bpxDeps = (() => {
     state = { requires: null, report: [], checking: false, error: false };
     justLinked.clear();
     manual = null;
+    help = { dismissed: false, stage: "offer", full: null, sent: null, error: null };
     hidePanels();
     $("depScanOut").innerHTML = "";
     $("depManualOut").innerHTML = "";
@@ -164,7 +312,7 @@ const bpxDeps = (() => {
     const out = $("depScanOut");
     const wanted = wantedFiles();
     if (!wanted.size) return;
-    out.innerHTML = '<p class="hint">Searching…</p>';
+    out.innerHTML = '<p class="hint">Searching\u2026</p>';
     // Only immediate Workshop item folders are considered: <id>/res/<kind>/<path>.
     // Only file NAMES are read, and only on this computer.
     const found = new Map(); // wanted key -> Set(workshop ids)
@@ -227,7 +375,7 @@ const bpxDeps = (() => {
     const img = typeof mod.previewUrl === "string" && mod.previewUrl.startsWith("https://")
       ? `<img src="${esc(mod.previewUrl)}" alt="" width="96" height="54" referrerpolicy="no-referrer" loading="lazy">` : "";
     return `<div class="depitem ok"><p class="depkind">${esc(heading)}</p><div class="depmod">${img}<div>
-      <div class="t">${esc(mod.title)}</div><div class="hint">Workshop #${esc(mod.workshopId)}${mod.author ? " · by " + esc(mod.author) : ""}</div>
+      <div class="t">${esc(mod.title)}</div><div class="hint">Workshop #${esc(mod.workshopId)}${mod.author ? " \u00b7 by " + esc(mod.author) : ""}</div>
       ${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View on Steam Workshop</a>` : ""}</div></div></div>`;
   }
 
@@ -240,7 +388,7 @@ const bpxDeps = (() => {
       out.innerHTML = '<p class="msg bad" style="display:block">Enter just the Workshop item number: digits only, no link.</p>';
       return;
     }
-    out.innerHTML = '<p class="hint">Looking it up on Steam…</p>';
+    out.innerHTML = '<p class="hint">Looking it up on Steam\u2026</p>';
     $("depModFind").disabled = true;
     const r = await bpxModsCall({ action: "lookup", workshopId: id });
     $("depModFind").disabled = false;
@@ -282,6 +430,19 @@ const bpxDeps = (() => {
       const files = e.target.files;
       if (files && files.length) scan(files).finally(() => { e.target.value = ""; });
     });
+    $("depFullFolder").addEventListener("change", (e) => {
+      const files = e.target.files;
+      if (files && files.length) fullScan(files).finally(() => { e.target.value = ""; });
+    });
+    $("depHelp").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-act]");
+      if (!btn) return;
+      const act = btn.dataset.act;
+      if (act === "no") { help.dismissed = true; renderHelp(); }
+      else if (act === "review" && help.full) { help.full.review = !help.full.review; renderHelp(); }
+      else if (act === "only") submitChoice(false);
+      else if (act === "plus") submitChoice(true);
+    });
     $("depModFind").addEventListener("click", manualFind);
     $("depModId").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); manualFind(); } });
     render();
@@ -291,12 +452,11 @@ const bpxDeps = (() => {
     init, check, reset, parseRequires, isResolved,
     set onChange(fn) { onChange = fn; },
     isChecking: () => state.checking,
+    contribute,
+    hasContribution: () => !!(help.full && help.full.freshCount),
+    set onSubmitChoice(fn) { submitChoice = fn; },
     // for the live preview card
-    mods: () => {
-      const seen = new Map();
-      state.report.filter((x) => x.status === "mod" && x.mod).forEach((x) => seen.set(String(x.mod.workshop_id), { workshop_id: String(x.mod.workshop_id), name: x.mod.name }));
-      return [...seen.values()];
-    },
+    mods,
     unresolvedPaths: () => unresolved().map((x) => x.path),
   };
 })();
