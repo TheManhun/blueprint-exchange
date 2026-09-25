@@ -425,3 +425,16 @@ links are ever shown; two different callers agreeing marks it verified). Cards s
 "Requires: N Workshop mod(s)" (either store) and link to the right page. Also: the
 upload page's "no code" check now ignores text inside quotes, so mod or blueprint names
 containing words like "load" are no longer refused.
+
+## Upload page redesign (26 Sep 2026)
+
+The Workshop-folder scanner (quick scan and the optional full community scan) was
+removed: since capture records `requiredMods` from the player's own installs, the
+upload page is four short steps -- **1 Choose your blueprint** (inspection status,
+feature dots, owner recognition), **2 Required mods** (the mods the file names, from
+either store, listed with links; pressing Upload attaches them, and if linking fails
+nothing is published), **3 Details** (title, name, description, screenshot, live card
+preview), **4 Upload**. "My blueprints", "I own this blueprint" and the new-version
+notes live in a collapsed **Manage my uploads** section (links to `#recover` /
+`#mine` open it). Blueprints with no `requiredMods` still get a Steam-ID box. The
+`bulk_link` / `bp_known_resources` server pieces from the scan remain but are unused.

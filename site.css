@@ -243,3 +243,13 @@ a.btn.small { font-size: 13px; padding: 3px 9px; }
 .keepthumb img { width: 160px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
 .keepthumb .keeplabel { display: flex; gap: 8px; align-items: center; margin: 0; font-weight: 600; }
 .keepthumb .hint { margin: 4px 0 0; max-width: 46ch; }
+
+/* ---------- required mods list (upload page) ---------- */
+.reqmods { display: grid; gap: 8px; margin: 10px 0 0; max-width: 720px; }
+.reqmod { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--surface-2); }
+.reqmod .t { font-weight: 600; }
+.reqmod-side { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.reqmod-files { grid-column: 1 / -1; margin: 2px 0 0; overflow-wrap: anywhere; }
+.reqtag { font: 600 11px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); border: 1px solid var(--ok); border-radius: 999px; padding: 4px 8px; }
+@media (max-width: 560px) { .reqmod { grid-template-columns: 1fr; } .reqmod-side { justify-content: flex-start; } }
+section.depbox { max-width: none; margin: 0 0 24px; }

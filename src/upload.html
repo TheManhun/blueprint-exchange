@@ -8,8 +8,28 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
-  .previewcard { max-width: 380px; margin-top: 8px; }
-  #fileReq { overflow-wrap: anywhere; }
+  /* the upload flow: four short steps, one card each */
+  .upl h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 4px; }
+  .stepnum { flex: none; display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 16px/1 Barlow, sans-serif; }
+  .upl .lede { margin: 0 0 14px; color: var(--ink-2); }
+  .upl input[type=file] { display: block; width: 100%; max-width: 560px; padding: 10px; border: 2px dashed var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink-2); }
+  .upl input[type=file]:hover { border-color: var(--accent); }
+  .upl input[type=file]::file-selector-button { font: 600 15px Barlow, sans-serif; border: 0; border-radius: 6px; background: var(--accent); color: var(--accent-ink); padding: 9px 16px; margin-right: 14px; cursor: pointer; }
+  .keepnote { margin: 12px 0 0; padding: 8px 12px; border: 1px solid var(--bad); border-radius: 8px; background: var(--bad-soft); font-size: 14px; max-width: 560px; }
+  .keepnote strong { color: var(--bad); }
+  .analysis { margin-top: 14px; }
+  .analysis .features { margin-top: 8px; }
+  .detailgrid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+  .detailgrid .side { position: sticky; top: 16px; }
+  .detailgrid .side h3 { margin: 0 0 8px; }
+  .previewcard { max-width: 360px; }
+  .uploadbar { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; margin-top: 4px; }
+  .manage > summary { cursor: pointer; font: 700 22px/1.2 "Barlow Condensed", sans-serif; padding: 2px 0; }
+  .manage > summary .sub { font: 400 15px Barlow, sans-serif; color: var(--ink-2); margin-left: 10px; }
+  .manage[open] > summary { margin-bottom: 10px; }
+  .manage section { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+  .manage h3 { margin: 0 0 6px; }
+  @media (max-width: 900px) { .detailgrid { grid-template-columns: 1fr; } .detailgrid .side { position: static; } }
 </style>
 </head>
 <body>
@@ -18,123 +38,128 @@
 
   <div class="page-head">
     <h1>Upload My Blueprint</h1>
-    <p class="sub">Share your Transport Fever 2 layout with the Blueprint Exchange community.</p>
+    <p class="sub">Share your Transport Fever 2 layout with the community. Capture it in the game, choose the file, check the details, upload.</p>
   </div>
 
-  <ol class="stepcards">
-    <li><span class="n">1</span><h3>Build it</h3><p>Create your station, junction, hub or layout in Transport Fever 2.</p></li>
-    <li><span class="n">2</span><h3>Capture it</h3><p>Use Blueprint Exchange in-game to capture the layout.</p></li>
-    <li><span class="n">3</span><h3>Find the file</h3><p>BPX creates a <code>blueprint_&lt;name&gt;.lua</code> file.</p></li>
-    <li><span class="n">4</span><h3>Upload it</h3><p>Add the file, screenshot and details below.</p></li>
-  </ol>
+  <div class="upl">
 
+  <!-- 1 -->
   <section class="panel" id="share">
-    <h2>Your blueprint</h2>
-    <p class="hint">Files are checked before upload &mdash; only real Blueprint Exchange files, plain data, no code. The mod saves your capture next to <code>TransportFever2.exe</code>, in the Transport Fever 2 game folder.</p>
+    <h2><span class="stepnum">1</span> Choose your blueprint</h2>
+    <p class="lede">Your capture is the <code>blueprint_&lt;name&gt;.lua</code> file the mod saved next to <code>TransportFever2.exe</code>. It is checked in your browser first &mdash; only real Blueprint Exchange files, plain data, no code.</p>
 
-    <div class="keepsafe" id="keepSafeBefore" role="note">
+    <label class="visually-hidden" for="file">Blueprint file (.lua)</label>
+    <input type="file" id="file" accept=".lua,text/plain">
+    <div class="keepnote" id="keepSafeBefore" role="note">
       <strong>IMPORTANT:</strong> Your original uploaded .lua file is your edit/recovery key. Keep it somewhere safe.
     </div>
 
-    <label for="file">Blueprint file (.lua)</label>
-    <input type="file" id="file" accept=".lua,text/plain">
-    <p class="hint" id="fileInfo"></p>
-    <p class="hint" id="fileReq"></p>
-    <p class="inspect" id="inspectStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Waiting for blueprint inspection</span></p>
-    <ul class="features" id="featureGrid" aria-label="Features BPX can detect in a blueprint"></ul>
-    <p class="hint" id="featureNote">Choose a blueprint file and BPX lights up what it finds in it.</p>
-
-    <div class="depbox" id="depBox">
-      <h3 class="section-title">Blueprint dependencies</h3>
-      <p class="inspect" id="depStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Dependencies are checked once your blueprint passes inspection</span></p>
-      <div id="depList" aria-live="polite"></div>
-      <div id="depSuggest" aria-live="polite"></div>
-      <div class="row" id="depActions" hidden style="margin-top:10px">
-        <button type="button" class="primary" id="depFindBtn">Find Required Mod</button>
-        <button type="button" id="depManualBtn">Enter Steam Workshop ID Manually</button>
-      </div>
-      <div class="deppanel" id="depScan" hidden>
-        <p><strong>Choose your Transport Fever 2 Workshop folder.</strong></p>
-        <p>BPX will only search <code>steamapps\workshop\content\1066780\</code> for the missing resource files used by this blueprint. The search runs on your computer and only file names are read &mdash; nothing from the folder is uploaded. (Your browser may say it will &ldquo;upload&rdquo; the folder&rsquo;s files; that is the browser&rsquo;s standard wording for choosing a folder.)</p>
-        <label class="btn primary" for="depFolder" style="cursor:pointer">Choose Workshop folder</label>
-        <input type="file" id="depFolder" class="visually-hidden" webkitdirectory multiple>
-      </div>
-      <div id="depScanOut" aria-live="polite"></div>
-      <div class="deppanel" id="depManual" hidden>
-        <label for="depModId">Steam Workshop item ID (digits only)</label>
-        <div class="row"><input type="text" id="depModId" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="e.g. 3800813265" style="max-width:260px"><button type="button" id="depModFind">Find</button></div>
-      </div>
-      <div id="depManualOut" aria-live="polite"></div>
-      <input type="file" id="depFullFolder" class="visually-hidden" webkitdirectory multiple aria-label="Choose your Workshop folder to scan">
-      <div class="depitem" id="depHelp" hidden aria-live="polite"></div>
+    <div class="analysis">
+      <p class="inspect" id="inspectStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Waiting for blueprint inspection</span></p>
+      <p class="hint" id="fileInfo"></p>
+      <ul class="features" id="featureGrid" aria-label="Features BPX can detect in a blueprint"></ul>
+      <p class="hint" id="featureNote">Choose a blueprint file and BPX lights up what it finds in it.</p>
     </div>
-    <div class="callout" id="existingBox" hidden>
+
+    <div class="callout" id="existingBox" hidden style="margin-top:14px">
       <p id="existingText"></p>
       <div class="row">
         <a class="btn primary" id="existingEdit" href="edit.html">Edit Existing Blueprint</a>
         <button type="button" id="existingNewVersion">Upload New Version</button>
       </div>
     </div>
+  </section>
 
-    <label for="name">Title</label>
-    <input type="text" id="name" maxlength="60" placeholder="e.g. Four-platform through station">
-
-    <label for="author">Your name (optional)</label>
-    <input type="text" id="author" maxlength="60">
-
-    <label for="desc">Description (optional)</label>
-    <textarea id="desc" maxlength="600" placeholder="What it is, what mods it needs, where it fits&hellip;"></textarea>
-
-    <label>Screenshot (optional)</label>
-<!--INCLUDE:thumbfield-->
-    <div class="keepthumb" id="keepThumbRow" hidden>
-      <img id="keepThumbImg" src="card-noimage.webp" alt="Your current screenshot" width="160" height="90">
-      <div>
-        <label class="keeplabel"><input type="checkbox" id="keepThumb" checked> Keep my current screenshot</label>
-        <p class="hint" id="keepThumbNote">This blueprint already has a screenshot. It stays on the new version unless you add a different one above.</p>
-      </div>
+  <!-- 2 -->
+  <section class="panel depbox" id="depBox">
+    <h2><span class="stepnum">2</span> Required mods</h2>
+    <p class="lede">If your layout uses content from a mod, other players need to know which one. BPX lists them from your own game &mdash; nothing to type.</p>
+    <p class="inspect" id="depStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Choose a blueprint file and BPX lists the mods it needs</span></p>
+    <div id="depList" aria-live="polite"></div>
+    <div id="depSuggest" aria-live="polite"></div>
+    <div class="deppanel" id="depManual" hidden>
+      <label for="depModId">Steam Workshop item ID (digits only)</label>
+      <div class="row"><input type="text" id="depModId" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="e.g. 3800813265" style="max-width:260px"><button type="button" id="depModFind">Find</button></div>
     </div>
+    <div id="depManualOut" aria-live="polite"></div>
+  </section>
 
-    <h3 class="section-title">How your card will look</h3>
-    <div class="previewcard" id="previewCard" aria-live="polite"></div>
+  <!-- 3 -->
+  <section class="panel">
+    <h2><span class="stepnum">3</span> Details</h2>
+    <p class="lede">A title and a screenshot make a card people want to download.</p>
+    <div class="detailgrid">
+      <div>
+        <label for="name">Title</label>
+        <input type="text" id="name" maxlength="60" placeholder="e.g. Four-platform through station">
 
+        <label for="author">Your name (optional)</label>
+        <input type="text" id="author" maxlength="60">
+
+        <label for="desc">Description (optional)</label>
+        <textarea id="desc" maxlength="600" placeholder="What it is, where it fits&hellip;"></textarea>
+
+        <label>Screenshot (optional)</label>
+<!--INCLUDE:thumbfield-->
+        <div class="keepthumb" id="keepThumbRow" hidden>
+          <img id="keepThumbImg" src="card-noimage.webp" alt="Your current screenshot" width="160" height="90">
+          <div>
+            <label class="keeplabel"><input type="checkbox" id="keepThumb" checked> Keep my current screenshot</label>
+            <p class="hint" id="keepThumbNote">This blueprint already has a screenshot. It stays on the new version unless you add a different one above.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="side">
+        <h3>How your card will look</h3>
+        <div class="previewcard" id="previewCard" aria-live="polite"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="panel">
+    <h2><span class="stepnum">4</span> Upload</h2>
     <p class="msg bad" id="depBlockMsg" role="alert" style="display:none">This blueprint uses external mod content BPX cannot yet identify. To make sure other players can use your blueprint, identify the required Workshop mod before publishing.</p>
-    <div class="row" style="margin-top:18px">
+    <div class="uploadbar">
       <button class="primary big" id="upload" disabled>Upload Blueprint</button>
       <span class="hint">Uploads are public and permanent.</span>
     </div>
     <div class="msg" id="uploadMsg"></div>
     <div id="afterUpload"></div>
-    <div id="contribNote" aria-live="polite"></div>
   </section>
 
-  <section class="panel" id="mine">
-    <h2>My blueprints</h2>
-    <p class="hint">Blueprints this browser has proved it owns. Each one can be edited here; nobody else sees this list.</p>
-    <div id="ownedList" class="ownedlist" aria-live="polite"></div>
-    <p class="hint" id="ownedEmpty">Nothing yet. Upload a blueprint, or choose your original file(s) under &ldquo;I own this blueprint&rdquo; (below), and they will appear here.</p>
-    <p class="hint" id="ownedRevokeNote" hidden>&ldquo;Remove this browser&rsquo;s access&rdquo; only forgets the edit permission on this browser. The blueprint stays in the library, and you can get access back with your original file.</p>
-  </section>
+  </div>
 
-  <section class="panel" id="recover">
-    <h2>I own this blueprint</h2>
-    <p>New computer, new browser, or cleared your browser data? Just choose your <strong>original</strong> <code>.lua</code> files &mdash; the ones the mod saved on your PC. The library checks each file&rsquo;s private key and, if it matches, this browser can edit that blueprint again. You can choose as many files as you like at once. Copies downloaded from the library won&rsquo;t work &mdash; they don&rsquo;t carry the key.</p>
-    <label for="recoverFile">Your original blueprint files (.lua)</label>
-    <input type="file" id="recoverFile" accept=".lua,text/plain" multiple>
-    <div class="msg" id="recoverMsg" role="status" style="white-space: pre-line"></div>
-    <p><a class="btn primary" id="recoverView" href="#mine" hidden>View My Blueprints</a></p>
-  </section>
+  <details class="panel manage" id="manage">
+    <summary>Manage my uploads <span class="sub">edit a blueprint, recover access, publish a new version</span></summary>
 
-  <section class="panel" id="update">
-    <h2>Uploading a new version of an existing blueprint?</h2>
-    <p>If the system recognises the same blueprint entry, it can be published as v2, v3 and so on. Every blueprint the mod captures carries a hidden identity, so uploading the file from a later capture of the <em>same</em> design updates its card. The version counter goes up by itself and only the latest version is shown.</p>
-    <p>New versions are checked against a hidden key inside the file the mod saved on your PC, so only the original uploader can update a blueprint. Keep your own blueprint files safe.</p>
-    <div class="keepsafe">
-      <strong>Keep your original blueprint .lua file safe.</strong>
-      <p>It is your ownership/recovery key for editing this upload later.</p>
-      <p>Your public downloadable blueprint does not contain the private edit key.</p>
-    </div>
-  </section>
+    <section id="mine">
+      <h3>My blueprints</h3>
+      <p class="hint">Blueprints this browser has proved it owns. Each one can be edited here; nobody else sees this list.</p>
+      <div id="ownedList" class="ownedlist" aria-live="polite"></div>
+      <p class="hint" id="ownedEmpty">Nothing yet. Upload a blueprint, or choose your original file(s) under &ldquo;I own this blueprint&rdquo; (below), and they will appear here.</p>
+      <p class="hint" id="ownedRevokeNote" hidden>&ldquo;Remove this browser&rsquo;s access&rdquo; only forgets the edit permission on this browser. The blueprint stays in the library, and you can get access back with your original file.</p>
+    </section>
+
+    <section id="recover">
+      <h3>I own this blueprint</h3>
+      <p>New computer, new browser, or cleared your browser data? Just choose your <strong>original</strong> <code>.lua</code> files &mdash; the ones the mod saved on your PC. The library checks each file&rsquo;s private key and, if it matches, this browser can edit that blueprint again. You can choose as many files as you like at once. Copies downloaded from the library won&rsquo;t work &mdash; they don&rsquo;t carry the key.</p>
+      <label for="recoverFile">Your original blueprint files (.lua)</label>
+      <input type="file" id="recoverFile" accept=".lua,text/plain" multiple>
+      <div class="msg" id="recoverMsg" role="status" style="white-space: pre-line"></div>
+      <p><a class="btn primary" id="recoverView" href="#mine" hidden>View My Blueprints</a></p>
+    </section>
+
+    <section id="update">
+      <h3>Uploading a new version of an existing blueprint?</h3>
+      <p>Every blueprint the mod captures carries a hidden identity, so uploading the file from a later capture of the <em>same</em> design publishes it as v2, v3 and so on, with only the latest version shown. Choose the file above: if its key proves it is yours, BPX offers Upload New Version.</p>
+      <div class="keepsafe">
+        <strong>Keep your original blueprint .lua file safe.</strong>
+        <p>It is your ownership/recovery key for editing this upload later.</p>
+        <p>Your public downloadable blueprint does not contain the private edit key.</p>
+      </div>
+    </section>
+  </details>
 
   <div class="cta">
     <div>
@@ -157,11 +182,11 @@
   // ---- Upload: validate the file as a REAL Blueprint Exchange data file.
   let pending = null;
   // What can hold the Upload button back: an existing blueprint waiting for the
-  // owner's choice, a file that isn't the original, or unidentified mod content.
+  // owner's choice, a file that isn't the original, or mod content BPX can't yet name.
   const gate = { existingHold: false, notOriginal: false };
   function refreshUpload() {
     const btn = document.getElementById("upload");
-    const depsOk = !pending || bpxDeps.isResolved();
+    const depsOk = !pending || bpxDeps.isReady();
     btn.disabled = !pending || gate.existingHold || gate.notOriginal || !depsOk;
     document.getElementById("depBlockMsg").style.display = (pending && !depsOk && !bpxDeps.isChecking()) ? "block" : "none";
   }
@@ -214,14 +239,6 @@
   showFeatures(null);
   bpxDeps.init();
   bpxDeps.onChange = () => { refreshUpload(); updatePreviewCard(); };
-  // "Submit Blueprint Only" / "Submit Blueprint + Help TFBPX" both publish the blueprint;
-  // the second one also shares the reviewed scan afterwards.
-  let contributeAfter = false;
-  bpxDeps.onSubmitChoice = (contribute) => {
-    if (document.getElementById("upload").disabled) return;
-    contributeAfter = !!contribute;
-    document.getElementById("upload").click();
-  };
 
   // The inspection status above the grid: waiting (grey), passed (green) or refused (red).
   function setInspect(state, text) {
@@ -238,11 +255,11 @@
     gate.existingHold = false; gate.notOriginal = false;
     bpxDeps.reset();
     refreshUpload();
-    document.getElementById("fileReq").textContent = "";
     document.getElementById("existingBox").hidden = true;
     document.getElementById("keepThumbRow").hidden = true;
     showFeatures(null);
     setInspect("idle", "Waiting for blueprint inspection");
+    info.textContent = "";
     if (!f) return;
     if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; setInspect("bad", "File too large (4 MB max)."); return; }
     const text = await f.text();
@@ -340,6 +357,10 @@
     const btn = document.getElementById("upload");
     btn.disabled = true;
 
+    // The mods the blueprint names (shown in step 2) are attached to it now.
+    const attached = await bpxDeps.applyClaims();
+    if (!attached.ok) { msg.className = "msg bad"; msg.textContent = attached.error; refreshUpload(); return; }
+
     // Preview image, if one was cropped: uploaded to R2 through the
     // Worker first, so bp_upload only ever receives a URL, never image
     // data. A failure here does not block the blueprint upload itself
@@ -372,20 +393,11 @@
     msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
     document.getElementById("author").value = "";
     const uploaded = pending;
-    // capture the reviewed scan before the form is reset; sent only if the uploader chose to
-    const contributing = contributeAfter && bpxDeps.hasContribution() ? bpxDeps.contribute() : null;
-    contributeAfter = false;
     pending = null; document.getElementById("file").value = "";
     document.getElementById("existingBox").hidden = true;
     document.getElementById("keepThumbRow").hidden = true;
     bpxDeps.reset();
     showAfterUpload(uploaded);
-    if (contributing) contributing.then((r) => {
-      const note = document.createElement("p");
-      note.className = "msg " + (r.ok ? "ok" : "bad"); note.style.display = "block";
-      note.textContent = r.message + (r.error ? " " + r.error : "");
-      document.getElementById("contribNote").appendChild(note);
-    });
     clearThumbnail();
     updatePreviewCard();
   });
@@ -427,6 +439,18 @@
     try { await sb.rpc("bp_revoke_browser", { p_token: bpxGetToken(false), p_blueprint_id: btn.dataset.id }); } catch (err) { /* list below shows the truth */ }
     refreshOwned();
   });
+
+  // Links like upload.html#recover open the "Manage my uploads" section.
+  function openManageFromHash() {
+    if (["#mine", "#recover", "#update", "#manage"].indexOf(location.hash) !== -1) {
+      document.getElementById("manage").open = true;
+      const target = document.querySelector(location.hash);
+      if (target) target.scrollIntoView();
+    }
+  }
+  window.addEventListener("hashchange", openManageFromHash);
+  document.getElementById("recoverView").addEventListener("click", () => { document.getElementById("manage").open = true; });
+  openManageFromHash();
 
   // ---- recover: choose the original file(s); the server compares the key ----
   // Nothing to pick: each file names its own blueprint, and the server
@@ -495,7 +519,7 @@
     const b = currentPreviewBlueprint();
     document.getElementById("previewCard").innerHTML = b
       ? blueprintCardHtml(b, { preview: true })
-      : '<p class="hint">Choose a blueprint file above and your card appears here as you fill in the details.</p>';
+      : '<p class="hint">Choose a blueprint file and your card appears here as you fill in the details.</p>';
   }
 
   ["name", "author", "desc", "file"].forEach((id) => {
