@@ -109,6 +109,7 @@
     <label for="recoverFile">Your original blueprint files (.lua)</label>
     <input type="file" id="recoverFile" accept=".lua,text/plain" multiple>
     <div class="msg" id="recoverMsg" role="status" style="white-space: pre-line"></div>
+    <p><a class="btn primary" id="recoverView" href="#mine" hidden>View My Blueprints</a></p>
   </section>
 
   <section class="panel" id="update">
@@ -337,7 +338,10 @@
     if (!files.length) return;
     msg.className = "msg ok"; msg.textContent = "Checking…";
     const lines = [];
-    let good = 0, bad = 0;
+    let good = 0, already = 0, bad = 0;
+    const owned = new Set((await bpxOwned()).map((b) => b.blueprint_id));
+    document.getElementById("recoverView").hidden = true;
+    // every file is checked on its own -- a bad one never stops the rest
     for (const f of files.slice(0, 50)) {
       const label = f.name.length > 60 ? f.name.slice(0, 57) + "…" : f.name;
       if (f.size > 4000000) { lines.push(`✗ ${label}: too big to be a blueprint.`); bad++; continue; }
@@ -347,15 +351,20 @@
         lines.push(`✗ ${label}: no ownership key in this file (older capture, or a copy downloaded from the library).`); bad++; continue;
       }
       const r = await bpxClaim(own.blueprintId, own.ownerSecret);
-      if (r.ok) { lines.push(`✓ ${label}: ownership restored for "${r.name}".`); good++; }
+      if (r.ok && owned.has(own.blueprintId)) { lines.push(`✓ ${label}: already yours -- "${r.name}".`); already++; }
+      else if (r.ok) { lines.push(`✓ ${label}: ownership restored for "${r.name}".`); good++; owned.add(own.blueprintId); }
       else if (r.code === "rate_limited") { lines.push(`✗ ${label}: too many attempts -- please try again in a while.`); bad++; break; }
       else if (r.code === "unclaimed") { lines.push(`✗ ${label}: no ownership key on record for this blueprint (uploaded before keys existed).`); bad++; }
       else { lines.push(`✗ ${label}: doesn't match. Use the original file the mod saved on your PC.`); bad++; }
     }
     if (files.length > 50) lines.push("Only the first 50 files were checked.");
-    msg.className = "msg " + (good ? "ok" : "bad");
-    msg.textContent = lines.join("\n");
+    msg.className = "msg " + (good || already ? "ok" : "bad");
+    const summary = ["Recovery complete", `✓ ${good} blueprint${good === 1 ? "" : "s"} recovered`];
+    if (already) summary.push(`✓ ${already} already owned`);
+    if (bad) summary.push(`✗ ${bad} file${bad === 1 ? "" : "s"} did not match any blueprint of yours`);
+    msg.textContent = summary.join("\n") + "\n\n" + lines.join("\n");
     e.target.value = "";
+    if (good || already) document.getElementById("recoverView").hidden = false;
     if (good) refreshOwned();
   });
 
