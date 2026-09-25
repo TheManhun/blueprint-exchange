@@ -311,3 +311,12 @@ A blueprint can have several (a station on a bridge, a road-over-rail
 crossing). The SQL and JS rules were checked against each other on 16
 sample blueprints. Trains depots built from the modular station are
 currently "Rail station" -- the data has no separate marker for them.
+
+## Feature dots on the upload page
+
+Under the file chooser a grid of grey dots (Cargo train station, Passenger
+train station, Cargo truck station, Bus station, Depot, Signals, Road
+connections, Bridge, Tunnel) turns green for whatever `bpxFeatures()` in
+`site.js` finds in the chosen file. It reads the file's own data only (the
+constructions it places and the street/track/bridge/tunnel/model types it
+lists), runs entirely in the browser, and changes nothing that is uploaded.

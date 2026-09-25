@@ -74,6 +74,37 @@ function bpxCategories(text) {
   return cats.length ? cats : ["Other"];
 }
 
+// Features shown as grey/green dots on the upload page, read from the same
+// data as the types above. Order = display order.
+const BPX_FEATURES = [
+  ["cargoTrain", "Cargo train station"],
+  ["passengerTrain", "Passenger train station"],
+  ["cargoTruck", "Cargo truck station"],
+  ["bus", "Bus station"],
+  ["depot", "Depot"],
+  ["signals", "Signals"],
+  ["road", "Road connections"],
+  ["bridge", "Bridge"],
+  ["tunnel", "Tunnel"],
+];
+
+function bpxFeatures(text) {
+  const t = String(text || "");
+  const rail = /fileName = "station\/rail\//.test(t);
+  const street = /fileName = "station\/street\//.test(t);
+  return {
+    cargoTrain: rail && /platform_cargo_era_|(main|side)_building_\d_cargo|cargo_platform = true/.test(t),
+    passengerTrain: rail && /station\/rail\/modular_station\/platform_passenger/.test(t),
+    cargoTruck: street && /station\/street\/(cargo_platform|era_[a-z]_cargo_building)/.test(t),
+    bus: street && /station\/street\/(passenger_platform|era_[a-z]_passenger_building)/.test(t),
+    depot: /fileName = "depot\//.test(t),
+    signals: /models = \{[^}]*signal/.test(t),
+    road: /streets = \{"/.test(t),
+    bridge: /bridges = \{"/.test(t),
+    tunnel: /tunnels = \{"/.test(t),
+  };
+}
+
 // One blueprint card, used by the library and by the live preview on the
 // upload page, so what people see there is exactly what they will get.
 function blueprintCardHtml(b, opts) {

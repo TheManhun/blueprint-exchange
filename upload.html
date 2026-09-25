@@ -50,6 +50,8 @@
     <input type="file" id="file" accept=".lua,text/plain">
     <p class="hint" id="fileInfo"></p>
     <p class="hint" id="fileReq"></p>
+    <ul class="features" id="featureGrid" aria-label="Features BPX can detect in a blueprint"></ul>
+    <p class="hint" id="featureNote">Choose a blueprint file and BPX lights up what it finds in it.</p>
     <div class="callout" id="existingBox" hidden>
       <p id="existingText"></p>
       <div class="row">
@@ -189,6 +191,31 @@
     return { constructions: Number(constructions), edges, requires, name, blueprintId, ownerSecret, author, description };
   }
 
+  // The feature grid: every feature starts grey; the ones found in the chosen
+  // file turn green (read from the file's own data, nothing is guessed).
+  function showFeatures(text) {
+    const found = text ? bpxFeatures(text) : {};
+    const grid = document.getElementById("featureGrid");
+    if (!grid.children.length) {
+      grid.innerHTML = BPX_FEATURES.map(([key, label]) =>
+        `<li data-key="${key}"><span class="dot" aria-hidden="true"></span><span class="lbl">${esc(label)}</span><span class="visually-hidden state"> not detected</span></li>`).join("");
+    }
+    // one frame later, so grey -> green is a visible change
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      let n = 0;
+      grid.querySelectorAll("li").forEach((li) => {
+        const on = !!found[li.dataset.key];
+        li.classList.toggle("on", on);
+        li.querySelector(".state").textContent = on ? " detected" : " not detected";
+        if (on) n++;
+      });
+      document.getElementById("featureNote").textContent = text
+        ? (n ? "BPX detected these features automatically from your blueprint." : "No special features found -- that's fine, it can still be shared.")
+        : "Choose a blueprint file and BPX lights up what it finds in it.";
+    }));
+  }
+  showFeatures(null);
+
   document.getElementById("file").addEventListener("change", async (e) => {
     const f = e.target.files[0];
     const info = document.getElementById("fileInfo");
@@ -196,12 +223,14 @@
     document.getElementById("upload").disabled = true;
     document.getElementById("fileReq").textContent = "";
     document.getElementById("existingBox").hidden = true;
+    showFeatures(null);
     if (!f) return;
     if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; return; }
     const text = await f.text();
     const r = inspect(text);
     if (r.err) { info.textContent = r.err; return; }
     pending = { text, ...r, categories: bpxCategories(text) };
+    showFeatures(text);
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
     const needs = (r.requires && r.requires.constructions) || [];
     document.getElementById("fileReq").textContent = needs.length ? "Needs this content installed: " + needs.join(", ") : "";
