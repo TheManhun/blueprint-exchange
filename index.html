@@ -56,6 +56,7 @@
   figure img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
   figcaption { color: var(--ink-2); font-size: 14px; margin-top: 8px; }
   .hint { color: var(--ink-2); font-size: 14px; margin: 4px 0 0; }
+  a { color: var(--accent); }
   .msg { padding: 10px 14px; border-radius: 6px; margin: 12px 0 0; display: none; }
   .msg.ok { display: block; background: var(--accent-soft); }
   .msg.bad { display: block; background: var(--bad-soft); color: var(--bad); }
@@ -67,6 +68,9 @@
   dialog::backdrop { background: rgba(0,0,0,.5); }
   .empty { color: var(--ink-2); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
   .search { margin: 0 0 14px; }
+  #examplesNote { background: var(--accent-soft); border-radius: 8px; padding: 14px 18px; margin: 18px 0 0; }
+  #examplesNote p { margin: 0 0 .7em; max-width: 66ch; }
+  #examplesNote p:last-child { margin-bottom: 0; }
   #bmcRow { margin: 20px 0 0; text-align: center; }
   #bmcRow img { display: inline-block; border-radius: 6px; }
   #bmcNote { text-align: center; margin-top: 8px; }
@@ -133,6 +137,12 @@
     </div>
     <div class="grid" id="grid"></div>
     <div class="empty" id="empty" hidden>Nothing here yet &mdash; be the first to share one below.</div>
+    <div id="examplesNote" hidden>
+      <p>These aren&rsquo;t meant to be the best blueprints on the site.<br>
+      They&rsquo;re just examples of what BPX can capture and share.<br>
+      The really impressive stuff should come from you lot. &#x1F604;</p>
+      <p>If you build amazing stations, junctions, freight hubs or entire transport complexes, <a href="#share">upload them</a> and show the community what you can do.</p>
+    </div>
   </section>
 
   <section class="panel" id="use">
@@ -482,6 +492,7 @@
       </article>`;
     }).join("");
     document.getElementById("empty").hidden = rows.length > 0;
+    document.getElementById("examplesNote").hidden = all.length === 0;
     document.getElementById("statCount").textContent = fmt(all.length);
     document.getElementById("statDownloads").textContent = fmt(all.reduce((s, b) => s + (b.downloads || 0), 0));
     document.getElementById("statEdges").textContent = fmt(all.reduce((s, b) => s + (b.edges || 0), 0));
