@@ -75,19 +75,16 @@
     <h2>My blueprints</h2>
     <p class="hint">Blueprints this browser has proved it owns. Each one can be edited here; nobody else sees this list.</p>
     <div id="ownedList" class="ownedlist" aria-live="polite"></div>
-    <p class="hint" id="ownedEmpty">Nothing yet. Upload a blueprint, or recover one you uploaded before (below), and it will appear here.</p>
+    <p class="hint" id="ownedEmpty">Nothing yet. Upload a blueprint, or choose your original file(s) under &ldquo;I own this blueprint&rdquo; (below), and they will appear here.</p>
     <p class="hint" id="ownedRevokeNote" hidden>&ldquo;Remove this browser&rsquo;s access&rdquo; only forgets the edit permission on this browser. The blueprint stays in the library, and you can get access back with your original file.</p>
   </section>
 
   <section class="panel" id="recover">
     <h2>I own this blueprint</h2>
-    <p>New computer, new browser, or cleared your browser data? Pick the blueprint, then choose the <strong>original</strong> <code>.lua</code> file the mod saved on your PC. A copy downloaded from the library will not work &mdash; it does not carry the private key.</p>
-    <label for="recoverPick">Blueprint</label>
-    <select id="recoverPick"><option value="">Loading&hellip;</option></select>
-    <label for="recoverFile">Your original blueprint file (.lua)</label>
-    <input type="file" id="recoverFile" accept=".lua,text/plain">
-    <div class="row" style="margin-top:14px"><button type="button" class="primary" id="recoverBtn">Recover Blueprint Ownership</button></div>
-    <div class="msg" id="recoverMsg" role="status"></div>
+    <p>New computer, new browser, or cleared your browser data? Just choose your <strong>original</strong> <code>.lua</code> files &mdash; the ones the mod saved on your PC. The library checks each file&rsquo;s private key and, if it matches, this browser can edit that blueprint again. You can choose as many files as you like at once. Copies downloaded from the library won&rsquo;t work &mdash; they don&rsquo;t carry the key.</p>
+    <label for="recoverFile">Your original blueprint files (.lua)</label>
+    <input type="file" id="recoverFile" accept=".lua,text/plain" multiple>
+    <div class="msg" id="recoverMsg" role="status" style="white-space: pre-line"></div>
   </section>
 
   <section class="panel" id="update">
@@ -280,43 +277,36 @@
     refreshOwned();
   });
 
-  // ---- recover: pick the blueprint, then prove it with the original file ----
-  async function fillRecoverPick() {
-    const pick = document.getElementById("recoverPick");
-    let rows = [];
-    try { const { data } = await sb.rpc("bp_list"); rows = (data || []).filter((b) => b.blueprint_id); } catch (err) { /* leave empty */ }
-    rows.sort((a, b) => String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }));
-    pick.innerHTML = '<option value="">Choose a blueprint&hellip;</option>' +
-      rows.map((b) => `<option value="${esc(b.blueprint_id)}">${esc(b.name)} (v${b.version || 1}${b.author ? ", " + esc(b.author) : ""})</option>`).join("");
-    const want = new URLSearchParams(location.search).get("recover");
-    if (want && rows.some((b) => b.blueprint_id === want)) pick.value = want;
-  }
-  document.getElementById("recoverBtn").addEventListener("click", async () => {
+  // ---- recover: choose the original file(s); the server compares the key ----
+  // Nothing to pick: each file names its own blueprint, and the server
+  // decides whether its private key matches. A wrong or public file just
+  // gets a generic "doesn't match".
+  document.getElementById("recoverFile").addEventListener("change", async (e) => {
     const msg = document.getElementById("recoverMsg");
-    const say = (t, bad) => { msg.className = "msg " + (bad ? "bad" : "ok"); msg.textContent = t; };
-    const id = document.getElementById("recoverPick").value;
-    const f = document.getElementById("recoverFile").files[0];
-    if (!id) { say("Choose the blueprint you want to recover first.", true); return; }
-    if (!f) { say("Choose your original blueprint .lua file.", true); return; }
-    if (f.size > 4000000) { say("That file is too big to be a blueprint.", true); return; }
-    const own = bpxReadOwnership(await f.text());
-    const sorry = "That file doesn't match this blueprint. Use the original .lua the mod saved on your PC -- a copy downloaded from the library won't work.";
-    if (!own.ownerSecret) {
-      // Says something about the file the person chose, nothing about the stored key.
-      say("That file has no ownership key in it. Files captured before ownership keys existed (or copies downloaded from the library) can't prove ownership. Capture the design again with the current mod, or choose a different original file.", true);
-      return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    msg.className = "msg ok"; msg.textContent = "Checking…";
+    const lines = [];
+    let good = 0, bad = 0;
+    for (const f of files.slice(0, 50)) {
+      const label = f.name.length > 60 ? f.name.slice(0, 57) + "…" : f.name;
+      if (f.size > 4000000) { lines.push(`✗ ${label}: too big to be a blueprint.`); bad++; continue; }
+      const own = bpxReadOwnership(await f.text());
+      if (!own.ownerSecret || !own.blueprintId) {
+        // says something about the chosen file only, nothing about stored keys
+        lines.push(`✗ ${label}: no ownership key in this file (older capture, or a copy downloaded from the library).`); bad++; continue;
+      }
+      const r = await bpxClaim(own.blueprintId, own.ownerSecret);
+      if (r.ok) { lines.push(`✓ ${label}: ownership restored for "${r.name}".`); good++; }
+      else if (r.code === "rate_limited") { lines.push(`✗ ${label}: too many attempts -- please try again in a while.`); bad++; break; }
+      else if (r.code === "unclaimed") { lines.push(`✗ ${label}: no ownership key on record for this blueprint (uploaded before keys existed).`); bad++; }
+      else { lines.push(`✗ ${label}: doesn't match. Use the original file the mod saved on your PC.`); bad++; }
     }
-    if (own.blueprintId !== id) { say(sorry, true); return; }
-    document.getElementById("recoverBtn").disabled = true;
-    const r = await bpxClaim(id, own.ownerSecret);
-    document.getElementById("recoverBtn").disabled = false;
-    if (r.ok) {
-      say(`Ownership restored for "${r.name}". This browser can edit it now.`, false);
-      document.getElementById("recoverFile").value = "";
-      refreshOwned();
-    } else if (r.code === "rate_limited") say("Too many attempts. Please try again in a while.", true);
-    else if (r.code === "unclaimed") say("That blueprint has no ownership key on record (it was uploaded before keys existed), so it can't be recovered here.", true);
-    else say(sorry, true);
+    if (files.length > 50) lines.push("Only the first 50 files were checked.");
+    msg.className = "msg " + (good ? "ok" : "bad");
+    msg.textContent = lines.join("\n");
+    e.target.value = "";
+    if (good) refreshOwned();
   });
 
   // ---- live preview of the card, so people see what they will publish ----
@@ -353,7 +343,6 @@
   updatePreviewCard();
 
   refreshOwned();
-  fillRecoverPick();
   trackVisit();
 </script>
 

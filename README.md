@@ -271,7 +271,7 @@ see Decision 36 in the mod repo).
   Official pass-phrase is typed there), the file. New versions go through
   the normal upload (`Upload New Version`).
 - **New computer / cleared browser:** "I own this blueprint" on the Upload
-  page: pick the blueprint, choose the original file. A wrong or public
+  page: choose the original file(s) -- no list to pick from; each file names its own blueprint and the server compares its key. A wrong or public
   file gets one generic message; wrong attempts are rate-limited (20/hour
   per salted address hash, `bp_recovery_attempts`).
 - **Uploading a file whose blueprint already exists:** if the key matches,

@@ -23,8 +23,8 @@
 
   <section class="panel editpanel" id="denied" hidden>
     <h2>This browser can&rsquo;t edit that blueprint</h2>
-    <p>Only the person who uploaded a blueprint can edit it. If that&rsquo;s you, prove it with the original <code>.lua</code> file the mod saved on your PC &mdash; no account or password needed.</p>
-    <p><a class="btn primary" id="recoverLink" href="upload.html#recover">I own this blueprint</a></p>
+    <p>Only the person who uploaded a blueprint can edit it. If that&rsquo;s you, prove it by choosing the original <code>.lua</code> file the mod saved on your PC &mdash; no account or password needed.</p>
+    <p><a class="btn primary" href="upload.html#recover">I own this blueprint</a></p>
   </section>
 
   <section class="panel editpanel" id="editor" hidden>
@@ -68,7 +68,6 @@
 <script>
   const $ = (id) => document.getElementById(id);
   const blueprintId = new URLSearchParams(location.search).get("b") || "";
-  if (/^[0-9a-f]+$/.test(blueprintId)) $("recoverLink").href = "upload.html?recover=" + blueprintId + "#recover";
   let current = null;
 
   function say(text, bad) {
