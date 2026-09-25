@@ -86,6 +86,13 @@
 
     <label>Screenshot (optional)</label>
 <!--INCLUDE:thumbfield-->
+    <div class="keepthumb" id="keepThumbRow" hidden>
+      <img id="keepThumbImg" src="card-noimage.webp" alt="Your current screenshot" width="160" height="90">
+      <div>
+        <label class="keeplabel"><input type="checkbox" id="keepThumb" checked> Keep my current screenshot</label>
+        <p class="hint" id="keepThumbNote">This blueprint already has a screenshot. It stays on the new version unless you add a different one above.</p>
+      </div>
+    </div>
 
     <h3 class="section-title">How your card will look</h3>
     <div class="previewcard" id="previewCard" aria-live="polite"></div>
@@ -230,6 +237,7 @@
     refreshUpload();
     document.getElementById("fileReq").textContent = "";
     document.getElementById("existingBox").hidden = true;
+    document.getElementById("keepThumbRow").hidden = true;
     showFeatures(null);
     setInspect("idle", "Waiting for blueprint inspection");
     if (!f) return;
@@ -259,6 +267,7 @@
       if (claim.ok) {
         mine.existing = claim;
         gate.existingHold = true; refreshUpload();
+        showKeepThumb(mine, r.blueprintId);
         showExisting(claim, r.blueprintId);
         refreshOwned();
       } else if (claim.code === "rate_limited") {
@@ -267,6 +276,42 @@
         info.textContent = "This blueprint is already in the library and this file is not its original, so it can't be used to update it.";
         gate.notOriginal = true; refreshUpload();
       }
+    }
+  });
+
+  // A new version is a new library row, so without this it would lose the
+  // screenshot the uploader already has. Kept by default; a newly added
+  // screenshot replaces it; unticking it publishes the version without one.
+  async function showKeepThumb(forPending, blueprintId) {
+    const owned = await bpxOwned();
+    const cur = owned.find((b) => b.blueprint_id === blueprintId);
+    if (pending !== forPending) return;
+    forPending.currentThumb = cur && /^https:\/\//.test(cur.thumbnail_url || "") ? cur.thumbnail_url : null;
+    const row = document.getElementById("keepThumbRow");
+    row.hidden = !forPending.currentThumb;
+    if (forPending.currentThumb) {
+      document.getElementById("keepThumbImg").src = forPending.currentThumb;
+      document.getElementById("keepThumb").checked = true;
+      syncKeepThumb();
+    }
+    updatePreviewCard();
+  }
+
+  // a newly added screenshot takes over from the current one
+  function syncKeepThumb() {
+    const box = document.getElementById("keepThumb");
+    const replacing = !!window.bpThumbnail;
+    if (replacing) box.checked = false;
+    box.disabled = replacing;
+    document.getElementById("keepThumbNote").textContent = replacing
+      ? "The screenshot you just added will replace your current one on the new version."
+      : "This blueprint already has a screenshot. It stays on the new version unless you add a different one above.";
+  }
+  document.getElementById("keepThumb").addEventListener("change", () => updatePreviewCard());
+  window.addEventListener("bpx:thumbchange", () => {
+    if (pending && pending.currentThumb) {
+      syncKeepThumb();
+      if (!window.bpThumbnail) document.getElementById("keepThumb").checked = true; // removed the new one: back to keeping the old
     }
   });
 
@@ -303,6 +348,10 @@
     } catch (thumbErr) {
       thumbWarning = " (preview image failed to upload: " + thumbErr.message + ")";
     }
+    // no new screenshot: carry the current one over if the uploader is keeping it
+    if (!thumbnailUrl && !window.bpThumbnail && pending.currentThumb && document.getElementById("keepThumb").checked) {
+      thumbnailUrl = pending.currentThumb;
+    }
 
     // Server-side upload: versioning by blueprintId and the "official"
     // check (a pass-phrase typed as the author name, compared inside the
@@ -325,6 +374,7 @@
     contributeAfter = false;
     pending = null; document.getElementById("file").value = "";
     document.getElementById("existingBox").hidden = true;
+    document.getElementById("keepThumbRow").hidden = true;
     bpxDeps.reset();
     showAfterUpload(uploaded);
     if (contributing) contributing.then((r) => {
@@ -433,7 +483,8 @@
       categories: pending.categories,
       mods: bpxDeps.mods(), unresolved: bpxDeps.unresolvedPaths(),
       official: false,
-      thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src : null,
+      thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src
+        : (pending.currentThumb && document.getElementById("keepThumb").checked ? pending.currentThumb : null),
     };
   }
 

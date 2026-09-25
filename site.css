@@ -237,3 +237,9 @@ a.btn.small { font-size: 13px; padding: 3px 9px; }
 .depreview { margin: 4px 0; }
 .depreview summary { cursor: pointer; font-weight: 600; }
 .depreview ul { margin: 4px 0 6px; padding-left: 1.2em; max-height: 220px; overflow: auto; }
+
+.keepthumb { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); max-width: 720px; }
+.keepthumb[hidden] { display: none; }
+.keepthumb img { width: 160px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
+.keepthumb .keeplabel { display: flex; gap: 8px; align-items: center; margin: 0; font-weight: 600; }
+.keepthumb .hint { margin: 4px 0 0; max-width: 46ch; }

@@ -384,3 +384,12 @@ dropped, 3 shares per caller per day, at most 60 mods / 3000 resources per
 request. Only Workshop ids, resource types and resource paths are sent; the
 mod name comes from Steam. Station/platform *modules* are not indexed: a
 blueprint's `requires` block does not list them, so nothing could use them.
+
+## New versions keep the screenshot
+
+A new version is a new library row, so publishing one used to drop the
+blueprint's screenshot. When the file's key proves the visitor owns an existing
+blueprint that already has a screenshot, the upload page shows it with
+"Keep my current screenshot" (ticked). A screenshot added on the page replaces
+it; unticking publishes the version without one. Editing an existing blueprint
+on `edit.html` already kept the screenshot unless a new one is chosen.
