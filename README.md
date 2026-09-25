@@ -161,7 +161,20 @@ is real text near the bottom of the library page.
 ## Visitor counting only counts real visits
 
 `bp_track_visit` is skipped when the page is opened from disk or from a
-local test server (localhost / 127.0.0.1). Automated test browsers had
-been counted as new visitors -- 32 "unique visitors" before anyone had
-been sent the link -- so the visitor tables were reset once and local
-views no longer count. The stat itself is still read and shown.
+local test server (localhost / 127.0.0.1), so an author's own local
+testing never counts as a visitor. The stat itself is still read and
+shown.
+
+Incident, 25 Sep 2026: the visitor tables were wiped on the assumption
+that the ~32 rows were automated-test noise. That was wrong -- the
+Supabase edge request logs showed 24 genuine browsers from around the
+world (Edge, Opera, Firefox, an Android phone) arriving from the live
+site, with only about 8 rows being test browsers. The rows were rebuilt
+from those logs: one row per distinct browser (grouped by network and
+browser, then the network address was discarded -- only random
+`restored-...` ids were stored, never an IP or anything derived from
+one), with first/last seen, page-load counts and visit-days from the
+POST requests. It is an approximation: the logs do not hold the
+anonymous id, so a returning visitor is counted once more under their
+real id. Lesson: check the request logs before deleting anything
+assumed to be test data."

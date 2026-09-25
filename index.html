@@ -442,8 +442,7 @@
     const visitorId = getOrMakeVisitorId();
     // Pages opened from disk or from a local test server are the
     // author (or a test browser) looking at work in progress, not a
-    // visitor -- they were inflating the count (32 "visitors" before
-    // anyone had been sent the link). The stat is still read below.
+    // visitor, so they are not recorded. The stat is still read below.
     const isLocalView = location.protocol === "file:" || ["localhost", "127.0.0.1", "[::1]", ""].indexOf(location.hostname) !== -1;
     if (visitorId && !isLocalView) {
       try { await sb.rpc("bp_track_visit", { p_visitor_id: visitorId }); } catch (err) { /* never break the page over this */ }
