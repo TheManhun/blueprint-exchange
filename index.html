@@ -176,6 +176,7 @@
   // ---- the library ----
   let all = [];
   let filterMode = "all";
+  let ownedIds = new Set(); // blueprints this browser has proved it owns (Edit button)
 
   const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
   const sorters = {
@@ -199,7 +200,7 @@
       .filter((b) => filterMode === "all" || (filterMode === "official" ? b.official : !b.official))
       .filter((b) => !q || [b.name, b.author, b.description, JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
       .sort(sorters[sortKey] || byNewest);
-    document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b)).join("");
+    document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
     document.getElementById("empty").hidden = rows.length > 0;
     document.getElementById("examplesNote").hidden = all.length === 0;
     document.getElementById("statCount").textContent = fmt(all.length);
@@ -283,7 +284,16 @@
     document.getElementById("statVisitors").textContent = fmt(data && data.total_unique);
   }
 
-  load();
+  // Owned blueprints: ask the server which ones this browser may edit and
+  // re-draw with an Edit button on those cards. Nothing about other people's
+  // blueprints is ever returned.
+  async function markOwned() {
+    const mine = await bpxOwned();
+    ownedIds = new Set(mine.map((m) => m.blueprint_id));
+    if (ownedIds.size && all.length) render();
+  }
+
+  load().then(markOwned);
   updateInboxIndicator();
   trackVisit().then(loadVisitorStat);
 </script>

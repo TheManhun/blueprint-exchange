@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Edit My Blueprint</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Edit a blueprint you uploaded to Blueprint Exchange.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .editpanel { max-width: 720px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:upload-->
+
+  <div class="page-head">
+    <h1>Edit My Blueprint</h1>
+    <p class="sub" id="editSub">Checking that this browser owns it&hellip;</p>
+  </div>
+
+  <section class="panel editpanel" id="denied" hidden>
+    <h2>This browser can&rsquo;t edit that blueprint</h2>
+    <p>Only the person who uploaded a blueprint can edit it. If that&rsquo;s you, prove it with the original <code>.lua</code> file the mod saved on your PC &mdash; no account or password needed.</p>
+    <p><a class="btn primary" id="recoverLink" href="upload.html#recover">I own this blueprint</a></p>
+  </section>
+
+  <section class="panel editpanel" id="editor" hidden>
+    <p class="verified">Ownership verified &#10003;</p>
+    <h2>Editing: <span id="editTitle"></span></h2>
+    <p class="hint" id="editMeta"></p>
+
+    <label for="name">Title</label>
+    <input type="text" id="name" maxlength="60">
+
+    <label for="desc">Description</label>
+    <textarea id="desc" maxlength="600"></textarea>
+
+    <label>Screenshot</label>
+<!--INCLUDE:thumbfield-->
+
+    <div class="row" style="margin-top:18px">
+      <button class="primary big" id="save">Save Changes</button>
+      <a class="btn" href="./" id="viewLib">Back to the library</a>
+    </div>
+    <div class="msg" id="saveMsg" role="status"></div>
+
+    <h3 class="section-title">Publish a new version</h3>
+    <p>To publish a new version of this blueprint, upload the file from your new capture on the <a href="upload.html#share">Upload page</a>. It is recognised by its hidden identity and published as the next version; the old version&rsquo;s downloads and history stay as they are.</p>
+
+    <div class="keepsafe">
+      <strong>Keep your original blueprint .lua file safe.</strong>
+      <p>It is your ownership/recovery key for editing this upload later.</p>
+      <p>Your public downloadable blueprint does not contain the private edit key.</p>
+    </div>
+  </section>
+
+<!--FOOTER-->
+</div>
+
+<!--INCLUDE:thumbdlg-->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script src="thumb.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const blueprintId = new URLSearchParams(location.search).get("b") || "";
+  if (/^[0-9a-f]+$/.test(blueprintId)) $("recoverLink").href = "upload.html?recover=" + blueprintId + "#recover";
+  let current = null;
+
+  function say(text, bad) {
+    const el = $("saveMsg");
+    el.className = "msg " + (bad ? "bad" : "ok");
+    el.textContent = text;
+  }
+
+  async function start() {
+    const mine = blueprintId ? await bpxOwned() : [];
+    current = mine.find((b) => b.blueprint_id === blueprintId) || null;
+    if (!current) {
+      $("editSub").textContent = "Edit access is needed for this blueprint.";
+      $("denied").hidden = false;
+      return;
+    }
+    $("editSub").textContent = "Change how your blueprint appears in the library.";
+    $("editTitle").textContent = current.name;
+    $("editMeta").textContent = `Version ${current.version || 1} · ${fmt(current.downloads)} download${current.downloads === 1 ? "" : "s"}. Downloads and version history can't be edited.`;
+    $("name").value = current.name || "";
+    $("desc").value = current.description || "";
+    window.bpxThumbDefault = current.thumbnail_url || null;
+    resetThumbSlot();
+    $("addThumbBtn").textContent = "Replace screenshot";
+    $("editor").hidden = false;
+  }
+
+  $("save").addEventListener("click", async () => {
+    if (!current) return;
+    const name = $("name").value.trim();
+    if (!name) { say("Give it a title.", true); return; }
+    $("save").disabled = true;
+
+    // New screenshot (if any) goes to R2 through the Worker first; the
+    // database only ever receives its URL.
+    let newThumb = null, thumbWarning = "";
+    if (window.bpThumbnail && window.bpThumbnail.blob) {
+      try { newThumb = await uploadThumbnailIfAny(); }
+      catch (err) { thumbWarning = " The new screenshot couldn't be uploaded (" + err.message + "), so the old one was kept."; }
+    }
+
+    let res = null;
+    try {
+      const { data, error } = await sb.rpc("bp_edit", {
+        p_token: bpxGetToken(false), p_blueprint_id: blueprintId,
+        p_name: name, p_description: $("desc").value.trim() || null,
+        p_thumbnail_url: newThumb, p_set_thumbnail: !!newThumb,
+      });
+      res = error ? null : data;
+    } catch (err) { res = null; }
+    $("save").disabled = false;
+
+    if (res && res.ok) {
+      current.name = name;
+      current.description = $("desc").value.trim();
+      if (newThumb) { current.thumbnail_url = newThumb; window.bpxThumbDefault = newThumb; clearThumbnail(); }
+      $("editTitle").textContent = name;
+      say("Saved." + thumbWarning, false);
+    } else if (res && res.code === "not_authorised") {
+      say("This browser no longer has edit access to this blueprint. Use \"I own this blueprint\" on the Upload page to get it back.", true);
+    } else if (res && res.code === "bad_name") {
+      say("The title must be 1 to 60 characters.", true);
+    } else if (res && res.code === "bad_description") {
+      say("The description must be 600 characters or fewer.", true);
+    } else {
+      say("Couldn't save just now. Please try again.", true);
+    }
+  });
+
+  start();
+  trackVisit();
+</script>
+</body>
+</html>

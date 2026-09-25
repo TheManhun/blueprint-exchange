@@ -1,0 +1,21 @@
+<dialog id="thumbDlg">
+  <h2>Add a preview image</h2>
+  <p class="hint">Paste a screenshot (Ctrl+V) or choose an image file. Drag to position it, use the slider to zoom, then press Use image.</p>
+  <div id="thumbDropZone" tabindex="0">
+    <img id="thumbDropArt" src="drop-placeholder.webp" alt="" aria-hidden="true">
+    <p id="thumbDropHint">Click here, then paste a screenshot &mdash; or choose a file below.</p>
+    <input type="file" id="thumbFileInput" accept="image/png,image/jpeg,image/webp">
+  </div>
+  <div id="thumbCropStage" hidden>
+    <div id="thumbCropWindow">
+      <canvas id="thumbCanvas" width="480" height="270"></canvas>
+    </div>
+    <label for="thumbZoom">Zoom</label>
+    <input type="range" id="thumbZoom" min="100" max="400" value="100" step="1">
+  </div>
+  <p class="hint" id="thumbMsg" style="min-height:1.4em"></p>
+  <div class="row" style="margin-top:14px">
+    <button type="button" id="thumbUseBtn" class="primary" disabled>Use image</button>
+    <button type="button" id="thumbCancelBtn">Cancel</button>
+  </div>
+</dialog>

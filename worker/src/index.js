@@ -7,7 +7,11 @@
 // it; the R2 bucket is reached only through the binding Wrangler sets
 // up, never through an API token the browser could see.
 
-const ALLOWED_ORIGIN = "https://themanhun.github.io";
+const ALLOWED_ORIGINS = new Set([
+  "https://tfbpx.com",
+  "https://www.tfbpx.com",
+  "https://themanhun.github.io",
+]);
 const ALLOWED_TYPES = new Set(["image/webp"]);
 const MAX_BYTES = 200 * 1024; // 200 KB -- the frontend targets ~100 KB; this is headroom, not the target
 const PUBLIC_BASE = "https://pub-ea55f87d66c04139a2a7ac3704e9c05e.r2.dev";
@@ -19,8 +23,8 @@ function corsHeaders(origin) {
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
-  if (origin === ALLOWED_ORIGIN) {
-    headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGIN;
+  if (ALLOWED_ORIGINS.has(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
   }
   return headers;
 }
@@ -52,7 +56,7 @@ export default {
       return json(405, { ok: false, error: "POST only" }, origin);
     }
 
-    if (origin !== ALLOWED_ORIGIN) {
+    if (!ALLOWED_ORIGINS.has(origin)) {
       return json(403, { ok: false, error: "origin not allowed" }, origin);
     }
 

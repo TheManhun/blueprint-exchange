@@ -9,6 +9,8 @@ markers and this script swaps in the shared pieces:
                           highlighted (index, upload, guides, tools,
                           plug, about)
     <!--FOOTER-->         the shared footer
+    <!--INCLUDE:name-->   the contents of src/_name.html (shared markup such
+                          as the preview-image field and its dialog)
 
 Edit src/*.html and src/_header.html / src/_footer.html, then run
 
@@ -44,6 +46,8 @@ def render(name, header, footer):
         text = text.replace(marker.group(0), marked.rstrip("\n"))
     if "<!--FOOTER-->" in text:
         text = text.replace("<!--FOOTER-->", footer.rstrip("\n"))
+    text = re.sub(r"<!--INCLUDE:(\w+)-->",
+                  lambda m: read(os.path.join(SRC, "_%s.html" % m.group(1))).rstrip("\n"), text)
     return text
 
 

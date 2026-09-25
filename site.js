@@ -53,6 +53,7 @@ async function trackVisit() {
 // upload page, so what people see there is exactly what they will get.
 function blueprintCardHtml(b, opts) {
   const preview = !!(opts && opts.preview);
+  const owned = !!(opts && opts.owned);
   const req = (b.requires && b.requires.constructions) || [];
   const thumb = b.thumbnail_url
     ? `<img class="thumb" src="${esc(b.thumbnail_url)}" alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">`
@@ -67,6 +68,74 @@ function blueprintCardHtml(b, opts) {
     <p class="desc">${esc(b.description || "")}</p>
     <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>
     ${req.length ? `<div class="req">needs: ${esc(req.join(", "))}</div>` : ""}
-    <div class="row">${button}</div>
+    <div class="row">${button}${owned && b.blueprint_id ? `<a class="btn" href="edit.html?b=${encodeURIComponent(b.blueprint_id)}">Edit</a>` : ""}</div>
   </article>`;
 }
+
+// ---------------------------------------------------------------------------
+// Ownership (no accounts). The original blueprint file carries a private key
+// that never leaves the uploader's PC except inside the upload itself; the
+// server keeps only its hash. A browser that has proved it holds the file is
+// given a random token. The token lives in localStorage (a cookie can't be
+// shared with the Supabase domain), the server keeps only the token's HASH,
+// and it can only ever do what it was authorised for. The private key itself
+// is never stored in the browser.
+// ---------------------------------------------------------------------------
+const BPX_TOKEN_KEY = "bpxBrowserToken";
+let bpxMemoryToken = null; // used if localStorage is unavailable (this page load only)
+
+function bpxGetToken(create) {
+  try {
+    let t = localStorage.getItem(BPX_TOKEN_KEY);
+    if (/^[0-9a-f]{64}$/.test(t || "")) return t;
+    if (!create) return bpxMemoryToken;
+    t = bpxRandomToken();
+    localStorage.setItem(BPX_TOKEN_KEY, t);
+    return t;
+  } catch (err) {
+    if (!bpxMemoryToken && create) bpxMemoryToken = bpxRandomToken();
+    return bpxMemoryToken;
+  }
+}
+
+function bpxRandomToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Blueprints this browser may manage, newest first. [] if none / no token.
+async function bpxOwned() {
+  const token = bpxGetToken(false);
+  if (!token) return [];
+  try {
+    const { data, error } = await sb.rpc("bp_my_blueprints", { p_token: token });
+    if (error || !Array.isArray(data)) return [];
+    return data;
+  } catch (err) { return []; }
+}
+
+// Prove ownership with the original file's key and authorise this browser.
+// Resolves to { ok, name, version } or { ok:false, code }.
+async function bpxClaim(blueprintId, ownerSecret) {
+  try {
+    const { data, error } = await sb.rpc("bp_claim_browser", {
+      p_token: bpxGetToken(true), p_blueprint_id: blueprintId, p_owner_secret: ownerSecret,
+    });
+    if (error || !data) return { ok: false };
+    return data;
+  } catch (err) { return { ok: false }; }
+}
+
+// The original .lua's ownership fields, read as plain text -- the file is
+// never run. Returns { blueprintId, ownerSecret } (either may be null).
+function bpxReadOwnership(text) {
+  return {
+    blueprintId: (text.match(/\bblueprintId = "([0-9a-f]+)"/) || [, null])[1],
+    ownerSecret: (text.match(/\bownerSecret = "([0-9a-f]+)"/) || [, null])[1],
+  };
+}
+
+const BPX_KEEP_SAFE_HTML = `<strong>Keep your original blueprint .lua file safe.</strong>
+  <p>It is your ownership/recovery key for editing this upload later.</p>
+  <p>Your public downloadable blueprint does not contain the private edit key.</p>`;

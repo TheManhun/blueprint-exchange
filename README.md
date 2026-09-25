@@ -237,3 +237,50 @@ Listings are approved automatically. To take one down:
 `pm_list()` (security definer, granted to anon) is the only way the
 page reads the table. The tables have row-level security on with no
 policies, so nothing is reachable directly.
+
+## Ownership and editing (no accounts)
+
+The original captured `blueprint_<name>.lua` is the recovery key. It
+carries a private `ownerSecret` (40 hex characters, made by the mod --
+see Decision 36 in the mod repo).
+
+- **Upload:** `bp_upload` hashes the key (SHA-256) into
+  `bp_blueprint_owners`, strips every ownership field from the public
+  copy by name (`ownerSecret`, `ownerKey`, `owner_key`, `editKey`,
+  `recoveryToken`, `browserToken`) and then *checks* the result: if any of
+  those names, or the key's own value, is still in the text the upload is
+  refused rather than published. Only the original uploader's file can
+  publish a new version of the same blueprint.
+- **Remembering a browser:** after the file proves ownership
+  (`bp_claim_browser`), this browser creates a random 256-bit token in
+  localStorage (`bpxBrowserToken`; a cookie can't be shared with the
+  Supabase domain). The server keeps only the token's hash, per
+  blueprint, in `bp_browser_access` (revocable via `revoked_at`). The
+  private key itself is never stored in the browser.
+- **Library page:** asks `bp_my_blueprints(token)` which blueprints this
+  browser may edit and adds an Edit button to just those cards.
+- **My blueprints** (Upload page): list with Edit and "Remove this
+  browser's access" (`bp_revoke_browser`: forgets the permission only;
+  never touches the blueprint or the ownership hash).
+- **Edit page** (`edit.html?b=<blueprint id>`): title, description and
+  screenshot only, via `bp_edit`, which re-checks the token server-side.
+  Not editable: id, owner hash, downloads, version history, author (the
+  Official pass-phrase is typed there), the file. New versions go through
+  the normal upload (`Upload New Version`).
+- **New computer / cleared browser:** "I own this blueprint" on the Upload
+  page: pick the blueprint, choose the original file. A wrong or public
+  file gets one generic message; wrong attempts are rate-limited (20/hour
+  per salted address hash, `bp_recovery_attempts`).
+- **Uploading a file whose blueprint already exists:** if the key matches,
+  the page offers Edit Existing Blueprint / Upload New Version instead of
+  silently adding a version; if the id is taken by someone else the upload
+  is refused up front.
+
+Not built (would need schema work): categories and tags. Blueprints
+uploaded before ownership keys existed have no key on record and can't be
+recovered; the one such row in the library is unaffected.
+
+`supabase/migrations/bp_ownership.sql` is the migration that was applied.
+The functions were exercised inside a transaction that was rolled back
+(wrong/missing/other-blueprint keys, stranger uploads, revocation, rate
+limiting), so no test data was left in production.

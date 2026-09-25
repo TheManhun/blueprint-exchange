@@ -355,3 +355,8 @@ grant execute on function public.bp_visit_stats() to anon;
 --                    (supabase/functions/plug-my-mod/index.ts).
 -- Moderation for Plug My Mod:
 --   update public.pm_mods set status = 'hidden' where workshop_id = <id>;
+
+--   bp_ownership  -- see supabase/migrations/bp_ownership.sql: bp_browser_access (hashed
+--                    browser tokens), bp_recovery_attempts, bp_claim_browser(),
+--                    bp_my_blueprints(), bp_edit(), bp_revoke_browser(), and bp_upload()
+--                    now verifies the public copy carries no ownership data.

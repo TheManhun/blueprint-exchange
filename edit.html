@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Edit My Blueprint</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Edit a blueprint you uploaded to Blueprint Exchange.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .editpanel { max-width: 720px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="125" height="52" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="125" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload" aria-current="page"><img src="nav-upload.png" width="119" height="52" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="119" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="101" height="52" alt="Guides"><img class="on" src="nav-guides-on.png" width="101" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="98" height="52" alt="Tools"><img class="on" src="nav-tools-on.png" width="98" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="123" height="52" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="123" height="52" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="101" height="52" alt="About"><img class="on" src="nav-about-on.png" width="101" height="52" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <h1>Edit My Blueprint</h1>
+    <p class="sub" id="editSub">Checking that this browser owns it&hellip;</p>
+  </div>
+
+  <section class="panel editpanel" id="denied" hidden>
+    <h2>This browser can&rsquo;t edit that blueprint</h2>
+    <p>Only the person who uploaded a blueprint can edit it. If that&rsquo;s you, prove it with the original <code>.lua</code> file the mod saved on your PC &mdash; no account or password needed.</p>
+    <p><a class="btn primary" id="recoverLink" href="upload.html#recover">I own this blueprint</a></p>
+  </section>
+
+  <section class="panel editpanel" id="editor" hidden>
+    <p class="verified">Ownership verified &#10003;</p>
+    <h2>Editing: <span id="editTitle"></span></h2>
+    <p class="hint" id="editMeta"></p>
+
+    <label for="name">Title</label>
+    <input type="text" id="name" maxlength="60">
+
+    <label for="desc">Description</label>
+    <textarea id="desc" maxlength="600"></textarea>
+
+    <label>Screenshot</label>
+    <div id="thumbField">
+      <div id="thumbSlotWrap">
+        <button type="button" id="addThumbBtn">Add a preview image</button>
+        <img id="thumbSlotImg" src="drop-placeholder.webp" alt="" width="240" height="135">
+      </div>
+      <div id="thumbSlotSide">
+        <p class="hint" id="thumbEmptyHint">Paste a screenshot or choose an image. Drag and zoom to frame your blueprint.</p>
+        <p class="hint" id="thumbReadyMsg" hidden>Preview ready &mdash; this is what other players will see. <a href="#" id="thumbDownloadLink" download="preview.webp">Download this WebP</a></p>
+        <p class="hint" id="thumbReadyError" hidden></p>
+        <div id="thumbReadyActions" hidden>
+          <button type="button" id="changeThumbBtn">Change image</button>
+          <button type="button" id="removeThumbBtn">Remove image</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:18px">
+      <button class="primary big" id="save">Save Changes</button>
+      <a class="btn" href="./" id="viewLib">Back to the library</a>
+    </div>
+    <div class="msg" id="saveMsg" role="status"></div>
+
+    <h3 class="section-title">Publish a new version</h3>
+    <p>To publish a new version of this blueprint, upload the file from your new capture on the <a href="upload.html#share">Upload page</a>. It is recognised by its hidden identity and published as the next version; the old version&rsquo;s downloads and history stay as they are.</p>
+
+    <div class="keepsafe">
+      <strong>Keep your original blueprint .lua file safe.</strong>
+      <p>It is your ownership/recovery key for editing this upload later.</p>
+      <p>Your public downloadable blueprint does not contain the private edit key.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange is a fan-made community project for Transport Fever 2 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange is free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+
+<dialog id="thumbDlg">
+  <h2>Add a preview image</h2>
+  <p class="hint">Paste a screenshot (Ctrl+V) or choose an image file. Drag to position it, use the slider to zoom, then press Use image.</p>
+  <div id="thumbDropZone" tabindex="0">
+    <img id="thumbDropArt" src="drop-placeholder.webp" alt="" aria-hidden="true">
+    <p id="thumbDropHint">Click here, then paste a screenshot &mdash; or choose a file below.</p>
+    <input type="file" id="thumbFileInput" accept="image/png,image/jpeg,image/webp">
+  </div>
+  <div id="thumbCropStage" hidden>
+    <div id="thumbCropWindow">
+      <canvas id="thumbCanvas" width="480" height="270"></canvas>
+    </div>
+    <label for="thumbZoom">Zoom</label>
+    <input type="range" id="thumbZoom" min="100" max="400" value="100" step="1">
+  </div>
+  <p class="hint" id="thumbMsg" style="min-height:1.4em"></p>
+  <div class="row" style="margin-top:14px">
+    <button type="button" id="thumbUseBtn" class="primary" disabled>Use image</button>
+    <button type="button" id="thumbCancelBtn">Cancel</button>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script src="thumb.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const blueprintId = new URLSearchParams(location.search).get("b") || "";
+  if (/^[0-9a-f]+$/.test(blueprintId)) $("recoverLink").href = "upload.html?recover=" + blueprintId + "#recover";
+  let current = null;
+
+  function say(text, bad) {
+    const el = $("saveMsg");
+    el.className = "msg " + (bad ? "bad" : "ok");
+    el.textContent = text;
+  }
+
+  async function start() {
+    const mine = blueprintId ? await bpxOwned() : [];
+    current = mine.find((b) => b.blueprint_id === blueprintId) || null;
+    if (!current) {
+      $("editSub").textContent = "Edit access is needed for this blueprint.";
+      $("denied").hidden = false;
+      return;
+    }
+    $("editSub").textContent = "Change how your blueprint appears in the library.";
+    $("editTitle").textContent = current.name;
+    $("editMeta").textContent = `Version ${current.version || 1} · ${fmt(current.downloads)} download${current.downloads === 1 ? "" : "s"}. Downloads and version history can't be edited.`;
+    $("name").value = current.name || "";
+    $("desc").value = current.description || "";
+    window.bpxThumbDefault = current.thumbnail_url || null;
+    resetThumbSlot();
+    $("addThumbBtn").textContent = "Replace screenshot";
+    $("editor").hidden = false;
+  }
+
+  $("save").addEventListener("click", async () => {
+    if (!current) return;
+    const name = $("name").value.trim();
+    if (!name) { say("Give it a title.", true); return; }
+    $("save").disabled = true;
+
+    // New screenshot (if any) goes to R2 through the Worker first; the
+    // database only ever receives its URL.
+    let newThumb = null, thumbWarning = "";
+    if (window.bpThumbnail && window.bpThumbnail.blob) {
+      try { newThumb = await uploadThumbnailIfAny(); }
+      catch (err) { thumbWarning = " The new screenshot couldn't be uploaded (" + err.message + "), so the old one was kept."; }
+    }
+
+    let res = null;
+    try {
+      const { data, error } = await sb.rpc("bp_edit", {
+        p_token: bpxGetToken(false), p_blueprint_id: blueprintId,
+        p_name: name, p_description: $("desc").value.trim() || null,
+        p_thumbnail_url: newThumb, p_set_thumbnail: !!newThumb,
+      });
+      res = error ? null : data;
+    } catch (err) { res = null; }
+    $("save").disabled = false;
+
+    if (res && res.ok) {
+      current.name = name;
+      current.description = $("desc").value.trim();
+      if (newThumb) { current.thumbnail_url = newThumb; window.bpxThumbDefault = newThumb; clearThumbnail(); }
+      $("editTitle").textContent = name;
+      say("Saved." + thumbWarning, false);
+    } else if (res && res.code === "not_authorised") {
+      say("This browser no longer has edit access to this blueprint. Use \"I own this blueprint\" on the Upload page to get it back.", true);
+    } else if (res && res.code === "bad_name") {
+      say("The title must be 1 to 60 characters.", true);
+    } else if (res && res.code === "bad_description") {
+      say("The description must be 600 characters or fewer.", true);
+    } else {
+      say("Couldn't save just now. Please try again.", true);
+    }
+  });
+
+  start();
+  trackVisit();
+</script>
+</body>
+</html>

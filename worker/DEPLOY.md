@@ -54,8 +54,9 @@ edit needed on the frontend side.
 If it fails instead, the message on the page says why:
 
 - **"origin not allowed"** -- you opened the page from `file://`
-  instead of `https://themanhun.github.io`. The Worker only accepts
-  that one Origin (see `ALLOWED_ORIGIN` in `src/index.js`). To test
+  instead of the site. The Worker only accepts the origins listed in
+  `ALLOWED_ORIGINS` in `src/index.js` (tfbpx.com, www.tfbpx.com and the old
+  github.io address). To test
   locally before the page is redeployed, temporarily add your local
   origin to the Worker's allow-list, deploy, test, then remove it
   again before this goes live.
