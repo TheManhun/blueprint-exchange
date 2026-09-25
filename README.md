@@ -314,9 +314,11 @@ currently "Rail station" -- the data has no separate marker for them.
 
 ## Feature dots on the upload page
 
-Under the file chooser a grid of grey dots (Cargo train station, Passenger
-train station, Cargo truck station, Bus station, Depot, Signals, Road
-connections, Bridge, Tunnel) turns green for whatever `bpxFeatures()` in
+Under the file chooser a status line (grey "Waiting for blueprint
+inspection", green "Blueprint format is clean", red with the reason if the
+file is refused) sits above a grid of grey dots (Cargo train station,
+Passenger train station, Cargo truck station, Bus station, Depot, Signals,
+Train tracks, Roads, Bridge, Tunnel) that turn green for whatever `bpxFeatures()` in
 `site.js` finds in the chosen file. It reads the file's own data only (the
 constructions it places and the street/track/bridge/tunnel/model types it
 lists), runs entirely in the browser, and changes nothing that is uploaded.

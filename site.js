@@ -83,7 +83,8 @@ const BPX_FEATURES = [
   ["bus", "Bus station"],
   ["depot", "Depot"],
   ["signals", "Signals"],
-  ["road", "Road connections"],
+  ["tracks", "Train tracks"],
+  ["road", "Roads"],
   ["bridge", "Bridge"],
   ["tunnel", "Tunnel"],
 ];
@@ -99,6 +100,7 @@ function bpxFeatures(text) {
     bus: street && /station\/street\/(passenger_platform|era_[a-z]_passenger_building)/.test(t),
     depot: /fileName = "depot\//.test(t),
     signals: /models = \{[^}]*signal/.test(t),
+    tracks: /tracks = \{"/.test(t),
     road: /streets = \{"/.test(t),
     bridge: /bridges = \{"/.test(t),
     tunnel: /tunnels = \{"/.test(t),

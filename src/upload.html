@@ -40,6 +40,7 @@
     <input type="file" id="file" accept=".lua,text/plain">
     <p class="hint" id="fileInfo"></p>
     <p class="hint" id="fileReq"></p>
+    <p class="inspect" id="inspectStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Waiting for blueprint inspection</span></p>
     <ul class="features" id="featureGrid" aria-label="Features BPX can detect in a blueprint"></ul>
     <p class="hint" id="featureNote">Choose a blueprint file and BPX lights up what it finds in it.</p>
     <div class="callout" id="existingBox" hidden>
@@ -166,6 +167,14 @@
   }
   showFeatures(null);
 
+  // The inspection status above the grid: waiting (grey), passed (green) or refused (red).
+  function setInspect(state, text) {
+    const el = document.getElementById("inspectStatus");
+    el.classList.toggle("ok", state === "ok");
+    el.classList.toggle("bad", state === "bad");
+    el.querySelector(".txt").textContent = text;
+  }
+
   document.getElementById("file").addEventListener("change", async (e) => {
     const f = e.target.files[0];
     const info = document.getElementById("fileInfo");
@@ -174,11 +183,13 @@
     document.getElementById("fileReq").textContent = "";
     document.getElementById("existingBox").hidden = true;
     showFeatures(null);
+    setInspect("idle", "Waiting for blueprint inspection");
     if (!f) return;
-    if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; return; }
+    if (f.size > 4000000) { info.textContent = "File too large (4 MB max)."; setInspect("bad", "File too large (4 MB max)."); return; }
     const text = await f.text();
     const r = inspect(text);
-    if (r.err) { info.textContent = r.err; return; }
+    if (r.err) { info.textContent = r.err; setInspect("bad", r.err); return; }
+    setInspect("ok", "Blueprint format is clean — no outside code detected.");
     pending = { text, ...r, categories: bpxCategories(text) };
     showFeatures(text);
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
