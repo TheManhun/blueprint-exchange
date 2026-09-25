@@ -17,6 +17,17 @@
   .checkrow label { margin: 0; font-weight: 500; }
   .count { float: right; font-size: 13px; color: var(--ink-2); font-weight: 400; }
   .modgrid .card .btnrow a.btn { width: 100%; text-align: center; }
+  .addmod { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0; margin: 0 0 24px; }
+  .addmod > summary:hover .addmod-cta { text-decoration: none; }
+  .addmod > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; cursor: pointer; padding: 18px 20px; list-style: none; }
+  .addmod > summary::-webkit-details-marker { display: none; }
+  .addmod > summary::after { content: "\25B8"; margin-left: auto; color: var(--accent); font-size: 22px; }
+  .addmod[open] > summary::after { content: "\25BE"; }
+  .addmod-title { font: 700 26px/1.15 "Barlow Condensed", sans-serif; }
+  .addmod-cta { color: var(--accent); font-weight: 600; text-decoration: underline; }
+  .addmod[open] .addmod-cta { display: none; }
+  .addmod > *:not(summary) { margin-left: 20px; margin-right: 20px; }
+  .addmod > *:last-child { margin-bottom: 20px; }
   .examplebox { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; max-width: 70ch; }
 </style>
 </head>
@@ -29,8 +40,11 @@
     <p class="sub">Made something for Transport Fever 2? Show it to the BPX community.</p>
   </div>
 
-  <section class="panel" id="submit">
-    <h2>Add your Workshop item</h2>
+  <details class="panel addmod" id="submit">
+    <summary>
+      <span class="addmod-title">Add your Workshop item</span>
+      <span class="addmod-cta">Click here to add your workshop mod</span>
+    </summary>
     <p>Enter your Steam Workshop item number. BPX will fetch the title, image and Workshop link automatically.</p>
     <div class="examplebox">
       <strong>Example: <code>3800813265</code></strong><br>
@@ -63,7 +77,7 @@
         <button type="button" class="primary big" id="submitBtn" disabled>Submit Mod</button>
       </div>
     </div>
-  </section>
+  </details>
 
   <h2 class="section-title">Community mods</h2>
   <div class="toolbar">
@@ -231,6 +245,10 @@
     await loadMods();
     $("modGrid").scrollIntoView({ block: "start" });
   });
+
+  // Collapsed until asked for -- but a link to #submit opens it.
+  if (location.hash === "#submit") $("submit").open = true;
+  window.addEventListener("hashchange", () => { if (location.hash === "#submit") $("submit").open = true; });
 
   loadMods();
   trackVisit();
