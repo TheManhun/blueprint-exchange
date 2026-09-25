@@ -361,3 +361,7 @@ grant execute on function public.bp_visit_stats() to anon;
 --                    bp_my_blueprints(), bp_edit(), bp_revoke_browser(), and bp_upload()
 --                    now verifies the public copy carries no ownership data.
 --   bp_categories -- see supabase/migrations/bp_categories.sql: bp_blueprints.categories, bp_categories(), bp_list()/bp_upload() updated.
+--   bp_modio_mods -- mod.io mods next to Steam Workshop mods: bp_mod_resources.platform ('steam'|'modio'),
+--                    modio_id, modio_url (workshop_id / steam_url now nullable, checked per platform);
+--                    bp_link_modio() (shape-validated, rate limited, two callers to "verified");
+--                    bp_dependency_report() / bp_list() return platform, ids and page URL.

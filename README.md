@@ -406,3 +406,22 @@ CLAIM inside an uploaded file, so the upload page only offers it as "This
 blueprint says it needs this mod" (verified with Steam, one click to confirm);
 `requires` stays the authoritative check and the scan / manual routes remain the
 fallback for blueprints captured before this existed.
+
+## mod.io mods
+
+Players use both stores, so a mod can be a Steam Workshop item or a mod.io mod.
+The game's mod.io client installs to `C:\Users\Public\mod.io\6791\mods\<mod.io id>\`
+(game id 6791 = Transport Fever 2) and keeps `metadata\state.json` there with each
+installed mod's id, name and profile URL, and a mod also published to the Workshop
+holds that id in `workshop_fileid.txt`. At capture the mod reads those (file names
+and that one JSON only), so `requiredMods` can carry `modioId`, `modName` and
+`modioUrl`, plus `workshopId` when the author published to both.
+
+On the upload page: a claim with a Workshop id goes through Steam as before (checked,
+one click). A **mod.io-only** claim is shown exactly as recorded, with a note that BPX
+cannot check mod.io mods without an API key, and one click saves it through
+`bp_link_modio` (name and URL shape-validated; only `https://mod.io/g/transportfever2/m/<slug>`
+links are ever shown; two different callers agreeing marks it verified). Cards say
+"Requires: N Workshop mod(s)" (either store) and link to the right page. Also: the
+upload page's "no code" check now ignores text inside quotes, so mod or blueprint names
+containing words like "load" are no longer refused.

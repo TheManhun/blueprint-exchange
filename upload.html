@@ -219,7 +219,9 @@
   function inspect(text) {
     if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blueprint Exchange file (it must start with a comment header and 'return {')." };
     if (!/\bblueprint\s*=\s*1\b/.test(text)) return { err: "Not a Blueprint Exchange file (no 'blueprint = 1' version field)." };
-    if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text)) return { err: "This file contains code, not just layout data -- refused." };
+    // Code words are looked for OUTSIDE quoted text: names, descriptions and mod names may
+    // legitimately contain words like "load" or "function"; the mod runs files with no access to anything anyway.
+    if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text.replace(/"(?:[^"\\\n]|\\.)*"/g, '""'))) return { err: "This file contains code, not just layout data -- refused." };
     const constructions = (text.match(/^-- Constructions: (\d+)/m) || [, "0"])[1];
     const edges = (text.match(/\bn0 = \d+/g) || []).length;
     // every requires group (constructions, tracks, streets, bridges, tunnels, models)

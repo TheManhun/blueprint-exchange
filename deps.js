@@ -78,10 +78,15 @@ const bpxDeps = (() => {
     const entries = src.match(/\{(?:[^{}]|\{[^{}]*\})*\}/g) || [];
     for (const e of entries.slice(0, 12)) {
       const id = (e.match(/workshopId = "([0-9]{6,12})"/) || [])[1];
-      if (!id) continue; // local (non-Workshop) mods can't be linked to a Workshop item
+      const modio = (e.match(/modioId = "([0-9]{1,10})"/) || [])[1];
+      if (!id && !modio) continue; // local mods can't be linked to anything public
       const res = (e.match(/resources = \{([^}]*)\}/) || [, ""])[1];
       const paths = [...res.matchAll(/"([^"]+)"/g)].map((m) => m[1]).slice(0, 100);
-      if (paths.length) out.push({ workshopId: id, resources: paths });
+      if (!paths.length) continue;
+      const name = ((e.match(/modName = "([^"]{1,80})"/) || [, ""])[1]).replace(/[^A-Za-z0-9 _.,:()&'+-]/g, "").trim();
+      const url = bpxModioUrl((e.match(/modioUrl = "([^"]+)"/) || [])[1]);
+      // a mod on BOTH stores is linked through Steam (checkable); mod.io-only ones are taken as recorded
+      out.push({ workshopId: id || null, modioId: modio || null, modName: name, modioUrl: url, resources: paths });
     }
     return out;
   }
@@ -123,19 +128,21 @@ const bpxDeps = (() => {
     // resolved externals, grouped by Workshop mod
     const byMod = new Map();
     for (const x of ext.filter((y) => y.status === "mod" && y.mod)) {
-      const id = String(x.mod.workshop_id);
+      const id = x.mod.platform === "modio" ? "modio:" + x.mod.modio_id : String(x.mod.workshop_id);
       if (!byMod.has(id)) byMod.set(id, { mod: x.mod, paths: [] });
       byMod.get(id).paths.push(x.path);
     }
     let html = "";
     for (const [id, g] of byMod) {
-      const url = bpxSteamUrl(id);
+      const link = bpxModLink(g.mod);
+      const url = link ? link.url : null;
+      const isModio = g.mod.platform === "modio";
       const pv = g.mod.preview_url;
       const img = typeof pv === "string" && pv.startsWith("https://")
         ? `<img src="${esc(pv)}" alt="" width="96" height="54" referrerpolicy="no-referrer" loading="lazy">` : "";
       html += `<div class="depitem ok"><p class="depkind">${justLinked.has(id) ? "\u2713 Required mod identified" : "\u2713 Required mod recognised"}</p>
-        <div class="depmod">${img}<div><div class="t">${esc(g.mod.name)}</div><div class="hint">Workshop #${esc(id)}</div>
-        ${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View on Steam Workshop</a>` : ""}</div></div>
+        <div class="depmod">${img}<div><div class="t">${esc(g.mod.name)}</div><div class="hint">${isModio ? "mod.io #" + esc(g.mod.modio_id) : "Workshop #" + esc(id)}</div>
+        ${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>` : ""}</div></div>
         <div class="hint">Provides: ${g.paths.map((p) => `<code>${esc(p)}</code>`).join(", ")}</div></div>`;
     }
     if (unres.length) {
@@ -302,7 +309,7 @@ const bpxDeps = (() => {
     const out = [];
     for (const c of state.claims || []) {
       const items = c.resources.filter((p) => typeOf[p] && unresolvedPaths.has(typeOf[p] + ":" + p)).map((p) => ({ type: typeOf[p], path: p }));
-      if (items.length) out.push({ workshopId: c.workshopId, items });
+      if (items.length) out.push({ key: c.workshopId ? c.workshopId : "modio:" + c.modioId, workshopId: c.workshopId, modioId: c.modioId, modName: c.modName, modioUrl: c.modioUrl, items });
     }
     return out;
   }
@@ -313,29 +320,51 @@ const bpxDeps = (() => {
     if (!claims.length) { box.innerHTML = ""; return; }
     // verify each claimed Workshop item with Steam once (also checks it is a Transport Fever 2 mod)
     for (const c of claims.slice(0, 4)) {
-      if (!claimMods.has(c.workshopId)) {
+      if (c.workshopId && !claimMods.has(c.workshopId)) {
         const r = await bpxModsCall({ action: "lookup", workshopId: c.workshopId });
         claimMods.set(c.workshopId, r && r.ok ? r.mod : null);
       }
     }
     if (state.requires === null || state.checking) return;
     box.innerHTML = claims.slice(0, 4).map((c) => {
-      const mod = claimMods.get(c.workshopId);
-      if (!mod) return "";
-      return modCard(mod, "This blueprint says it needs this mod") +
-        `<p>Provides: ${c.items.map((x) => `<code>${esc(x.path)}</code>`).join(", ")}</p>
-         <div class="row"><button type="button" class="primary" data-claim="${esc(c.workshopId)}">Yes, link this mod</button></div>
-         <div class="msg" data-claimmsg="${esc(c.workshopId)}" role="status"></div>`;
+      const provides = `<p>Provides: ${c.items.map((x) => `<code>${esc(x.path)}</code>`).join(", ")}</p>`;
+      if (c.workshopId) {
+        const mod = claimMods.get(c.workshopId);
+        if (!mod) return "";
+        return modCard(mod, "This blueprint says it needs this mod") + provides +
+          `<div class="row"><button type="button" class="primary" data-claim="${esc(c.key)}">Yes, link this mod</button></div>
+           <div class="msg" data-claimmsg="${esc(c.key)}" role="status"></div>`;
+      }
+      // mod.io only: BPX cannot check these with mod.io, so it shows exactly what the uploader's own
+      // mod.io installation recorded and asks them to confirm
+      const url = bpxModioUrl(c.modioUrl);
+      return `<div class="depitem ok"><p class="depkind">This blueprint says it needs this mod.io mod</p>
+        <div class="t">${esc(c.modName || "mod.io mod")}</div><div class="hint">mod.io #${esc(c.modioId)}${url ? "" : ""}</div>
+        ${url ? `<a class="btn small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">View on mod.io</a>` : ""}
+        <p class="hint">Recorded by the mod.io installation on the computer that captured this blueprint. BPX can't check mod.io mods itself, so please confirm it is the right one.</p></div>` + provides +
+        `<div class="row"><button type="button" class="primary" data-claim="${esc(c.key)}">Yes, link this mod</button></div>
+         <div class="msg" data-claimmsg="${esc(c.key)}" role="status"></div>`;
     }).join("");
   }
 
-  async function confirmClaim(id) {
-    const c = openClaims().find((x) => x.workshopId === id);
-    const msg = document.querySelector(`[data-claimmsg="${id}"]`);
+  async function confirmClaim(key) {
+    const c = openClaims().find((x) => x.key === key);
+    const msg = document.querySelector(`[data-claimmsg="${key}"]`);
     if (!c) return;
-    const link = await bpxModsCall({ action: "link", workshopId: id, source: "manual", resources: c.items });
-    if (!link || !link.ok) { if (msg) { msg.className = "msg bad"; msg.textContent = bpxFailText(link); } return; }
-    justLinked.add(String(id));
+    const fail = (text) => { if (msg) { msg.className = "msg bad"; msg.textContent = text; } };
+    if (c.workshopId) {
+      const link = await bpxModsCall({ action: "link", workshopId: c.workshopId, source: "manual", resources: c.items });
+      if (!link || !link.ok) { fail(bpxFailText(link)); return; }
+      justLinked.add(String(c.workshopId));
+    } else {
+      let linked = 0;
+      try {
+        const { data, error } = await sb.rpc("bp_link_modio", { p_modio_id: Number(c.modioId), p_name: c.modName || "mod.io mod", p_url: bpxModioUrl(c.modioUrl), p_resources: c.items });
+        linked = error ? 0 : Number(data) || 0;
+      } catch (e) { linked = 0; }
+      if (!linked) { fail("Couldn't save that just now. Please try again in a moment."); return; }
+      justLinked.add("modio:" + c.modioId);
+    }
     await check(state.requires, state.claims);
   }
 

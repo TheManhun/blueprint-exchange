@@ -142,6 +142,17 @@ function bpxFailText(r) {
 }
 
 // The only Steam link the pages ever build from a Workshop id.
+// The only mod.io link the pages ever show: the exact shape mod.io uses for Transport Fever 2.
+const bpxModioUrl = (url) => /^https:\/\/mod\.io\/g\/transportfever2\/m\/[A-Za-z0-9_-]{1,80}$/.test(String(url || "")) ? url : null;
+// Link + label for a mod of either kind, as returned by bp_list / bp_dependency_report.
+function bpxModLink(m) {
+  if (m && m.platform === "modio") {
+    const u = bpxModioUrl(m.url);
+    return u ? { url: u, label: "View on mod.io" } : null;
+  }
+  const u = bpxSteamUrl(m && m.workshop_id);
+  return u ? { url: u, label: "View on Steam Workshop" } : null;
+}
 const bpxSteamUrl = (id) => /^[0-9]{1,15}$/.test(String(id)) ? "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id : null;
 
 // One blueprint card, used by the library and by the live preview on the
@@ -155,7 +166,7 @@ function blueprintCardHtml(b, opts) {
   const unresolved = Array.isArray(b.unresolved) ? b.unresolved : [];
   const reqHtml = (mods.length || unresolved.length) ? `<details class="reqs">
       <summary>${mods.length ? `Requires: ${mods.length} Workshop mod${mods.length === 1 ? "" : "s"}` : "Requires external content"}${mods.length && unresolved.length ? " + unidentified content" : ""}</summary>
-      ${mods.length ? `<div class="reqhead">Required Mods</div><ul>${mods.map((m) => `<li>${esc(m.name)}${bpxSteamUrl(m.workshop_id) ? ` <a class="btn small" href="${esc(bpxSteamUrl(m.workshop_id))}" target="_blank" rel="noopener noreferrer">View on Steam Workshop</a>` : ""}</li>`).join("")}</ul>` : ""}
+      ${mods.length ? `<div class="reqhead">Required Mods</div><ul>${mods.map((m) => { const link = bpxModLink(m); return `<li>${esc(m.name)}${link ? ` <a class="btn small" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>` : ""}</li>`; }).join("")}</ul>` : ""}
       ${unresolved.length ? `<div class="reqhead">Unresolved external content:</div><ul>${unresolved.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : ""}
     </details>` : "";
   const thumb = b.thumbnail_url
