@@ -226,8 +226,11 @@ only the numeric item id; the `plug-my-mod` Edge Function
   confirmation card shows Steam's image directly, once per lookup);
 - description is optional plain text, HTML stripped, 200 characters max;
 - rate limits by salted hash of the caller's IP (raw IPs are never
-  stored): 20 lookups/hour, 5 submissions/day per caller, 200 new
-  listings/day overall; duplicates are refused;
+  stored): 60 lookups/hour per caller (rolling hour), 600 lookups/hour
+  overall, 5 submissions/day per caller, 200 new listings/day overall.
+  A limited reply carries `retryAfter` (seconds, also as a Retry-After
+  header) and the page shows the wait; if Steam itself answers 429 the
+  function passes on Steam's Retry-After (`code: steam_rate_limited`); duplicates are refused;
 - only accepts requests from this site (CORS allow-list: tfbpx.com, www.tfbpx.com, the old github.io address, and local test ports).
 
 Listings are approved automatically. To take one down:

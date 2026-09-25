@@ -101,6 +101,21 @@
     el.textContent = text || "";
   }
 
+  // "Try again in about 12 minutes" from a Retry-After in seconds.
+  function waitText(sec) {
+    if (typeof sec !== "number" || !isFinite(sec) || sec <= 0) return "";
+    if (sec < 90) return " Try again in " + Math.ceil(sec) + " second" + (Math.ceil(sec) === 1 ? "" : "s") + ".";
+    if (sec < 5400) return " Try again in about " + Math.ceil(sec / 60) + " minutes.";
+    return " Try again in about " + Math.ceil(sec / 3600) + " hours.";
+  }
+  // A failed reply's message, with the wait time appended when the server gave one.
+  function failText(r) {
+    const base = (r && r.error) || "Something went wrong. Please try again.";
+    const wait = waitText(r && r.retryAfter);
+    // the exact wait replaces the vague "try again in a little while"
+    return (wait ? base.replace(/ Please try again[^.]*\./, "") : base) + wait;
+  }
+
   async function callFn(payload) {
     let res;
     try {
@@ -173,7 +188,7 @@
     showMsg("Looking it up on Steam…", "ok");
     const r = await callFn({ action: "lookup", workshopId: id });
     $("findBtn").disabled = false;
-    if (!r || !r.ok) { showMsg((r && r.error) || "Something went wrong. Please try again.", "bad"); return; }
+    if (!r || !r.ok) { showMsg(failText(r), "bad"); return; }
 
     found = r.mod;
     $("foundCard").innerHTML = modCardHtml(
@@ -205,7 +220,7 @@
     showMsg("Adding it to the list…", "ok");
     const r = await callFn({ action: "submit", workshopId: found.workshopId, description: $("modDesc").value, consent: true });
     if (!r || !r.ok) {
-      showMsg((r && r.error) || "Something went wrong. Please try again.", "bad");
+      showMsg(failText(r), "bad");
       $("submitBtn").disabled = !$("consent").checked || (r && r.code === "already_listed");
       return;
     }

@@ -35,7 +35,8 @@ const MAX_BODY_BYTES = 4096;
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const MAX_DESCRIPTION = 200;
 
-const LOOKUPS_PER_HOUR = 20;
+const LOOKUPS_PER_HOUR = 60;          // per caller (salted address hash), rolling hour
+const GLOBAL_LOOKUPS_PER_HOUR = 600;  // everyone together -- keeps Steam calls modest
 const SUBMITS_PER_DAY = 5;
 const NEW_LISTINGS_PER_DAY = 200; // everyone together
 
@@ -74,7 +75,11 @@ function corsHeaders(origin: string | null): Record<string, string> {
 function json(status: number, body: unknown, origin: string | null): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
+    headers: {
+      "Content-Type": "application/json",
+      ...corsHeaders(origin),
+      ...(status === 429 && typeof (body as any)?.retryAfter === "number" ? { "Retry-After": String((body as any).retryAfter) } : {}),
+    },
   });
 }
 
@@ -146,7 +151,14 @@ async function enforceLimit(ipHash: string, kind: "lookup" | "submit", limit: nu
   const { count, error } = await db.from("pm_rate_events").select("id", { count: "exact", head: true })
     .eq("ip_hash", ipHash).eq("kind", kind).gte("at", since);
   if (error) throw new Error("rate-limit check failed: " + error.message);
-  if ((count ?? 0) >= limit) throw new HttpError(429, "rate_limited", message);
+  if ((count ?? 0) >= limit) {
+    // when will the oldest event in the window drop out? that is when one more is allowed
+    const { data: oldest } = await db.from("pm_rate_events").select("at")
+      .eq("ip_hash", ipHash).eq("kind", kind).gte("at", since).order("at", { ascending: true }).limit(1).maybeSingle();
+    const freeAt = oldest?.at ? new Date(oldest.at).getTime() + windowMs : Date.now() + windowMs;
+    const retryAfter = Math.max(1, Math.ceil((freeAt - Date.now()) / 1000));
+    throw new HttpError(429, "rate_limited", message, { retryAfter, limit, source: "bpx" });
+  }
   const ins = await db.from("pm_rate_events").insert({ ip_hash: ipHash, kind });
   if (ins.error) throw new Error("rate-limit record failed: " + ins.error.message);
 }
@@ -171,6 +183,21 @@ async function steamLookup(workshopId: string): Promise<SteamItem> {
     }, 8000);
   } catch (_e) {
     throw new HttpError(502, "steam_unavailable", "Steam didn't answer just now. Please try again in a minute.");
+  }
+  if (res.status === 429) {
+    // Steam itself is asking us to slow down: pass its Retry-After on (seconds or a date).
+    const raw = res.headers.get("retry-after");
+    let retryAfter: number | null = null;
+    if (raw) {
+      const secs = Number(raw);
+      if (Number.isFinite(secs) && secs >= 0) retryAfter = Math.ceil(secs);
+      else {
+        const when = Date.parse(raw);
+        if (!Number.isNaN(when)) retryAfter = Math.max(1, Math.ceil((when - Date.now()) / 1000));
+      }
+    }
+    console.error("steam rate limited us; retry-after:", raw);
+    throw new HttpError(429, "steam_rate_limited", "Steam is asking us to slow down.", { retryAfter, source: "steam" });
   }
   if (!res.ok) throw new HttpError(502, "steam_unavailable", "Steam didn't answer just now. Please try again in a minute.");
 
@@ -308,6 +335,13 @@ async function handle(req: Request, origin: string | null): Promise<Response> {
 
   const ipHash = await sha256Hex((await ipSalt()) + ":" + callerAddress(req));
   await enforceLimit(ipHash, "lookup", LOOKUPS_PER_HOUR, 3600_000, "You've looked up a lot of mods in a short time. Please try again in a little while.");
+  {
+    const { count: everyone } = await db.from("pm_rate_events").select("id", { count: "exact", head: true })
+      .eq("kind", "lookup").gte("at", new Date(Date.now() - 3600_000).toISOString());
+    if ((everyone ?? 0) > GLOBAL_LOOKUPS_PER_HOUR) {
+      throw new HttpError(429, "busy", "Lots of people are looking up mods right now. Please try again in a few minutes.", { retryAfter: 300, source: "bpx" });
+    }
+  }
 
   if (Math.random() < 0.05) {
     await db.from("pm_rate_events").delete().lt("at", new Date(Date.now() - 2 * 86400_000).toISOString());
