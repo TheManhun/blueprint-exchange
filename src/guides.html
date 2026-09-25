@@ -140,7 +140,8 @@
     <p>A dependency is something a blueprint needs that isn&rsquo;t part of the base game &mdash; for example a station or signal that comes from a Workshop mod. If your layout uses mod content, its blueprint depends on that mod.</p>
     <ul>
       <li>Every blueprint records the content it uses: constructions, track and road types, bridges, tunnels and signal models.</li>
-      <li>Cards in the library list the construction files a blueprint needs, under &ldquo;needs:&rdquo;. Blueprints that only use base game content list nothing.</li>
+      <li>BPX knows which of those come with the base game. Anything else is <em>external mod content</em>, and the upload page asks which Steam Workshop mod provides it: choose your Workshop folder (only file names are read, on your computer) or type the Workshop ID. The first person to upload a mod&rsquo;s content teaches BPX once; after that it is recognised automatically.</li>
+      <li>A blueprint can&rsquo;t be published while it uses external content BPX can&rsquo;t identify. Cards show &ldquo;Requires: 1 Workshop mod&rdquo;, and open to a link to the Workshop page. Blueprints that only use base game content list nothing.</li>
       <li>When you press <strong>Place</strong>, BPX checks each item against what is installed <em>before it builds anything</em>. If something is missing you get a message naming it, and nothing is built.</li>
     </ul>
     <p>To use a blueprint that needs a mod you don&rsquo;t have, subscribe to that mod on the Steam Workshop, load your game with it enabled, and try again. BPX never guesses or swaps in a substitute.</p>

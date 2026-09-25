@@ -53,6 +53,28 @@
     <p class="inspect" id="inspectStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Waiting for blueprint inspection</span></p>
     <ul class="features" id="featureGrid" aria-label="Features BPX can detect in a blueprint"></ul>
     <p class="hint" id="featureNote">Choose a blueprint file and BPX lights up what it finds in it.</p>
+
+    <div class="depbox" id="depBox">
+      <h3 class="section-title">Blueprint dependencies</h3>
+      <p class="inspect" id="depStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Dependencies are checked once your blueprint passes inspection</span></p>
+      <div id="depList" aria-live="polite"></div>
+      <div class="row" id="depActions" hidden style="margin-top:10px">
+        <button type="button" class="primary" id="depFindBtn">Find Required Mod</button>
+        <button type="button" id="depManualBtn">Enter Steam Workshop ID Manually</button>
+      </div>
+      <div class="deppanel" id="depScan" hidden>
+        <p><strong>Choose your Transport Fever 2 Workshop folder.</strong></p>
+        <p>BPX will only search <code>steamapps\workshop\content\1066780\</code> for the missing resource files used by this blueprint. The search runs on your computer and only file names are read &mdash; nothing from the folder is uploaded. (Your browser may say it will &ldquo;upload&rdquo; the folder&rsquo;s files; that is the browser&rsquo;s standard wording for choosing a folder.)</p>
+        <label class="btn primary" for="depFolder" style="cursor:pointer">Choose Workshop folder</label>
+        <input type="file" id="depFolder" class="visually-hidden" webkitdirectory multiple>
+      </div>
+      <div id="depScanOut" aria-live="polite"></div>
+      <div class="deppanel" id="depManual" hidden>
+        <label for="depModId">Steam Workshop item ID (digits only)</label>
+        <div class="row"><input type="text" id="depModId" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="12" placeholder="e.g. 3800813265" style="max-width:260px"><button type="button" id="depModFind">Find</button></div>
+      </div>
+      <div id="depManualOut" aria-live="polite"></div>
+    </div>
     <div class="callout" id="existingBox" hidden>
       <p id="existingText"></p>
       <div class="row">
@@ -90,6 +112,7 @@
     <h3 class="section-title">How your card will look</h3>
     <div class="previewcard" id="previewCard" aria-live="polite"></div>
 
+    <p class="msg bad" id="depBlockMsg" role="alert" style="display:none">This blueprint uses external mod content BPX cannot yet identify. To make sure other players can use your blueprint, identify the required Workshop mod before publishing.</p>
     <div class="row" style="margin-top:18px">
       <button class="primary big" id="upload" disabled>Upload Blueprint</button>
       <span class="hint">Uploads are public and permanent.</span>
@@ -168,9 +191,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="site.js"></script>
 <script src="thumb.js"></script>
+<script src="deps.js"></script>
 <script>
   // ---- Upload: validate the file as a REAL Blueprint Exchange data file.
   let pending = null;
+  // What can hold the Upload button back: an existing blueprint waiting for the
+  // owner's choice, a file that isn't the original, or unidentified mod content.
+  const gate = { existingHold: false, notOriginal: false };
+  function refreshUpload() {
+    const btn = document.getElementById("upload");
+    const depsOk = !pending || bpxDeps.isResolved();
+    btn.disabled = !pending || gate.existingHold || gate.notOriginal || !depsOk;
+    document.getElementById("depBlockMsg").style.display = (pending && !depsOk && !bpxDeps.isChecking()) ? "block" : "none";
+  }
 
   function inspect(text) {
     if (!/^\s*(--[^\n]*\n\s*)*return\s*\{/.test(text)) return { err: "Not a Blueprint Exchange file (it must start with a comment header and 'return {')." };
@@ -178,8 +211,8 @@
     if (/\b(function|io\.|os\.|require|load|dofile|game\.|api\.)\b/.test(text)) return { err: "This file contains code, not just layout data -- refused." };
     const constructions = (text.match(/^-- Constructions: (\d+)/m) || [, "0"])[1];
     const edges = (text.match(/\bn0 = \d+/g) || []).length;
-    const reqBlock = (text.match(/requires = \{([\s\S]*?)\}\s*,\s*constructions = \{/) || [, ""])[1];
-    const requires = { constructions: [...reqBlock.matchAll(/"([^"]+\.con)"/g)].map((m) => m[1]) };
+    // every requires group (constructions, tracks, streets, bridges, tunnels, models)
+    const requires = bpxDeps.parseRequires(text);
     const name = (text.match(/^-- Name: (.*)$/m) || [, ""])[1].trim();
     const blueprintId = (text.match(/\bblueprintId = "([0-9a-f]+)"/) || [, null])[1];
     // Ownership proof (Decision 28 on the mod side): only ever read
@@ -216,6 +249,8 @@
     }));
   }
   showFeatures(null);
+  bpxDeps.init();
+  bpxDeps.onChange = () => { refreshUpload(); updatePreviewCard(); };
 
   // The inspection status above the grid: waiting (grey), passed (green) or refused (red).
   function setInspect(state, text) {
@@ -229,7 +264,9 @@
     const f = e.target.files[0];
     const info = document.getElementById("fileInfo");
     pending = null;
-    document.getElementById("upload").disabled = true;
+    gate.existingHold = false; gate.notOriginal = false;
+    bpxDeps.reset();
+    refreshUpload();
     document.getElementById("fileReq").textContent = "";
     document.getElementById("existingBox").hidden = true;
     showFeatures(null);
@@ -243,15 +280,14 @@
     pending = { text, ...r, categories: bpxCategories(text) };
     showFeatures(text);
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
-    const needs = (r.requires && r.requires.constructions) || [];
-    document.getElementById("fileReq").textContent = needs.length ? "Needs this content installed: " + needs.join(", ") : "";
+    bpxDeps.check(pending.requires);
     const nameField = document.getElementById("name");
     if (!nameField.value && r.name) nameField.value = r.name.replace(/_+/g, " ").trim();
     const authorField = document.getElementById("author");
     if (!authorField.value && r.author) authorField.value = r.author;
     const descField = document.getElementById("desc");
     if (!descField.value && r.description) descField.value = r.description;
-    document.getElementById("upload").disabled = false;
+    refreshUpload();
 
     // Already in the library? If the file's private key matches, offer to
     // edit it or publish a new version instead of just uploading again.
@@ -261,14 +297,14 @@
       if (pending !== mine) return; // a different file was chosen meanwhile
       if (claim.ok) {
         mine.existing = claim;
-        document.getElementById("upload").disabled = true;
+        gate.existingHold = true; refreshUpload();
         showExisting(claim, r.blueprintId);
         refreshOwned();
       } else if (claim.code === "rate_limited") {
         info.textContent += " (Too many ownership checks just now -- try again later.)";
       } else if (claim.code !== "unclaimed") {
         info.textContent = "This blueprint is already in the library and this file is not its original, so it can't be used to update it.";
-        document.getElementById("upload").disabled = true;
+        gate.notOriginal = true; refreshUpload();
       }
     }
   });
@@ -282,7 +318,7 @@
     box.hidden = false;
   }
   document.getElementById("existingNewVersion").addEventListener("click", () => {
-    document.getElementById("upload").disabled = false;
+    gate.existingHold = false; refreshUpload();
     document.getElementById("existingNewVersion").disabled = true;
     document.getElementById("existingText").textContent += " Ready to publish as the next version -- press Upload Blueprint.";
   });
@@ -317,7 +353,7 @@
       p_requires: pending.requires, p_blueprint_id: pending.blueprintId,
       p_thumbnail_url: thumbnailUrl, p_owner_secret: pending.ownerSecret,
     });
-    if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; btn.disabled = false; return; }
+    if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; refreshUpload(); return; }
     const version = (result && result.version) || 1;
     msg.className = "msg ok";
     msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
@@ -325,6 +361,7 @@
     const uploaded = pending;
     pending = null; document.getElementById("file").value = "";
     document.getElementById("existingBox").hidden = true;
+    bpxDeps.reset();
     showAfterUpload(uploaded);
     clearThumbnail();
     updatePreviewCard();
@@ -424,6 +461,7 @@
       size: pending.text.length,
       requires: pending.requires,
       categories: pending.categories,
+      mods: bpxDeps.mods(), unresolved: bpxDeps.unresolvedPaths(),
       official: false,
       thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src : null,
     };

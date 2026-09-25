@@ -31,13 +31,15 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const STEAM_API = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/";
-const MAX_BODY_BYTES = 4096;
+const MAX_BODY_BYTES = 8192;
 const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const MAX_DESCRIPTION = 200;
 
 const LOOKUPS_PER_HOUR = 60;          // per caller (salted address hash), rolling hour
 const GLOBAL_LOOKUPS_PER_HOUR = 600;  // everyone together -- keeps Steam calls modest
 const SUBMITS_PER_DAY = 5;
+const LINKS_PER_HOUR = 40;            // per caller: resource -> Workshop mod links
+const LINK_TYPES = new Set(["construction", "track", "street", "bridge", "model", "tunnel"]);
 const NEW_LISTINGS_PER_DAY = 200; // everyone together
 
 const IMAGE_EXT: Record<string, string> = {
@@ -326,7 +328,7 @@ async function handle(req: Request, origin: string | null): Promise<Response> {
   if (!body || typeof body !== "object") throw new HttpError(400, "bad_request", "That request wasn't understood.");
 
   const action = body.action;
-  if (action !== "lookup" && action !== "submit") throw new HttpError(400, "bad_request", "That request wasn't understood.");
+  if (action !== "lookup" && action !== "submit" && action !== "link") throw new HttpError(400, "bad_request", "That request wasn't understood.");
 
   const workshopId = typeof body.workshopId === "string" ? body.workshopId.trim() : "";
   if (!/^[0-9]{6,12}$/.test(workshopId)) {
@@ -351,6 +353,29 @@ async function handle(req: Request, origin: string | null): Promise<Response> {
     const item = await steamLookup(workshopId);
     const already = await existing(workshopId);
     return json(200, { ok: true, mod: publicMod(item, { alreadyListed: !!already }) }, origin);
+  }
+
+  // ---- link: teach BPX which Workshop mod supplies which resource paths ----
+  // (used by the blueprint upload page; the item is verified with Steam first)
+  if (action === "link") {
+    const list = Array.isArray(body.resources) ? body.resources : [];
+    if (list.length === 0 || list.length > 50) throw new HttpError(400, "bad_request", "That request wasn't understood.");
+    const resources: { type: string; path: string }[] = [];
+    for (const r of list) {
+      const type = typeof r?.type === "string" ? r.type : "";
+      const path = typeof r?.path === "string" ? r.path : "";
+      if (!LINK_TYPES.has(type) || !/^[A-Za-z0-9_.\/ -]{1,200}$/.test(path)) throw new HttpError(400, "bad_request", "That request wasn't understood.");
+      resources.push({ type, path });
+    }
+    const source = body.source === "scan" ? "scan" : "manual";
+    await enforceLimit(ipHash, "link", LINKS_PER_HOUR, 3600_000, "You've linked a lot of mods in a short time. Please try again in a little while.");
+    const item = await steamLookup(workshopId);
+    const { data: linked, error: linkErr } = await db.rpc("bp_link_mod", {
+      p_ip_hash: ipHash, p_workshop_id: workshopId, p_mod_name: item.title, p_preview_url: item.previewUrl,
+      p_source: source, p_resources: resources,
+    });
+    if (linkErr) throw new Error("link failed: " + linkErr.message);
+    return json(200, { ok: true, mod: publicMod(item), linked: linked ?? 0 }, origin);
   }
 
   // ---- submit ----

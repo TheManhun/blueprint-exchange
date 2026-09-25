@@ -322,3 +322,46 @@ Train tracks, Roads, Bridge, Tunnel) that turn green for whatever `bpxFeatures()
 `site.js` finds in the chosen file. It reads the file's own data only (the
 constructions it places and the street/track/bridge/tunnel/model types it
 lists), runs entirely in the browser, and changes nothing that is uploaded.
+
+## Mod dependency resolution
+
+A blueprint's `requires` block lists resource PATHS (constructions, track,
+street, bridge and tunnel types, signal models) but never which Workshop mod
+supplies them. BPX learns that once per mod:
+
+1. **Read all groups.** `bp_requires(content)` (and `deps.js` in the browser)
+   read every group of the block, whatever order the mod wrote them in.
+2. **Base game or external?** `bp_base_resources` is the game's own list
+   (`tools/gen_base_resources.py` builds it from the install; `building/*`
+   constructions count as base wholesale). Unknown is not unsafe -- an
+   unknown path inside a valid dependency field is fine.
+3. **Which mod?** `bp_mod_resources` maps (type, path) to a Workshop item:
+   `resource_path`, `resource_type`, `workshop_id`, `mod_name`, canonical
+   `steam_url`, `preview_url`, `verified`, `source` (`scan` or `manual`),
+   `confirmations`. One mod can map many paths; one (game, type, path,
+   workshop id) is stored once, and when two mods claim the same path the
+   one with most confirmations wins. `verified` becomes true when two
+   different callers (salted address hashes in `bp_mod_confirmers`) confirm
+   the same mapping. Base-game paths can never be mapped to a mod.
+4. **Teaching it.** The upload page offers *Find Required Mod* (pick your
+   `steamapps\workshop\content\1066780` folder; the browser matches
+   `<id>/res/<kind>/<path>` against file NAMES only, on your computer) or
+   *Enter Steam Workshop ID Manually* (digits only, confirmed with a
+   checkbox per resource). Either way the Edge Function `plug-my-mod`
+   (`link` action) verifies the item with Steam (exists, public, Transport
+   Fever 2) and calls `bp_link_mod`, which only the service role can run.
+   Only Workshop ids and resource paths are ever sent.
+5. **Publishing.** `bp_upload` reads the requires list from the file itself
+   and refuses a blueprint whose external content is still unidentified.
+   Editing an existing blueprint's metadata is never blocked by this.
+6. **Showing it.** `bp_list` returns `mods` (identified Workshop mods) and
+   `unresolved` (paths still unidentified). Cards show "Requires: N
+   Workshop mods" and expand to the mod names with Steam links, or
+   "Requires external content" plus the raw paths for legacy uploads.
+
+First real case: PYT_Test needs `asset/epod_shared_gantry_1850_noroad.con`;
+scanning the Workshop folder found it under item 3800813265 (Pay Your Tolls 2)
+and that mapping is now in the database.
+
+Moderation: `delete from public.bp_mod_resources where id = <id>;` removes a
+wrong mapping.
