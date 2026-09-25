@@ -70,6 +70,7 @@
   #bmcRow { margin: 20px 0 0; text-align: center; }
   #bmcRow img { display: inline-block; border-radius: 6px; }
   #bmcNote { text-align: center; margin-top: 8px; }
+  #fanNote { margin-top: 18px; }
   @media (prefers-reduced-motion: no-preference) { .card { transition: transform .12s; } .card:hover { transform: translateY(-1px); } }
 
   /* Thumbnail field + cropper (stage 1: local only, no upload) */
@@ -106,12 +107,13 @@
   #importer code { overflow-wrap: anywhere; }
   #importer summary { cursor: pointer; font-weight: 600; margin: 16px 0 4px; }
   #importer details[open] summary { margin-bottom: 0; }
+  .masthead { margin: 0 0 20px; font-size: 0; line-height: 0; }
+  .masthead img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Transport Fever 2 &middot; Blueprint Exchange mod</p>
-  <h1>Blueprint Exchange Library</h1>
+  <h1 class="masthead"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library: a fan-made community hub for Transport Fever 2"></h1>
   <p class="lede">Layouts other players built &mdash; stations, yards, junctions, whole complexes with their track &mdash; ready to drop into your own map with the <strong>Blueprint Exchange</strong> mod. Download one, drop it in the game folder, press Import. Want to share your own? <a href="#share">Add it to the library</a>. New here? <a href="about.html">What is Blueprint Exchange?</a></p>
 
   <div class="stats" id="stats" aria-live="polite">
@@ -278,6 +280,8 @@
 
   <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
 
+  <p class="hint" id="fanNote">Blueprint Exchange is a fan-made community project for Transport Fever 2. It is unofficial and not affiliated with the game&rsquo;s developers or publishers.</p>
+
   <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
   <p class="hint" id="bmcNote">Blueprint Exchange is free &mdash; support is completely optional.</p>
 </div>
@@ -436,7 +440,12 @@
 
   async function trackVisitAndLoadStats() {
     const visitorId = getOrMakeVisitorId();
-    if (visitorId) {
+    // Pages opened from disk or from a local test server are the
+    // author (or a test browser) looking at work in progress, not a
+    // visitor -- they were inflating the count (32 "visitors" before
+    // anyone had been sent the link). The stat is still read below.
+    const isLocalView = location.protocol === "file:" || ["localhost", "127.0.0.1", "[::1]", ""].indexOf(location.hostname) !== -1;
+    if (visitorId && !isLocalView) {
       try { await sb.rpc("bp_track_visit", { p_visitor_id: visitorId }); } catch (err) { /* never break the page over this */ }
     }
     let data = null;

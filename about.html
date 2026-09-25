@@ -40,10 +40,13 @@
   .callout p:last-child { margin-bottom: 0; }
   a { color: var(--accent); }
   @media (max-width: 720px) { .intro { grid-template-columns: 1fr; } .intro img { max-width: 320px; } h1 { font-size: 40px; } }
+  a.masthead { display: block; margin: 0 0 22px; font-size: 0; line-height: 0; }
+  a.masthead img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 892px) 860px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, back to the library home"></a>
   <p class="eyebrow"><a href="./">Blueprint Exchange</a> &middot; About</p>
   <h1>Blueprint Exchange</h1>
   <p class="tagline">Build it once. Share it forever.</p>
