@@ -48,6 +48,7 @@
       <h3 class="section-title">Blueprint dependencies</h3>
       <p class="inspect" id="depStatus" role="status"><span class="dot" aria-hidden="true"></span><span class="txt">Dependencies are checked once your blueprint passes inspection</span></p>
       <div id="depList" aria-live="polite"></div>
+      <div id="depSuggest" aria-live="polite"></div>
       <div class="row" id="depActions" hidden style="margin-top:10px">
         <button type="button" class="primary" id="depFindBtn">Find Required Mod</button>
         <button type="button" id="depManualBtn">Enter Steam Workshop ID Manually</button>
@@ -249,7 +250,7 @@
     pending = { text, ...r, categories: bpxCategories(text) };
     showFeatures(text);
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
-    bpxDeps.check(pending.requires);
+    bpxDeps.check(pending.requires, bpxDeps.parseRequiredMods(text));
     const nameField = document.getElementById("name");
     if (!nameField.value && r.name) nameField.value = r.name.replace(/_+/g, " ").trim();
     const authorField = document.getElementById("author");

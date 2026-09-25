@@ -393,3 +393,16 @@ blueprint that already has a screenshot, the upload page shows it with
 "Keep my current screenshot" (ticked). A screenshot added on the page replaces
 it; unticking publishes the version without one. Editing an existing blueprint
 on `edit.html` already kept the screenshot unless a new one is chosen.
+
+## `requiredMods` in blueprints (capture-time provenance)
+
+New captures can carry `requiredMods = {{ workshopId = "3800813265", resources = {"asset/....con"} }}`:
+which Workshop mod supplies which of the layout's files (only mods the layout
+actually uses; local, non-Workshop mods are recorded by folder name and can't
+be linked). The mod's loader half (`bp_provenance.lua`, run from `mod.lua`) watches
+`loadConstruction/Street/Track/Bridge/Tunnel/Model` and notes `getCurrentModId()`
+per resource into `blueprint_exchange_mods.lua`; capture reads it back. It is a
+CLAIM inside an uploaded file, so the upload page only offers it as "This
+blueprint says it needs this mod" (verified with Steam, one click to confirm);
+`requires` stays the authoritative check and the scan / manual routes remain the
+fallback for blueprints captured before this existed.

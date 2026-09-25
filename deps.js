@@ -33,7 +33,8 @@ const bpxDeps = (() => {
   };
   const LABEL = Object.fromEntries(GROUPS.map(([, type, label]) => [type, label]));
 
-  let state = { requires: null, report: [], checking: false, error: false };
+  let state = { requires: null, claims: [], report: [], checking: false, error: false };
+  const claimMods = new Map(); // workshop id -> Steam-verified mod (looked up once)
   const justLinked = new Set(); // Workshop ids identified during this upload (worded "identified", not "recognised")
   let manual = null; // { mod } while a manually entered mod awaits confirmation
   // Optional full Workshop scan (community contribution). Nothing is sent
@@ -52,6 +53,35 @@ const bpxDeps = (() => {
     for (const [group] of GROUPS) {
       const m = String(text).match(new RegExp("requires = \\{(?:\\w+ = \\{[^{}]*\\},\\s*)*" + group + " = \\{([^}]*)\\}"));
       out[group] = m ? [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]) : [];
+    }
+    return out;
+  }
+
+  // requiredMods: what the mod recorded at capture time -- which Workshop mod
+  // supplied each resource. It is a CLAIM inside an uploaded file, so it is only
+  // ever offered as a suggestion for the uploader to confirm (the Workshop item
+  // is verified with Steam first); requires stays the real check.
+  function parseRequiredMods(text) {
+    const out = [];
+    const t = String(text);
+    const at = t.indexOf("requiredMods = {");
+    if (at < 0) return out;
+    // balanced-brace slice of the requiredMods table (entries nest one level deep)
+    let depth = 0, end = -1;
+    for (let i = t.indexOf("{", at); i < t.length && i < at + 60000; i++) {
+      const ch = t[i];
+      if (ch === "{") depth++;
+      else if (ch === "}") { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (end < 0) return out;
+    const src = t.slice(t.indexOf("{", at) + 1, end);
+    const entries = src.match(/\{(?:[^{}]|\{[^{}]*\})*\}/g) || [];
+    for (const e of entries.slice(0, 12)) {
+      const id = (e.match(/workshopId = "([0-9]{6,12})"/) || [])[1];
+      if (!id) continue; // local (non-Workshop) mods can't be linked to a Workshop item
+      const res = (e.match(/resources = \{([^}]*)\}/) || [, ""])[1];
+      const paths = [...res.matchAll(/"([^"]+)"/g)].map((m) => m[1]).slice(0, 100);
+      if (paths.length) out.push({ workshopId: id, resources: paths });
     }
     return out;
   }
@@ -79,7 +109,7 @@ const bpxDeps = (() => {
     if (state.error) {
       setStatus("bad", "Couldn't check dependencies just now.");
       list.innerHTML = '<p class="hint">Please try again in a moment. <button type="button" class="linkbtn" id="depRetry">Check again</button></p>';
-      $("depRetry").addEventListener("click", () => check(state.requires));
+      $("depRetry").addEventListener("click", () => check(state.requires, state.claims));
       return;
     }
     const ext = external();
@@ -122,6 +152,7 @@ const bpxDeps = (() => {
     }
     list.innerHTML = html;
     renderHelp();
+    renderSuggest();
   }
 
   // ---- optional full scan of the Workshop folder ----
@@ -263,14 +294,59 @@ const bpxDeps = (() => {
     return [...seen.values()];
   }
 
+  // The blueprint's own claims that cover something still unidentified.
+  function openClaims() {
+    const unresolvedPaths = new Set(unresolved().map((x) => x.type + ":" + x.path));
+    const typeOf = {};
+    unresolved().forEach((x) => { typeOf[x.path] = x.type; });
+    const out = [];
+    for (const c of state.claims || []) {
+      const items = c.resources.filter((p) => typeOf[p] && unresolvedPaths.has(typeOf[p] + ":" + p)).map((p) => ({ type: typeOf[p], path: p }));
+      if (items.length) out.push({ workshopId: c.workshopId, items });
+    }
+    return out;
+  }
+
+  async function renderSuggest() {
+    const box = $("depSuggest");
+    const claims = state.error || state.checking ? [] : openClaims();
+    if (!claims.length) { box.innerHTML = ""; return; }
+    // verify each claimed Workshop item with Steam once (also checks it is a Transport Fever 2 mod)
+    for (const c of claims.slice(0, 4)) {
+      if (!claimMods.has(c.workshopId)) {
+        const r = await bpxModsCall({ action: "lookup", workshopId: c.workshopId });
+        claimMods.set(c.workshopId, r && r.ok ? r.mod : null);
+      }
+    }
+    if (state.requires === null || state.checking) return;
+    box.innerHTML = claims.slice(0, 4).map((c) => {
+      const mod = claimMods.get(c.workshopId);
+      if (!mod) return "";
+      return modCard(mod, "This blueprint says it needs this mod") +
+        `<p>Provides: ${c.items.map((x) => `<code>${esc(x.path)}</code>`).join(", ")}</p>
+         <div class="row"><button type="button" class="primary" data-claim="${esc(c.workshopId)}">Yes, link this mod</button></div>
+         <div class="msg" data-claimmsg="${esc(c.workshopId)}" role="status"></div>`;
+    }).join("");
+  }
+
+  async function confirmClaim(id) {
+    const c = openClaims().find((x) => x.workshopId === id);
+    const msg = document.querySelector(`[data-claimmsg="${id}"]`);
+    if (!c) return;
+    const link = await bpxModsCall({ action: "link", workshopId: id, source: "manual", resources: c.items });
+    if (!link || !link.ok) { if (msg) { msg.className = "msg bad"; msg.textContent = bpxFailText(link); } return; }
+    justLinked.add(String(id));
+    await check(state.requires, state.claims);
+  }
+
   function hidePanels() {
     $("depScan").hidden = true;
     $("depManual").hidden = true;
   }
 
   // ---- asking the library ----
-  async function check(requires) {
-    state = { requires, report: [], checking: true, error: false };
+  async function check(requires, claims) {
+    state = { requires, claims: claims || (state.requires === requires ? state.claims : []), report: [], checking: true, error: false };
     manual = null;
     render();
     onChange();
@@ -287,7 +363,8 @@ const bpxDeps = (() => {
   }
 
   function reset() {
-    state = { requires: null, report: [], checking: false, error: false };
+    state = { requires: null, claims: [], report: [], checking: false, error: false };
+    $("depSuggest").innerHTML = "";
     justLinked.clear();
     manual = null;
     help = { dismissed: false, stage: "offer", full: null, sent: null, error: null };
@@ -367,7 +444,7 @@ const bpxDeps = (() => {
     const missing = [...wanted].filter(([key]) => !found.has(key)).map(([, w]) => w.path);
     if (missing.length) html += `<p class="hint">Not found in that folder: ${missing.map((p) => `<code>${esc(p)}</code>`).join(", ")}</p>`;
     out.innerHTML = html;
-    if (linkedAny) await check(state.requires);
+    if (linkedAny) await check(state.requires, state.claims);
   }
 
   function modCard(mod, heading) {
@@ -412,7 +489,7 @@ const bpxDeps = (() => {
       $("depModId").value = "";
       justLinked.add(String(manual.mod.workshopId));
       manual = null;
-      await check(state.requires);
+      await check(state.requires, state.claims);
     });
   }
 
@@ -443,13 +520,17 @@ const bpxDeps = (() => {
       else if (act === "only") submitChoice(false);
       else if (act === "plus") submitChoice(true);
     });
+    $("depSuggest").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-claim]");
+      if (btn) { btn.disabled = true; confirmClaim(btn.dataset.claim); }
+    });
     $("depModFind").addEventListener("click", manualFind);
     $("depModId").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); manualFind(); } });
     render();
   }
 
   return {
-    init, check, reset, parseRequires, isResolved,
+    init, check, reset, parseRequires, parseRequiredMods, isResolved,
     set onChange(fn) { onChange = fn; },
     isChecking: () => state.checking,
     contribute,
