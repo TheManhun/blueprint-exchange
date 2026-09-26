@@ -253,3 +253,13 @@ a.btn.small { font-size: 13px; padding: 3px 9px; }
 .reqtag { font: 600 11px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); border: 1px solid var(--ok); border-radius: 999px; padding: 4px 8px; }
 @media (max-width: 560px) { .reqmod { grid-template-columns: 1fr; } .reqmod-side { justify-content: flex-start; } }
 section.depbox { max-width: none; margin: 0 0 24px; }
+
+/* Card image view toggle (screenshot <-> blueprint schematic) */
+.thumbwrap { position: relative; }
+.thumbwrap .thumbToggle {
+  position: absolute; right: 8px; bottom: 8px;
+  font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(10, 30, 60, 0.65); color: #eaf2ff; cursor: pointer;
+}
+.thumbwrap .thumbToggle:hover { background: rgba(18, 60, 124, 0.9); }

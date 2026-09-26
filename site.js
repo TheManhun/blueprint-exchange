@@ -157,6 +157,22 @@ const bpxSteamUrl = (id) => /^[0-9]{1,15}$/.test(String(id)) ? "https://steamcom
 
 // One blueprint card, used by the library and by the live preview on the
 // upload page, so what people see there is exactly what they will get.
+// Card image toggle: screenshot <-> drawn schematic (delegated once; cards
+// are re-rendered wholesale, listeners on them would be lost).
+if (typeof document !== "undefined") {
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest ? e.target.closest(".thumbToggle") : null;
+    if (!btn) return;
+    const wrap = btn.closest(".thumbwrap");
+    const img = wrap ? wrap.querySelector("img.thumb") : null;
+    if (!img || !img.dataset.schem) return;
+    const showingSchem = img.src === img.dataset.schem;
+    img.src = showingSchem ? img.dataset.photo : img.dataset.schem;
+    btn.textContent = showingSchem ? "Blueprint view" : "Screenshot";
+    btn.setAttribute("aria-pressed", showingSchem ? "false" : "true");
+  });
+}
+
 function blueprintCardHtml(b, opts) {
   const preview = !!(opts && opts.preview);
   const owned = !!(opts && opts.owned);
@@ -169,8 +185,12 @@ function blueprintCardHtml(b, opts) {
       ${mods.length ? `<div class="reqhead">Required Mods</div><ul>${mods.map((m) => { const link = bpxModLink(m); return `<li>${esc(m.name)}${link ? ` <a class="btn small" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>` : ""}</li>`; }).join("")}</ul>` : ""}
       ${unresolved.length ? `<div class="reqhead">Unresolved external content:</div><ul>${unresolved.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : ""}
     </details>` : "";
+  const hasBothViews = !!(b.schematic_url && b.thumbnail_url && b.schematic_url !== b.thumbnail_url);
   const thumb = b.thumbnail_url
-    ? `<img class="thumb" src="${esc(b.thumbnail_url)}" alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">`
+    ? `<div class="thumbwrap">
+         <img class="thumb" src="${esc(b.thumbnail_url)}" data-photo="${esc(b.thumbnail_url)}"${hasBothViews ? ` data-schem="${esc(b.schematic_url)}"` : ""} alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">
+         ${hasBothViews ? `<button type="button" class="thumbToggle" aria-pressed="false" title="Switch between the screenshot and the blueprint schematic">Blueprint view</button>` : ""}
+       </div>`
     : `<img class="thumb thumb-placeholder" src="card-noimage.webp" alt="No preview image supplied for ${esc(b.name)}" width="480" height="270" loading="lazy">`;
   const button = preview
     ? `<button class="primary" type="button" disabled>Download</button>`

@@ -9,6 +9,21 @@
 // public URL) before this was wired in.
 const THUMB_WORKER_URL = "https://blueprint-exchange-thumbnails.blueprint-exchange.workers.dev";
 
+// Upload the always-drawn schematic; returns its public URL or null.
+async function uploadSchematicIfAny() {
+  if (!window.bpSchematic || !window.bpSchematic.blob) return null;
+  try {
+    const res = await fetch(THUMB_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "image/webp" },
+      body: window.bpSchematic.blob,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) return null;
+    return data.url;
+  } catch (err) { return null; }
+}
+
 async function uploadThumbnailIfAny() {
   if (!window.bpThumbnail || !window.bpThumbnail.blob) return null;
   const res = await fetch(THUMB_WORKER_URL, {
@@ -468,30 +483,40 @@ function bpxDrawBlueprintSchematic(bp) {
   cv.width = W; cv.height = H;
   const g = cv.getContext("2d");
 
-  // Ground: the site's dark green with a soft vignette.
-  g.fillStyle = "#20302b";
+  // A proper BLUEPRINT: white linework on Prussian blue, faint drafting
+  // grid, framed border (Epod: "as if it's a blue print").
+  g.fillStyle = "#123c7c";
   g.fillRect(0, 0, W, H);
-  const grad = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * 0.7);
-  grad.addColorStop(0, "rgba(255,255,255,0.05)");
-  grad.addColorStop(1, "rgba(0,0,0,0.25)");
+  const grad = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * 0.75);
+  grad.addColorStop(0, "rgba(255,255,255,0.06)");
+  grad.addColorStop(1, "rgba(0,0,30,0.28)");
   g.fillStyle = grad;
   g.fillRect(0, 0, W, H);
 
-  // Building plots first (under the network).
+  g.strokeStyle = "rgba(255,255,255,0.07)";
+  g.lineWidth = 1;
+  for (let gx = 0; gx <= W; gx += 24) { g.beginPath(); g.moveTo(gx + 0.5, 0); g.lineTo(gx + 0.5, H); g.stroke(); }
+  for (let gy = 0; gy <= H; gy += 24) { g.beginPath(); g.moveTo(0, gy + 0.5); g.lineTo(W, gy + 0.5); g.stroke(); }
+  g.strokeStyle = "rgba(255,255,255,0.55)";
+  g.lineWidth = 1.5;
+  g.strokeRect(6.5, 6.5, W - 13, H - 13);
+
+  // Building plots first (under the network): white outlines, light wash.
   for (const poly of plots) {
     g.beginPath();
     poly.forEach((p, k) => k ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1])));
     g.closePath();
-    g.fillStyle = "rgba(230,176,92,0.28)";
+    g.fillStyle = "rgba(255,255,255,0.10)";
     g.fill();
-    g.strokeStyle = "rgba(230,176,92,0.85)";
+    g.strokeStyle = "rgba(255,255,255,0.85)";
     g.lineWidth = 1.5;
     g.stroke();
   }
 
-  // Edges: roads under tracks; width scales gently with zoom.
+  // Edges: white linework -- roads wide and soft, tracks bright with a
+  // blue dashed centerline for the rail read.
   const lw = Math.max(1.5, Math.min(5, 4.5 * scale));
-  const line = (e, color, width) => {
+  const line = (e, color, width, dash) => {
     const a = nodes[e.n0 - 1], b = nodes[e.n1 - 1];
     if (!a || !b || !a.relative || !b.relative) return;
     g.beginPath();
@@ -500,12 +525,13 @@ function bpxDrawBlueprintSchematic(bp) {
     g.strokeStyle = color;
     g.lineWidth = width;
     g.lineCap = "round";
+    g.setLineDash(dash || []);
     g.stroke();
+    g.setLineDash([]);
   };
-  for (const e of edges) if (e && !e.track) line(e, "#8f9a96", lw * 1.35);
-  for (const e of edges) if (e && e.track) line(e, "#b08a5a", lw);
-  // Track centerlines for a rail look.
-  for (const e of edges) if (e && e.track) line(e, "#2c241a", Math.max(0.8, lw * 0.3));
+  for (const e of edges) if (e && !e.track) line(e, "rgba(255,255,255,0.7)", lw * 1.35);
+  for (const e of edges) if (e && e.track) line(e, "rgba(255,255,255,0.95)", lw);
+  for (const e of edges) if (e && e.track) line(e, "#123c7c", Math.max(0.8, lw * 0.3), [6, 5]);
 
   return cv;
 }
@@ -513,12 +539,15 @@ function bpxDrawBlueprintSchematic(bp) {
 // Fired by the upload page after a blueprint passes inspection.
 function bpxAutoThumbFromBlueprint(luaText) {
   try {
-    if (window.bpThumbnail && window.bpThumbnail.blob && !window.bpThumbnail.auto) return; // never replace a hand-picked image
     const bp = bpxParseLuaLiteral(luaText);
     const cv = bpxDrawBlueprintSchematic(bp);
     if (!cv) return;
     cv.toBlob(function (blob) {
       if (!blob) return;
+      // The schematic is ALWAYS kept -- it uploads alongside a hand-picked
+      // screenshot so the card can switch between the two views.
+      window.bpSchematic = { blob: blob };
+      if (window.bpThumbnail && window.bpThumbnail.blob && !window.bpThumbnail.auto) return; // never replace a hand-picked image
       try {
         if (window.bpThumbnail && window.bpThumbnail.url) URL.revokeObjectURL(window.bpThumbnail.url);
         const url = URL.createObjectURL(blob);

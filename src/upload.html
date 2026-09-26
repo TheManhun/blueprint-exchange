@@ -389,6 +389,16 @@
       p_thumbnail_url: thumbnailUrl, p_owner_secret: pending.ownerSecret,
     });
     if (error) { msg.className = "msg bad"; msg.textContent = "Upload failed: " + error.message; refreshUpload(); return; }
+    // Blueprint view (both images): when a hand-picked screenshot was used,
+    // the drawn schematic uploads too, attached via an additive RPC --
+    // quietly skipped before the bp_schematic_view migration is applied.
+    try {
+      if (result && result.id && window.bpSchematic && window.bpSchematic.blob
+          && window.bpThumbnail && !window.bpThumbnail.auto) {
+        const schemUrl = await uploadSchematicIfAny();
+        if (schemUrl) await sb.rpc("bp_set_schematic", { p_id: result.id, p_url: schemUrl });
+      }
+    } catch (schemErr) { /* never fail an upload over the second image */ }
     const version = (result && result.version) || 1;
     msg.className = "msg ok";
     msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
