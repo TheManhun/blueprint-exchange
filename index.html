@@ -193,6 +193,15 @@
     const { data, error } = await sb.rpc("bp_list");
     if (error) { console.error(error); return; }
     all = data || [];
+    // Blueprint-view URLs (additive RPC; quietly absent pre-migration).
+    // Fetched ONCE here -- render() stays synchronous and filter-fast.
+    try {
+      const { data: schem } = await sb.rpc("bp_schematics", { p_ids: all.map((b) => b.id) });
+      if (Array.isArray(schem)) {
+        const byId = Object.fromEntries(schem.map((row) => [row.id, row.schematic_url]));
+        all.forEach((b) => { if (byId[b.id]) b.schematic_url = byId[b.id]; });
+      }
+    } catch (schemErr) { /* pre-migration: no toggle, nothing lost */ }
     buildCatChips();
     render();
   }
@@ -224,13 +233,6 @@
       .filter((b) => !catFilter || (b.categories || []).includes(catFilter))
       .filter((b) => !q || [b.name, b.author, b.description, (b.categories || []).join(" "), JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
       .sort(sorters[sortKey] || byNewest);
-    try { // Blueprint-view URLs (additive RPC; quietly absent pre-migration)
-      const { data: schem } = await sb.rpc("bp_schematics", { p_ids: rows.map((b) => b.id) });
-      if (Array.isArray(schem)) {
-        const byId = Object.fromEntries(schem.map((s) => [s.id, s.schematic_url]));
-        rows.forEach((b) => { if (byId[b.id]) b.schematic_url = byId[b.id]; });
-      }
-    } catch (schemErr) { /* pre-migration: no toggle, nothing lost */ }
     document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
     document.getElementById("empty").hidden = rows.length > 0;
     document.getElementById("examplesNote").hidden = all.length === 0;
