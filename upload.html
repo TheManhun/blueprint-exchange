@@ -318,6 +318,7 @@
     setInspect("ok", "Blueprint format is clean — no outside code detected.");
     pending = { text, ...r, categories: bpxCategories(text) };
     showFeatures(text);
+    if (window.bpxAutoThumbFromBlueprint) bpxAutoThumbFromBlueprint(text); // auto-preview drawn from the geometry
     info.textContent = `Looks good: ${r.constructions} construction(s), ${r.edges} segment(s), ${Math.round(f.size / 1024)} KB. Detected type: ${pending.categories.join(", ")}.`;
     bpxDeps.check(pending.requires, bpxDeps.parseRequiredMods(text));
     const nameField = document.getElementById("name");

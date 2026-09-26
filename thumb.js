@@ -340,3 +340,200 @@ function clearThumbnail() {
   });
 
 })();
+
+// ============================================================
+// AUTO-THUMBNAIL -- drawn from the blueprint itself (Epod: "when the
+// user uploads a blueprint the thumbnail is already there"). The game
+// has no screenshot API, but the file carries the full geometry, so
+// the page renders a schematic: roads and tracks as ribbons, each
+// building's plot as a filled outline -- the same vocabulary as the
+// in-game ghost. Fires when a blueprint passes inspection and no
+// image has been chosen; picking a real screenshot replaces it, and
+// choosing another blueprint redraws (auto images never overwrite a
+// hand-picked one).
+// ============================================================
+
+// A tiny parser for the blueprint's pure-literal Lua ("return { ... }").
+// Numbers, strings, booleans, nested tables; array parts become arrays,
+// key parts become object fields. Anything unexpected throws.
+function bpxParseLuaLiteral(text) {
+  let i = text.indexOf("return");
+  if (i < 0) throw new Error("no return");
+  i += 6;
+  const n = text.length;
+
+  function ws() {
+    for (;;) {
+      while (i < n && /\s/.test(text[i])) i++;
+      if (text.startsWith("--", i)) { while (i < n && text[i] !== "\n") i++; continue; }
+      break;
+    }
+  }
+
+  function value() {
+    ws();
+    const c = text[i];
+    if (c === "{") return table();
+    if (c === '"') return str();
+    if (text.startsWith("true", i)) { i += 4; return true; }
+    if (text.startsWith("false", i)) { i += 5; return false; }
+    if (text.startsWith("nil", i)) { i += 3; return null; }
+    const m = /^-?\d+(\.\d+)?(e[-+]?\d+)?/i.exec(text.slice(i, i + 40));
+    if (m) { i += m[0].length; return parseFloat(m[0]); }
+    throw new Error("unexpected value at " + i);
+  }
+
+  function str() {
+    i++; // opening quote
+    let out = "";
+    while (i < n) {
+      const c = text[i];
+      if (c === "\\") { out += text[i + 1]; i += 2; continue; }
+      if (c === '"') { i++; return out; }
+      out += c; i++;
+    }
+    throw new Error("unterminated string");
+  }
+
+  function table() {
+    i++; // {
+    const arr = [];
+    const obj = {};
+    let hasKeys = false;
+    for (;;) {
+      ws();
+      if (text[i] === "}") { i++; break; }
+      // key = value | [expr] = value | value
+      const keyMatch = /^([A-Za-z_]\w*)\s*=/.exec(text.slice(i, i + 80));
+      if (keyMatch && !/^(true|false|nil)\s*=/.test(keyMatch[0])) {
+        i += keyMatch[0].length;
+        obj[keyMatch[1]] = value();
+        hasKeys = true;
+      } else if (text[i] === "[") {
+        i++;
+        const k = value();
+        ws();
+        if (text[i] !== "]") throw new Error("bad [key]");
+        i++;
+        ws();
+        if (text[i] !== "=") throw new Error("missing = after [key]");
+        i++;
+        obj[String(k)] = value();
+        hasKeys = true;
+      } else {
+        arr.push(value());
+      }
+      ws();
+      if (text[i] === "," || text[i] === ";") i++;
+    }
+    if (arr.length && hasKeys) { obj.__array = arr; return obj; }
+    return arr.length || !hasKeys ? (arr.length ? arr : (hasKeys ? obj : arr)) : obj;
+  }
+
+  return value();
+}
+
+// Draw the schematic onto a 480x270 canvas. Returns the canvas, or null
+// when there is nothing drawable.
+function bpxDrawBlueprintSchematic(bp) {
+  const nodes = Array.isArray(bp.nodes) ? bp.nodes : [];
+  const edges = Array.isArray(bp.edges) ? bp.edges : [];
+  const cons = Array.isArray(bp.constructions) ? bp.constructions : [];
+  if (!edges.length && !cons.length) return null;
+
+  // Bounds over node positions and construction footprints.
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  const seen = (x, y) => { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; };
+  for (const nd of nodes) if (nd && nd.relative) seen(nd.relative[0], nd.relative[1]);
+  const plots = [];
+  for (const c of cons) {
+    if (!c || !c.relative) continue;
+    const yaw = c.yaw || 0, co = Math.cos(yaw), si = Math.sin(yaw);
+    const px = c.relative[0], py = c.relative[1];
+    const fp = Array.isArray(c.footprint) ? c.footprint : [[-10, -10], [10, -10], [10, 10], [-10, 10]];
+    const poly = fp.map(pt => [px + pt[0] * co - pt[1] * si, py + pt[0] * si + pt[1] * co]);
+    poly.forEach(p => seen(p[0], p[1]));
+    plots.push(poly);
+  }
+  if (minX > maxX) return null;
+
+  const W = 480, H = 270, PAD = 22;
+  const spanX = Math.max(maxX - minX, 10), spanY = Math.max(maxY - minY, 10);
+  const scale = Math.min((W - 2 * PAD) / spanX, (H - 2 * PAD) / spanY);
+  const ox = (W - spanX * scale) / 2, oy = (H + spanY * scale) / 2;
+  const X = x => ox + (x - minX) * scale;
+  const Y = y => oy - (y - minY) * scale; // north up
+
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const g = cv.getContext("2d");
+
+  // Ground: the site's dark green with a soft vignette.
+  g.fillStyle = "#20302b";
+  g.fillRect(0, 0, W, H);
+  const grad = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, W * 0.7);
+  grad.addColorStop(0, "rgba(255,255,255,0.05)");
+  grad.addColorStop(1, "rgba(0,0,0,0.25)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, W, H);
+
+  // Building plots first (under the network).
+  for (const poly of plots) {
+    g.beginPath();
+    poly.forEach((p, k) => k ? g.lineTo(X(p[0]), Y(p[1])) : g.moveTo(X(p[0]), Y(p[1])));
+    g.closePath();
+    g.fillStyle = "rgba(230,176,92,0.28)";
+    g.fill();
+    g.strokeStyle = "rgba(230,176,92,0.85)";
+    g.lineWidth = 1.5;
+    g.stroke();
+  }
+
+  // Edges: roads under tracks; width scales gently with zoom.
+  const lw = Math.max(1.5, Math.min(5, 4.5 * scale));
+  const line = (e, color, width) => {
+    const a = nodes[e.n0 - 1], b = nodes[e.n1 - 1];
+    if (!a || !b || !a.relative || !b.relative) return;
+    g.beginPath();
+    g.moveTo(X(a.relative[0]), Y(a.relative[1]));
+    g.lineTo(X(b.relative[0]), Y(b.relative[1]));
+    g.strokeStyle = color;
+    g.lineWidth = width;
+    g.lineCap = "round";
+    g.stroke();
+  };
+  for (const e of edges) if (e && !e.track) line(e, "#8f9a96", lw * 1.35);
+  for (const e of edges) if (e && e.track) line(e, "#b08a5a", lw);
+  // Track centerlines for a rail look.
+  for (const e of edges) if (e && e.track) line(e, "#2c241a", Math.max(0.8, lw * 0.3));
+
+  return cv;
+}
+
+// Fired by the upload page after a blueprint passes inspection.
+function bpxAutoThumbFromBlueprint(luaText) {
+  try {
+    if (window.bpThumbnail && window.bpThumbnail.blob && !window.bpThumbnail.auto) return; // never replace a hand-picked image
+    const bp = bpxParseLuaLiteral(luaText);
+    const cv = bpxDrawBlueprintSchematic(bp);
+    if (!cv) return;
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      try {
+        if (window.bpThumbnail && window.bpThumbnail.url) URL.revokeObjectURL(window.bpThumbnail.url);
+        const url = URL.createObjectURL(blob);
+        window.bpThumbnail = { blob: blob, url: url, auto: true };
+        const slotImg = document.getElementById("thumbSlotImg");
+        const emptyHint = document.getElementById("thumbEmptyHint");
+        const readyMsg = document.getElementById("thumbReadyMsg");
+        if (slotImg) slotImg.src = url;
+        if (emptyHint) emptyHint.hidden = true;
+        if (readyMsg) {
+          readyMsg.hidden = false;
+          readyMsg.textContent = "Preview drawn from the blueprint — add your own screenshot to replace it.";
+        }
+        window.dispatchEvent(new Event("bpx:thumbchange"));
+      } catch (err) { /* the placeholder stays -- never break the upload */ }
+    }, "image/webp", 0.9);
+  } catch (err) { /* unparseable geometry: the placeholder stays */ }
+}
