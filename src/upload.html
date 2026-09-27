@@ -399,6 +399,11 @@
         if (schemUrl) await sb.rpc("bp_set_schematic", { p_id: result.id, p_url: schemUrl });
       }
     } catch (schemErr) { /* never fail an upload over the second image */ }
+    // Contents (the mod's icon counts) for the card's Contents button
+    try {
+      const contents = bpxContentsOf(bpxParseLuaLiteral(pending.text));
+      if (result && result.id && contents) await sb.rpc("bp_set_contents", { p_id: result.id, p_contents: contents });
+    } catch (contentsErr) { /* never fail an upload over the icons */ }
     const version = (result && result.version) || 1;
     msg.className = "msg ok";
     msg.textContent = (result && result.official ? "Official: " : "") + (version > 1 ? `"${name}" updated to v${version}. Thank you!` : `"${name}" is in the library. Thank you!`) + thumbWarning;
@@ -521,6 +526,7 @@
       categories: pending.categories,
       mods: bpxDeps.mods(), unresolved: bpxDeps.unresolvedPaths(),
       official: false,
+      contents: (() => { try { return bpxContentsOf(bpxParseLuaLiteral(pending.text)); } catch (e) { return ""; } })(),
       thumbnail_url: window.bpThumbnail ? document.getElementById("thumbSlotImg").src
         : (pending.currentThumb && document.getElementById("keepThumb").checked ? pending.currentThumb : null),
     };

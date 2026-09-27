@@ -155,6 +155,97 @@ function bpxModLink(m) {
 }
 const bpxSteamUrl = (id) => /^[0-9]{1,15}$/.test(String(id)) ? "https://steamcommunity.com/sharedfiles/filedetails/?id=" + id : null;
 
+// ---------------------------------------------------------------------------
+// CONTENTS -- what a blueprint holds, in the mod's own icon language (the
+// in-game Library row): "station:1;bus:2;road:23;other:1". Stored per blueprint
+// (bp_blueprints.contents); the card's Contents button drops the icons over the
+// picture. Icons are the mod's own list icons, in icons/<key>.png.
+// ---------------------------------------------------------------------------
+const BPX_CONTENT_ORDER = ["coal", "ironore", "crude", "forest", "stone", "grain", "chemical", "materials", "food",
+  "fuel", "goods", "machines", "refinery", "sawmill", "steel", "tools", "industry",
+  "station", "bus", "truck", "air", "harbour", "track", "road",
+  "railbridge", "roadbridge", "railtunnel", "roadtunnel", "mods"];
+const BPX_CONTENT_NAMES = {
+  coal: "Coal mine", ironore: "Iron ore mine", crude: "Oil well", forest: "Forest", stone: "Quarry", grain: "Farm",
+  chemical: "Chemical plant", materials: "Building materials plant", food: "Food processing plant", fuel: "Fuel refinery",
+  goods: "Goods factory", machines: "Machines factory", refinery: "Oil refinery", sawmill: "Saw mill", steel: "Steel mill",
+  tools: "Tools factory", industry: "Industry", station: "Train station", bus: "Bus station", truck: "Truck station",
+  air: "Airport", harbour: "Harbour", track: "Track pieces", road: "Road pieces", railbridge: "Rail bridge pieces",
+  roadbridge: "Road bridge pieces", railtunnel: "Rail tunnel pieces", roadtunnel: "Road tunnel pieces", mods: "Mods needed",
+};
+const BPX_INDUSTRY_KIND = {
+  coal_mine: "coal", iron_ore_mine: "ironore", oil_well: "crude", forest: "forest", quarry: "stone", farm: "grain",
+  chemical_plant: "chemical", construction_material: "materials", food_processing_plant: "food", fuel_refinery: "fuel",
+  goods_factory: "goods", machines_factory: "machines", oil_refinery: "refinery", saw_mill: "sawmill",
+  steel_mill: "steel", tools_factory: "tools",
+};
+
+// The mod's bp_summary.categorize, line for line, over a parsed blueprint (for
+// new uploads -- the existing ones were counted by the mod's own code).
+function bpxContentsOf(bp) {
+  const counts = {};
+  const add = (k, n) => { counts[k] = (counts[k] || 0) + (n || 1); };
+  const list = (v) => Array.isArray(v) ? v
+    : (v && typeof v === "object" ? Object.keys(v).filter((k) => k !== "__array").map((k) => v[k]).concat(v.__array || []) : []);
+  for (const piece of list(bp && bp.constructions)) {
+    const file = String((piece && piece.fileName) || "");
+    if (/^industry\//.test(file)) {
+      const m = /^industry\/(.*?)\.con$/.exec(file);
+      add(BPX_INDUSTRY_KIND[m ? m[1] : ""] || "industry");
+    } else if (/^station\/rail/.test(file)) add("station");
+    else if (/^station\/air/.test(file) || /airport|airfield/.test(file)) add("air");
+    else if (/^station\/water/.test(file) || /harbo/.test(file)) add("harbour");
+    else if (/^station\/street/.test(file)) {
+      let cargo = false, passenger = false;
+      for (const mod of list(piece.params && piece.params.modules)) {
+        const md = mod && mod.metadata;
+        if (md && typeof md === "object") { if (md.cargo) cargo = true; if (md.passenger) passenger = true; }
+      }
+      if (cargo && passenger) { add("bus"); add("truck"); }
+      else if (cargo) add("truck");
+      else if (passenger) add("bus");
+      else if (/truck|cargo/.test(file)) add("truck");
+      else add("bus");
+    } else add("other");
+  }
+  for (const e of list(bp && bp.edges)) {
+    const track = !!e && e.track === true;
+    if (e && e.edgeType === 1) add(track ? "railbridge" : "roadbridge");
+    else if (e && e.edgeType === 2) add(track ? "railtunnel" : "roadtunnel");
+    else add(track ? "track" : "road");
+  }
+  const mods = list(bp && bp.requiredMods).length;
+  if (mods > 0) add("mods", mods);
+  const parts = BPX_CONTENT_ORDER.filter((k) => counts[k]).map((k) => k + ":" + counts[k]);
+  if (counts.other) parts.push("other:" + counts.other);
+  return parts.join(";");
+}
+
+// "track:13;other:2" -> the chips laid over the picture
+function bpxContentsHtml(contents) {
+  const items = String(contents || "").split(";").map((p) => /^([a-z]+):(\d+)$/.exec(p)).filter(Boolean);
+  return items.map((m, i) => m[1] === "other"
+    ? `<span class="cchip cchip-other" style="--i:${i}" title="Other pieces (depots, assets...)">+${esc(m[2])} other</span>`
+    : BPX_CONTENT_NAMES[m[1]]
+      ? `<span class="cchip" style="--i:${i}" title="${esc(BPX_CONTENT_NAMES[m[1]])}: ${esc(m[2])}"><img src="icons/${m[1]}.png" alt="${esc(BPX_CONTENT_NAMES[m[1]])}" width="28" height="28"><b>${esc(m[2])}</b></span>`
+      : "").join("");
+}
+
+// Contents button: show / hide the chips (delegated once, like the view toggle)
+if (typeof document !== "undefined") {
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest ? e.target.closest(".contentsToggle") : null;
+    if (!btn) return;
+    const wrap = btn.closest(".thumbwrap");
+    const layer = wrap ? wrap.querySelector(".contentsLayer") : null;
+    if (!layer) return;
+    const show = layer.hidden;
+    layer.hidden = !show;
+    btn.setAttribute("aria-pressed", String(show));
+    btn.textContent = show ? "Hide contents" : "Contents";
+  });
+}
+
 // One blueprint card, used by the library and by the live preview on the
 // upload page, so what people see there is exactly what they will get.
 // Card image toggle: screenshot <-> drawn schematic (delegated once; cards
@@ -186,12 +277,21 @@ function blueprintCardHtml(b, opts) {
       ${unresolved.length ? `<div class="reqhead">Unresolved external content:</div><ul>${unresolved.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : ""}
     </details>` : "";
   const hasBothViews = !!(b.schematic_url && b.thumbnail_url && b.schematic_url !== b.thumbnail_url);
+  const chips = bpxContentsHtml(b.contents);
+  const contentsHtml = chips
+    ? `<div class="contentsLayer" hidden>${chips}</div>
+       <button type="button" class="contentsToggle" aria-pressed="false" title="What this blueprint holds -- the same icons the mod shows">Contents</button>`
+    : "";
   const thumb = b.thumbnail_url
     ? `<div class="thumbwrap">
          <img class="thumb" src="${esc(b.thumbnail_url)}" data-photo="${esc(b.thumbnail_url)}"${hasBothViews ? ` data-schem="${esc(b.schematic_url)}"` : ""} alt="Preview of ${esc(b.name)}" width="480" height="270" loading="lazy">
          ${hasBothViews ? `<button type="button" class="thumbToggle" aria-pressed="false" title="Switch between the screenshot and the blueprint schematic">Blueprint view</button>` : ""}
+         ${contentsHtml}
        </div>`
-    : `<img class="thumb thumb-placeholder" src="card-noimage.webp" alt="No preview image supplied for ${esc(b.name)}" width="480" height="270" loading="lazy">`;
+    : `<div class="thumbwrap">
+         <img class="thumb thumb-placeholder" src="card-noimage.webp" alt="No preview image supplied for ${esc(b.name)}" width="480" height="270" loading="lazy">
+         ${contentsHtml}
+       </div>`;
   // Pre-installed: ships inside the mod (in game: Show: Built-in), so there is nothing to
   // download. downloadable = false is the general switch (the server refuses those too).
   const pre = !!b.preinstalled;

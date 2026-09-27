@@ -265,3 +265,29 @@ section.depbox { max-width: none; margin: 0 0 24px; }
   background: rgba(10, 30, 60, 0.65); color: #eaf2ff; cursor: pointer;
 }
 .thumbwrap .thumbToggle:hover { background: rgba(18, 60, 124, 0.9); }
+
+/* Contents overlay: the mod's icons + counts dropped over the picture */
+.thumbwrap .contentsToggle {
+  position: absolute; left: 8px; bottom: 8px;
+  font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(10, 30, 60, 0.65); color: #eaf2ff; cursor: pointer;
+}
+.thumbwrap .contentsToggle:hover, .thumbwrap .contentsToggle[aria-pressed="true"] { background: rgba(18, 60, 124, 0.9); }
+.thumbwrap .contentsToggle:focus-visible, .thumbwrap .thumbToggle:focus-visible { outline: 2px solid #eaf2ff; outline-offset: 2px; }
+.contentsLayer {
+  position: absolute; top: -16px; left: -16px; right: -16px; bottom: 0;
+  display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+  padding: 12px 12px 40px; overflow: auto;
+  background: linear-gradient(180deg, rgba(6, 16, 34, 0.72), rgba(6, 16, 34, 0.35));
+}
+.cchip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 2px;
+  border-radius: 7px; border: 1px solid rgba(255,255,255,0.28); background: rgba(10, 30, 60, 0.85);
+  color: #fff; font: 600 14px/1 Barlow, sans-serif; font-variant-numeric: tabular-nums;
+  animation: bpxDrip .38s cubic-bezier(.2, .9, .3, 1.25) both; animation-delay: calc(var(--i, 0) * 55ms);
+}
+.cchip img { width: 28px; height: 28px; display: block; }
+.cchip-other { padding: 6px 9px; font-weight: 500; color: #cfe0f7; }
+@keyframes bpxDrip { from { opacity: 0; transform: translateY(-16px) scale(.9); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .cchip { animation: none; } }
