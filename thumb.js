@@ -456,10 +456,35 @@ function bpxDrawBlueprintSchematic(bp) {
   const cons = Array.isArray(bp.constructions) ? bp.constructions : [];
   if (!edges.length && !cons.length) return null;
 
-  // Bounds over node positions and construction footprints.
+  // Bounds over node positions, the curves between them and construction footprints.
   let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
   const seen = (x, y) => { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; };
   for (const nd of nodes) if (nd && nd.relative) seen(nd.relative[0], nd.relative[1]);
+
+  // Each edge is the game's cubic Hermite curve between its two nodes (t0 / t1 are the end
+  // tangents), so a curve is sampled rather than drawn as a straight chord -- a roundabout
+  // reads as a circle, a crossover's S-bends as S-bends. Edges without tangents stay straight.
+  const isVec = v => Array.isArray(v) && typeof v[0] === "number" && typeof v[1] === "number";
+  const paths = new Map();
+  for (const e of edges) {
+    const a = e && nodes[e.n0 - 1], b = e && nodes[e.n1 - 1];
+    if (!a || !b || !a.relative || !b.relative) continue;
+    const p0 = a.relative, p1 = b.relative;
+    const pts = [];
+    if (isVec(e.t0) && isVec(e.t1)) {
+      const N = 16;
+      for (let k = 0; k <= N; k++) {
+        const t = k / N, t2 = t * t, t3 = t2 * t;
+        const h00 = 2 * t3 - 3 * t2 + 1, h10 = t3 - 2 * t2 + t, h01 = -2 * t3 + 3 * t2, h11 = t3 - t2;
+        pts.push([h00 * p0[0] + h10 * e.t0[0] + h01 * p1[0] + h11 * e.t1[0],
+                  h00 * p0[1] + h10 * e.t0[1] + h01 * p1[1] + h11 * e.t1[1]]);
+      }
+    } else {
+      pts.push([p0[0], p0[1]], [p1[0], p1[1]]);
+    }
+    pts.forEach(pt => seen(pt[0], pt[1]));
+    paths.set(e, pts);
+  }
   const plots = [];
   for (const c of cons) {
     if (!c || !c.relative) continue;
@@ -517,11 +542,11 @@ function bpxDrawBlueprintSchematic(bp) {
   // blue dashed centerline for the rail read.
   const lw = Math.max(1.5, Math.min(5, 4.5 * scale));
   const line = (e, color, width, dash) => {
-    const a = nodes[e.n0 - 1], b = nodes[e.n1 - 1];
-    if (!a || !b || !a.relative || !b.relative) return;
+    const pts = paths.get(e);
+    if (!pts) return;
     g.beginPath();
-    g.moveTo(X(a.relative[0]), Y(a.relative[1]));
-    g.lineTo(X(b.relative[0]), Y(b.relative[1]));
+    pts.forEach((pt, k) => k ? g.lineTo(X(pt[0]), Y(pt[1])) : g.moveTo(X(pt[0]), Y(pt[1])));
+    g.lineJoin = "round";
     g.strokeStyle = color;
     g.lineWidth = width;
     g.lineCap = "round";
