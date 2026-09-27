@@ -127,6 +127,16 @@ a.btn.big, button.big { font-size: 17px; padding: 11px 20px; }
 /* search / sort / filter bar */
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin: 0 0 16px; }
 .toolbar .search { flex: 1 1 260px; margin: 0; }
+
+/* Pages under the library grid */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 20px 0 0; }
+.pager button { min-width: 38px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 14px/1 Barlow, sans-serif; font-variant-numeric: tabular-nums; cursor: pointer; }
+.pager button:hover:not([disabled]) { border-color: var(--accent); }
+.pager button[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pager button[disabled] { opacity: .45; cursor: default; }
+.pager button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pager .gap { color: var(--ink-2); padding: 0 2px; }
+.pager .pagecount { margin-left: auto; color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; }
 .toolbar label { display: inline; margin: 0 6px 0 0; font-weight: 500; color: var(--ink-2); font-size: 14px; }
 .chips, .catchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .catchips { margin: 0 0 16px; }

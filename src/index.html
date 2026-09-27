@@ -47,6 +47,14 @@
           <option value="az">A&ndash;Z</option>
         </select>
       </div>
+      <div>
+        <label for="perPage">Show</label>
+        <select id="perPage">
+          <option value="20">20</option>
+          <option value="30" selected>30</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
 
     <p class="hint" id="inboxStatus" hidden></p>
@@ -58,6 +66,7 @@
     <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
     <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
     <div class="grid" id="grid"></div>
+    <nav class="pager" id="pager" aria-label="Pages" hidden></nav>
     <div class="empty" id="empty" hidden>Nothing matches that &mdash; try a different search, or <a href="upload.html">be the first to share one</a>.</div>
 
     <div id="examplesNote" class="callout" hidden>
@@ -165,6 +174,11 @@
   let all = [];
   let filterMode = "all";
   let catFilter = ""; // "" = every type
+  // Pages: 20 / 30 / 50 cards per page (remembered per visitor); any change to the search,
+  // filters or sort goes back to page 1.
+  let page = 1;
+  let perPage = 30;
+  try { const saved = Number(localStorage.getItem("bpxPerPage")); if ([20, 30, 50].includes(saved)) perPage = saved; } catch (err) { /* no storage: default */ }
   let ownedIds = new Set(); // blueprints this browser has proved it owns (Edit button)
 
   const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
@@ -208,6 +222,7 @@
     const btn = e.target.closest("button[data-cat]");
     if (!btn) return;
     catFilter = btn.dataset.cat;
+    page = 1;
     document.querySelectorAll("#catChips button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
     render();
   });
@@ -227,7 +242,12 @@
         // order (Crossover 45 before 50 before 100; Roundabout Small before Medium before Large)
         || (sortKey !== "az" && a.preinstalled && b.preinstalled && preOrder(a, b))
         || (sorters[sortKey] || byNewest)(a, b));
-    document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
+    const pages = Math.max(1, Math.ceil(rows.length / perPage));
+    if (page > pages) page = pages;
+    const from = (page - 1) * perPage;
+    const shown = rows.slice(from, from + perPage);
+    document.getElementById("grid").innerHTML = shown.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
+    renderPager(rows.length, pages, from, shown.length);
     document.getElementById("empty").hidden = rows.length > 0;
     document.getElementById("examplesNote").hidden = all.length === 0;
     const preCount = all.filter((b) => b.preinstalled).length;
@@ -238,15 +258,50 @@
     document.getElementById("statEdges").textContent = fmt(all.reduce((s, b) => s + (b.edges || 0), 0));
   }
 
+  // 1 2 3 ... 9 10 -- the current page with its neighbours, the first and the last
+  function pageList(pages) {
+    const want = new Set([1, pages, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pages));
+    const out = [];
+    [...want].sort((a, b) => a - b).forEach((n, i, arr) => { if (i && n - arr[i - 1] > 1) out.push("gap"); out.push(n); });
+    return out;
+  }
+  function renderPager(total, pages, from, count) {
+    const nav = document.getElementById("pager");
+    nav.hidden = total <= perPage;
+    if (nav.hidden) { nav.innerHTML = ""; return; }
+    const btn = (label, target, extra) => `<button type="button" data-page="${target}"${extra || ""}>${label}</button>`;
+    nav.innerHTML =
+      btn("&lsaquo; Prev", page - 1, page === 1 ? " disabled" : "")
+      + pageList(pages).map((n) => n === "gap" ? '<span class="gap" aria-hidden="true">&hellip;</span>'
+          : btn(String(n), n, n === page ? ' aria-current="page"' : "")).join("")
+      + btn("Next &rsaquo;", page + 1, page === pages ? " disabled" : "")
+      + `<span class="pagecount">Showing ${fmt(from + 1)}&ndash;${fmt(from + count)} of ${fmt(total)}</span>`;
+  }
+  document.getElementById("pager").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-page]");
+    if (!b || b.disabled) return;
+    page = Number(b.dataset.page);
+    render();
+    document.getElementById("browse").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("perPage").value = String(perPage);
+  document.getElementById("perPage").addEventListener("change", (e) => {
+    perPage = Number(e.target.value) || 30;
+    try { localStorage.setItem("bpxPerPage", String(perPage)); } catch (err) { /* fine */ }
+    page = 1;
+    render();
+  });
+
   const PRE_SIZE = { Small: 1, Medium: 2, Large: 3 };
   const preKey = (name) => String(name).replace(/(Small|Medium|Large)/, (w) => PRE_SIZE[w]);
   const preOrder = (a, b) => preKey(a.name).localeCompare(preKey(b.name), undefined, { numeric: true, sensitivity: "base" });
 
-  document.getElementById("search").addEventListener("input", render);
-  document.getElementById("sort").addEventListener("change", render);
+  document.getElementById("search").addEventListener("input", () => { page = 1; render(); });
+  document.getElementById("sort").addEventListener("change", () => { page = 1; render(); });
   document.querySelectorAll(".chips button").forEach((btn) => {
     btn.addEventListener("click", () => {
       filterMode = btn.dataset.filter;
+      page = 1;
       document.querySelectorAll(".chips button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
       render();
     });
