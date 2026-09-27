@@ -222,7 +222,11 @@
         || (filterMode === "preinstalled" && b.preinstalled))
       .filter((b) => !catFilter || (b.categories || []).includes(catFilter))
       .filter((b) => !q || [b.name, b.author, b.description, (b.categories || []).join(" "), JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
-      .sort((a, b) => (sortKey !== "az" && (!!a.preinstalled - !!b.preinstalled)) || (sorters[sortKey] || byNewest)(a, b));
+      .sort((a, b) => (sortKey !== "az" && (!!a.preinstalled - !!b.preinstalled))
+        // pre-installed ones were all added at once: among themselves, by name with numbers in
+        // order (Crossover 45 before 50 before 100; Roundabout Small before Medium before Large)
+        || (sortKey !== "az" && a.preinstalled && b.preinstalled && preOrder(a, b))
+        || (sorters[sortKey] || byNewest)(a, b));
     document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
     document.getElementById("empty").hidden = rows.length > 0;
     document.getElementById("examplesNote").hidden = all.length === 0;
@@ -233,6 +237,10 @@
     document.getElementById("statDownloads").textContent = fmt(all.reduce((s, b) => s + (b.downloads || 0), 0));
     document.getElementById("statEdges").textContent = fmt(all.reduce((s, b) => s + (b.edges || 0), 0));
   }
+
+  const PRE_SIZE = { Small: 1, Medium: 2, Large: 3 };
+  const preKey = (name) => String(name).replace(/(Small|Medium|Large)/, (w) => PRE_SIZE[w]);
+  const preOrder = (a, b) => preKey(a.name).localeCompare(preKey(b.name), undefined, { numeric: true, sensitivity: "base" });
 
   document.getElementById("search").addEventListener("input", render);
   document.getElementById("sort").addEventListener("change", render);
