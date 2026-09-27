@@ -258,9 +258,40 @@
   // in: origin -> "community", plus author/description/version so they
   // travel with the file even when it's passed on by hand. Any existing
   // origin/author/description/version keys are replaced.
-  function stampCommunity(text, row) {
+  //
+  // Mod names travel too: the mod records a Workshop mod by id only, so the
+  // game would show "Workshop 1234567". The library knows each mod's name
+  // (bp_dependency_report), so the file gets modNames = { ["id"] = "name" },
+  // and -- for an older upload with no requiredMods record at all -- a
+  // requiredMods list built from the same report, so the game can name what
+  // is missing instead of counting files.
+  async function modStamp(text, row) {
+    if (!row.requires) return "";
+    const { data, error } = await sb.rpc("bp_dependency_report", { p_requires: row.requires });
+    if (error || !Array.isArray(data)) return "";
+    const mods = new Map(); // workshop id -> { name, paths }
+    for (const item of data) {
+      const m = item && item.status === "mod" && item.mod;
+      if (!m || !/^\d+$/.test(String(m.workshop_id))) continue;
+      const id = String(m.workshop_id);
+      if (!mods.has(id)) mods.set(id, { name: m.name || "", paths: [] });
+      mods.get(id).paths.push(item.path);
+    }
+    if (!mods.size) return "";
+    const names = [...mods].map(([id, m]) => `[${luaStr(id)}] = ${luaStr(m.name)}`).join(", ");
+    let stamp = `modNames = {${names}}, `;
+    if (!/\brequiredMods\s*=/.test(text)) {
+      const list = [...mods].map(([id, m]) => `{workshopId = ${luaStr(id)}, modName = ${luaStr(m.name)}, resources = {${m.paths.map(luaStr).join(", ")}}}`).join(", ");
+      stamp += `requiredMods = {${list}}, `;
+    }
+    return stamp;
+  }
+
+  async function stampCommunity(text, row) {
     let out = text.replace(/\b(origin|author|description|version) = (?:"(?:[^"\\]|\\.)*"|\d+|nil)\s*,?\s*/g, "");
-    const stamp = `origin = ${row.official ? '"official"' : '"community"'}, version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, `;
+    let mods = "";
+    try { mods = await modStamp(out, row); } catch (_) { mods = ""; } // names are a nicety: never block a download
+    const stamp = `origin = ${row.official ? '"official"' : '"community"'}, version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, ${mods}`;
     out = out.replace(/return\s*\{/, "return {" + stamp);
     return out.replace(/^-- Origin: .*$/m, `-- Origin: ${row.official ? "official" : "community"} | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
   }
@@ -297,7 +328,7 @@
       alert("All 10 download slots are full in this session -- move the files in and press \"I've moved them\" before downloading more.");
       return;
     }
-    const url = URL.createObjectURL(new Blob([stampCommunity(content, row)], { type: "text/plain" }));
+    const url = URL.createObjectURL(new Blob([await stampCommunity(content, row)], { type: "text/plain" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: fileName });
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
