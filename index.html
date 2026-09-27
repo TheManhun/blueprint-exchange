@@ -46,6 +46,7 @@
         <button type="button" data-filter="all" aria-pressed="true">All</button>
         <button type="button" data-filter="official" aria-pressed="false">Official</button>
         <button type="button" data-filter="community" aria-pressed="false">Community</button>
+        <button type="button" data-filter="preinstalled" aria-pressed="false">Pre-installed</button>
       </div>
       <div>
         <label for="sort">Sort</label>
@@ -73,6 +74,7 @@
       <p><span class="badge" style="margin-left:0">Official</span> These aren&rsquo;t meant to be the best blueprints on the site &mdash; they&rsquo;re just examples of what BPX can capture and share.<br>
       The really impressive stuff should come from you lot. &#x1F604;</p>
       <p>If you build amazing stations, junctions, freight hubs, or entire transport complexes, <a href="upload.html">upload them</a> and show the community what you can do.</p>
+      <p id="preNote" hidden><span class="badge pre" style="margin-left:0">Pre-installed</span> <b id="preCount"></b> blueprints already come with the mod: every base-game industry, scissor crossovers from 45 to 300 km/h, roundabouts in three sizes and three lane widths, and more on the way. They&rsquo;re in your game under <strong>Show: Built-in</strong>, so there&rsquo;s nothing to download. The everyday layouts are covered; the library grows with what <em>you</em> build.</p>
     </div>
   </section>
 
@@ -186,6 +188,7 @@
     newest: byNewest,
     downloads: (a, b) => (b.downloads || 0) - (a.downloads || 0) || byNewest(a, b),
     updated: (a, b) => (((b.version || 1) > 1) - ((a.version || 1) > 1)) || byNewest(a, b),
+    // (pre-installed ones sort after the uploads, except A-Z -- see render)
     az: (a, b) => String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" }),
   };
 
@@ -229,13 +232,19 @@
     const q = document.getElementById("search").value.trim().toLowerCase();
     const sortKey = document.getElementById("sort").value;
     const rows = all
-      .filter((b) => filterMode === "all" || (filterMode === "official" ? b.official : !b.official))
+      .filter((b) => filterMode === "all"
+        || (filterMode === "official" && b.official)
+        || (filterMode === "community" && !b.official && !b.preinstalled)
+        || (filterMode === "preinstalled" && b.preinstalled))
       .filter((b) => !catFilter || (b.categories || []).includes(catFilter))
       .filter((b) => !q || [b.name, b.author, b.description, (b.categories || []).join(" "), JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
-      .sort(sorters[sortKey] || byNewest);
+      .sort((a, b) => (sortKey !== "az" && (!!a.preinstalled - !!b.preinstalled)) || (sorters[sortKey] || byNewest)(a, b));
     document.getElementById("grid").innerHTML = rows.map((b) => blueprintCardHtml(b, { owned: ownedIds.has(b.blueprint_id) })).join("");
     document.getElementById("empty").hidden = rows.length > 0;
     document.getElementById("examplesNote").hidden = all.length === 0;
+    const preCount = all.filter((b) => b.preinstalled).length;
+    document.getElementById("preNote").hidden = preCount === 0;
+    document.getElementById("preCount").textContent = fmt(preCount);
     document.getElementById("statCount").textContent = fmt(all.length);
     document.getElementById("statDownloads").textContent = fmt(all.reduce((s, b) => s + (b.downloads || 0), 0));
     document.getElementById("statEdges").textContent = fmt(all.reduce((s, b) => s + (b.edges || 0), 0));

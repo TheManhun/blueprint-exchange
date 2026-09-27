@@ -53,7 +53,7 @@ async function trackVisit() {
 // and which street/track/bridge types it lists) -- never typed in. The
 // database does the same in bp_categories() (supabase/migrations/
 // bp_categories.sql): keep the two in step. The order is the display order.
-const BPX_CATEGORY_ORDER = ["Truck station", "Bus station", "Rail station", "Airport", "Harbour", "Depot", "Road network", "Rail network", "Bridges & tunnels", "Other"];
+const BPX_CATEGORY_ORDER = ["Truck station", "Bus station", "Rail station", "Airport", "Harbour", "Depot", "Industry", "Road network", "Rail network", "Bridges & tunnels", "Other"];
 
 function bpxCategories(text) {
   const t = String(text || "");
@@ -192,13 +192,24 @@ function blueprintCardHtml(b, opts) {
          ${hasBothViews ? `<button type="button" class="thumbToggle" aria-pressed="false" title="Switch between the screenshot and the blueprint schematic">Blueprint view</button>` : ""}
        </div>`
     : `<img class="thumb thumb-placeholder" src="card-noimage.webp" alt="No preview image supplied for ${esc(b.name)}" width="480" height="270" loading="lazy">`;
-  const button = preview
-    ? `<button class="primary" type="button" disabled>Download</button>`
-    : `<button class="primary" data-id="${b.id}" data-name="${esc(b.name)}">Download</button>`;
-  return `<article class="card${b.official ? " official" : ""}">
+  // Pre-installed: ships inside the mod (in game: Show: Built-in), so there is nothing to
+  // download. downloadable = false is the general switch (the server refuses those too).
+  const pre = !!b.preinstalled;
+  const canDownload = b.downloadable !== false && !pre;
+  const button = pre
+    ? `<span class="btn preinst" title="Already in your game: BPX Library, Show: Built-in">Pre-installed with BPX</span>`
+    : !canDownload
+      ? `<button class="primary" type="button" disabled>Not available to download</button>`
+      : preview
+        ? `<button class="primary" type="button" disabled>Download</button>`
+        : `<button class="primary" data-id="${b.id}" data-name="${esc(b.name)}">Download</button>`;
+  const metaLine = pre
+    ? `${esc(b.author || "BPX Default")} &middot; comes with the mod &middot; in game: Library &rarr; Show: Built-in`
+    : `${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}`;
+  return `<article class="card${b.official ? " official" : ""}${pre ? " preinstalled" : ""}">
     ${thumb}
-    <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}</h3>
-    <div class="meta">${esc(b.author || "anonymous")} &middot; ${new Date(b.created_at).toLocaleDateString()} &middot; v${b.version || 1}${(b.version || 1) > 1 ? " (updated)" : ""} &middot; ${fmt(b.downloads)} download${b.downloads === 1 ? "" : "s"}</div>
+    <h3>${esc(b.name)}${b.official ? ' <span class="badge">Official</span>' : ""}${pre ? ' <span class="badge pre">Pre-installed</span>' : ""}</h3>
+    <div class="meta">${metaLine}</div>
     ${(b.categories || []).length ? `<div class="cats">${b.categories.map((c) => `<span class="cat">${esc(c)}</span>`).join("")}</div>` : ""}
     <p class="desc">${esc(b.description || "")}</p>
     <div class="meta">${fmt(b.constructions)} construction${b.constructions === 1 ? "" : "s"} &middot; ${fmt(b.edges)} segment${b.edges === 1 ? "" : "s"} &middot; ${Math.round((b.size || 0) / 1024)} KB</div>

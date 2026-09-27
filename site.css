@@ -73,6 +73,8 @@ section.panel { background: var(--surface); border: 1px solid var(--line); borde
 .thumb { width: calc(100% + 32px); height: auto; margin: -16px -16px 0; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
 .card h3 { font-size: 22px; margin: 0; }
 .card.official { border-color: var(--accent); }
+.badge.pre { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+.btn.preinst { cursor: default; opacity: .85; }
 .badge { display: inline-block; vertical-align: middle; font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 4px 6px; margin-left: 8px; }
 .meta { color: var(--ink-2); font-size: 14px; }
 .desc { margin: 0; min-height: 1.5em; overflow-wrap: anywhere; }
