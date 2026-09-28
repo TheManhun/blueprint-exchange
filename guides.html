@@ -11,6 +11,10 @@
   .guide-section h2 { margin-top: 0; }
   .guide-section { margin-bottom: 36px; }
   .guide-section h3 { margin-top: 22px; }
+  .start-here { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 20px; align-items: center; margin: 12px 0 8px; }
+  .start-here img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+  .start-here p { margin: 0 0 .8em; max-width: 60ch; }
+  @media (max-width: 760px) { .start-here { grid-template-columns: minmax(0, 1fr); } .start-here a { max-width: 360px; } }
   .tour { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 12px 0 8px; }
   .tour .shot { margin: 0; }
   .tour .shot.wide { grid-column: 1 / -1; }
@@ -46,7 +50,7 @@
     <a href="#capture"><strong>Capture Your Own Blueprint</strong><span>Turn something you built into a file.</span></a>
     <a href="#upload-share"><strong>Upload &amp; Share</strong><span>Put it in the library for everyone.</span></a>
     <a href="#find-folder"><strong>Find Your Transport Fever 2 Folder</strong><span>Where the files need to go.</span></a>
-    <a href="#dependencies"><strong>Dependencies</strong><span>What happens when a blueprint needs a mod.</span></a>
+    <a href="#dependencies"><strong>Dependencies</strong><span>Red, amber, green: the mods a blueprint needs.</span></a>
     <a href="#troubleshooting"><strong>Troubleshooting</strong><span>Quick answers to common snags.</span></a>
   </nav>
 
@@ -54,6 +58,15 @@
   <section class="panel guide-section" id="tour">
     <h2>A Tour of Blueprint Exchange</h2>
     <p class="lede">Everything the mod does, in the game. Click any picture to see it full size.</p>
+
+    <h3>Start here</h3>
+    <div class="start-here">
+      <a href="tour/start.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/start-800.webp" srcset="tour/start-800.webp 800w, tour/start.webp 1000w" sizes="(min-width: 760px) 320px, 100vw" width="1000" height="1000" loading="lazy" alt="Start Blueprint Exchange: click the BPX icon in the bottom bar of Transport Fever 2. Build, Copy, Move, Delete, Share."></a>
+      <div>
+        <p>Subscribe on the <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3807336092" target="_blank" rel="noopener">Steam Workshop</a> or <a href="https://mod.io/g/transportfever2/m/blueprint-exchange" target="_blank" rel="noopener">mod.io</a>, switch Blueprint Exchange on for your save (it can be added to a game you already have), and click the <strong>BPX</strong> icon in the bottom bar.</p>
+        <p>Everything starts from that one window: the Library of ready-made layouts, Capture, Copy, Move, Delete and Undo.</p>
+      </div>
+    </div>
 
     <h3>The Library</h3>
     <div class="tour">
@@ -201,13 +214,26 @@
   <section class="panel guide-section" id="dependencies">
     <h2>Dependencies</h2>
     <p>A dependency is something a blueprint needs that isn&rsquo;t part of the base game &mdash; for example a station or signal that comes from a Workshop mod. If your layout uses mod content, its blueprint depends on that mod.</p>
+
+    <figure>
+      <a href="tour/mod-status.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/mod-status-800.webp" srcset="tour/mod-status-800.webp 800w, tour/mod-status.webp 1600w" sizes="(min-width: 1092px) 1020px, 100vw" width="1600" height="900" loading="lazy" alt="Three Library rows for the same blueprint: red, Pay Your Tolls 2 not installed, check tfbpx.com for links; amber, installed but not enabled for this savegame; green, installed and ready to place."></a>
+      <figcaption>Open a blueprint&rsquo;s row in the Library (the <strong>&gt;</strong> before its name) and every mod it needs is listed by name, with its state.</figcaption>
+    </figure>
+
+    <h3>Red, amber, green</h3>
+    <ul>
+      <li><strong>Red &mdash; not installed.</strong> You don&rsquo;t have the mod. The blueprint&rsquo;s card on tfbpx.com links to it.</li>
+      <li><strong>Amber &mdash; installed, not enabled for this savegame.</strong> You have it, but it isn&rsquo;t switched on in this save. Enable it in the save&rsquo;s mod list and load the game again.</li>
+      <li><strong>Green &mdash; ready.</strong> Place away.</li>
+    </ul>
+    <p>While a mod is red or amber, the row&rsquo;s <strong>Quick</strong> and <strong>Asset</strong> place buttons are greyed out; hover over one to see which mod it is waiting for. The game can&rsquo;t build a building whose files it doesn&rsquo;t have, so BPX never places half a layout or swaps in a substitute.</p>
+
+    <h3>How BPX knows</h3>
     <ul>
       <li>Every blueprint records the content it uses: constructions, track and road types, bridges, tunnels and signal models.</li>
       <li>BPX knows which of those come with the base game. Anything else is <em>external mod content</em>. A blueprint captured with the current mod records which Steam Workshop or mod.io mod each piece came from, so the upload page just lists the mods it needs and attaches them when you press Upload &mdash; nothing to type. Older blueprints without that record ask you for the Workshop ID once.</li>
-      <li>A blueprint can&rsquo;t be published while it uses external content BPX can&rsquo;t identify. Cards show &ldquo;Requires: 1 Workshop mod&rdquo;, and open to a link to the Workshop page. Blueprints that only use base game content list nothing.</li>
-      <li>When you press <strong>Place</strong>, BPX checks each item against what is installed <em>before it builds anything</em>. If something is missing you get a message naming it, and nothing is built.</li>
+      <li>A blueprint can&rsquo;t be published while it uses external content BPX can&rsquo;t identify. Cards show &ldquo;Requires: 1 Workshop mod&rdquo;, and open to a link to the mod&rsquo;s page. Blueprints that only use base game content list nothing.</li>
     </ul>
-    <p>To use a blueprint that needs a mod you don&rsquo;t have, subscribe to that mod on the Steam Workshop, load your game with it enabled, and try again. BPX never guesses or swaps in a substitute.</p>
   </section>
 
   <!-- ============ TROUBLESHOOTING ============ -->
@@ -234,13 +260,23 @@
         <p>In Notepad&rsquo;s Save As box set <strong>Save as type</strong> to <strong>All Files</strong> and type the full name <code>Blueprint_Importer.bat</code>. Already saved as <code>.txt</code>? Turn on <strong>View &rarr; Show &rarr; File name extensions</strong> in File Explorer and rename it. Or use <strong>Download My Blueprint Importer</strong> on the <a href="tools.html">Tools</a> page for the file directly.</p>
       </details>
       <details>
+        <summary>The Quick or Asset button is grey</summary>
+        <p>Hover over it: the tooltip says why. Usually the blueprint needs a mod that isn&rsquo;t installed or isn&rsquo;t switched on in this save &mdash; open the row (the <strong>&gt;</strong> before its name) to see which. See <a href="#dependencies">Dependencies</a>.</p>
+        <p>Asset is also grey for layouts the game&rsquo;s own build tool can&rsquo;t take, such as industries: use <strong>Quick</strong> for those.</p>
+      </details>
+      <details>
         <summary>The blueprint uses a mod I don&rsquo;t have</summary>
-        <p>BPX refuses to place it, tells you which content is missing, and builds nothing. Install the mod that provides it, enable it in your game, and try again. See <a href="#dependencies">Dependencies</a>.</p>
+        <p>BPX won&rsquo;t place it and builds nothing. Install the mod that provides it (the blueprint&rsquo;s card on tfbpx.com links to it), enable it for your save, load the game again and try again. See <a href="#dependencies">Dependencies</a>.</p>
       </details>
       <details>
         <summary>My imported layout looks different</summary>
         <p>Place it on flat, clear ground. A blueprint captured on almost level ground is flattened so it fits anywhere; one with deliberate slopes, bridges or tunnels keeps its heights, so it needs ground that suits it. If the game refuses a spot it says why and builds nothing.</p>
-        <p>Not right after placing? <strong>Undo last blueprint placement</strong> takes back everything that placement built. If a layout doesn&rsquo;t capture or rebuild correctly, that&rsquo;s useful to know &mdash; BPX is a public beta and unusual layouts are exactly what it needs testing on.</p>
+        <p>Not right after placing? <strong>Undo</strong> at the top of the BPX window takes back everything that placement built (and the last Move or Delete too).</p>
+      </details>
+      <details>
+        <summary>Something went wrong &mdash; how do I report it?</summary>
+        <p>Open the <strong>Log</strong> tab in the BPX window: it lists every step BPX took, newest first. The full history is in <code>blueprint_exchange_log.txt</code> next to <code>TransportFever2.exe</code>.</p>
+        <p>Then tell us on the <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">community forum</a>: what you built, what happened, and a copy of the Log. Unusual layouts are exactly how BPX gets better.</p>
       </details>
     </div>
   </section>
