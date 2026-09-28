@@ -41,6 +41,7 @@ a { color: var(--accent); }
 .announce-text { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .announce p { margin: 0; }
 .announce-sub { color: var(--ink-2); font-size: 15px; }
+.announce-btns { display: flex; flex-wrap: wrap; gap: 10px; }
 .announce-text a { font-weight: 600; white-space: nowrap; }
 .announce-shot { display: block; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0, 0, 0, .28); }
 .announce-shot img { display: block; width: 100%; height: auto; max-width: 100%; transition: transform .25s ease; }
