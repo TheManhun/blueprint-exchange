@@ -163,13 +163,13 @@ const bpxSteamUrl = (id) => /^[0-9]{1,15}$/.test(String(id)) ? "https://steamcom
 // ---------------------------------------------------------------------------
 const BPX_CONTENT_ORDER = ["coal", "ironore", "crude", "forest", "stone", "grain", "chemical", "materials", "food",
   "fuel", "goods", "machines", "refinery", "sawmill", "steel", "tools", "industry",
-  "station", "bus", "truck", "air", "harbour", "track", "road",
+  "station", "bus", "truck", "bays", "air", "harbour", "track", "road",
   "railbridge", "roadbridge", "railtunnel", "roadtunnel", "mods"];
 const BPX_CONTENT_NAMES = {
   coal: "Coal mine", ironore: "Iron ore mine", crude: "Oil well", forest: "Forest", stone: "Quarry", grain: "Farm",
   chemical: "Chemical plant", materials: "Building materials plant", food: "Food processing plant", fuel: "Fuel refinery",
   goods: "Goods factory", machines: "Machines factory", refinery: "Oil refinery", sawmill: "Saw mill", steel: "Steel mill",
-  tools: "Tools factory", industry: "Industry", station: "Train station", bus: "Bus station", truck: "Truck station",
+  tools: "Tools factory", industry: "Industry", station: "Train station", bus: "Bus station", truck: "Truck station", bays: "Bus / truck bays",
   air: "Airport", harbour: "Harbour", track: "Track pieces", road: "Road pieces", railbridge: "Rail bridge pieces",
   roadbridge: "Road bridge pieces", railtunnel: "Rail tunnel pieces", roadtunnel: "Road tunnel pieces", mods: "Mods needed",
 };
@@ -214,6 +214,21 @@ function bpxContentsOf(bp) {
     else if (e && e.edgeType === 2) add(track ? "railtunnel" : "roadtunnel");
     else add(track ? "track" : "road");
   }
+  // the bus + truck terminals' bays: the columns holding platform modules (bp_summary terminalBays)
+  let bays = 0;
+  for (const piece of list(bp && bp.constructions)) {
+    const modules = piece && piece.params && piece.params.modules;
+    if (!/modular_terminal/.test(String((piece && piece.fileName) || "")) || !modules || typeof modules !== "object") continue;
+    const cols = { bus: new Set(), truck: new Set() };
+    for (const slot of Object.keys(modules)) {
+      const name = String((modules[slot] && modules[slot].name) || "");
+      if (name.includes("_platform.module") && /^[0-9]+$/.test(slot)) {
+        cols[name.includes("cargo") ? "truck" : "bus"].add((Math.floor(Number(slot) / 100) % 2000) - 100);
+      }
+    }
+    bays += cols.bus.size + cols.truck.size;
+  }
+  if (bays > 0) add("bays", bays);
   const mods = list(bp && bp.requiredMods).length;
   if (mods > 0) add("mods", mods);
   const parts = BPX_CONTENT_ORDER.filter((k) => counts[k]).map((k) => k + ":" + counts[k]);
