@@ -11,6 +11,12 @@
   .guide-section h2 { margin-top: 0; }
   .guide-section { margin-bottom: 36px; }
   .guide-section h3 { margin-top: 22px; }
+  .tour { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 12px 0 8px; }
+  .tour .shot { margin: 0; }
+  .tour .shot.wide { grid-column: 1 / -1; }
+  .tour .shot a { display: block; border-radius: 8px; }
+  .tour .shot a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (max-width: 760px) { .tour { grid-template-columns: minmax(0, 1fr); } }
   .guide-actions { margin: 18px 0 0; display: flex; flex-wrap: wrap; gap: 10px; }
 </style>
 </head>
@@ -35,6 +41,7 @@
   </div>
 
   <nav class="guide-cards" aria-label="Guides">
+    <a href="#tour"><strong>A Tour of Blueprint Exchange</strong><span>See everything it does, in pictures.</span></a>
     <a href="#download-import"><strong>Download &amp; Import Blueprints</strong><span>Get a community blueprint into your game.</span></a>
     <a href="#capture"><strong>Capture Your Own Blueprint</strong><span>Turn something you built into a file.</span></a>
     <a href="#upload-share"><strong>Upload &amp; Share</strong><span>Put it in the library for everyone.</span></a>
@@ -42,6 +49,52 @@
     <a href="#dependencies"><strong>Dependencies</strong><span>What happens when a blueprint needs a mod.</span></a>
     <a href="#troubleshooting"><strong>Troubleshooting</strong><span>Quick answers to common snags.</span></a>
   </nav>
+
+  <!-- ============ TOUR (Epod's 1.0 screenshots) ============ -->
+  <section class="panel guide-section" id="tour">
+    <h2>A Tour of Blueprint Exchange</h2>
+    <p class="lede">Everything the mod does, in the game. Click any picture to see it full size.</p>
+
+    <h3>The Library</h3>
+    <div class="tour">
+      <figure class="shot wide"><a href="tour/library.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/library-800.webp" srcset="tour/library-800.webp 800w, tour/library.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="1013" loading="lazy" alt="The Blueprint Exchange window: Capture, Import downloads, Copy, Move, Delete and Undo along the top, and the Library of built-in blueprints with icons and counts for what each holds"></a>
+        <figcaption>90 built-in blueprints to start with: stations, yards, junctions, hubs and every base-game industry. The icons show what each one holds. <strong>Quick</strong> places it with BPX; <strong>Asset</strong> places it with the game&rsquo;s own build tool.</figcaption></figure>
+      <figure class="shot"><a href="tour/place-industry.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/place-industry-800.webp" srcset="tour/place-industry-800.webp 800w, tour/place-industry.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="780" loading="lazy" alt="The Building Materials plant on the cursor, placing on open grass, with a turn slider and -90 / +90 buttons"></a>
+        <figcaption>Place any base-game industry, turned any way you like. Green means it fits: click to build.</figcaption></figure>
+      <figure class="shot"><a href="tour/asset-place.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/asset-place-800.webp" srcset="tour/asset-place-800.webp 800w, tour/asset-place.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="780" loading="lazy" alt="Central Station 16 Mixed shown as a blue ghost on the map, waiting in the build menu's Assets tab as the BPX asset"></a>
+        <figcaption>Asset place: pick the BPX asset in the build menu (Assets &gt; Misc) and place it with the game&rsquo;s own tool. N and M turn it.</figcaption></figure>
+    </div>
+
+    <h3>Capture your own</h3>
+    <div class="tour">
+      <figure class="shot wide"><a href="tour/capture-name.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/capture-name-800.webp" srcset="tour/capture-name-800.webp 800w, tour/capture-name.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="460" loading="lazy" alt="The Name your blueprint box, with the next steps written underneath"></a>
+        <figcaption>Name it first. The box tells you what comes next.</figcaption></figure>
+      <figure class="shot"><a href="tour/capture-sweep.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/capture-sweep-800.webp" srcset="tour/capture-sweep-800.webp 800w, tour/capture-sweep.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="814" loading="lazy" alt="A station inside a curving road on bridges, covered by overlapping green capture circles, with Add, Remove, a circle-size slider and Save"></a>
+        <figcaption>Sweep circles over everything it should include. The strip counts the road/track pieces and buildings it found.</figcaption></figure>
+      <figure class="shot"><a href="tour/capture-test.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/capture-test-800.webp" srcset="tour/capture-test-800.webp 800w, tour/capture-test.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="793" loading="lazy" alt="A grey outline of the captured layout following the cursor, next to the original, with turn buttons"></a>
+        <figcaption>Save puts a test copy on your cursor, so you can check it before you keep it.</figcaption></figure>
+      <figure class="shot wide"><a href="tour/capture-saved.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/capture-saved-800.webp" srcset="tour/capture-saved-800.webp 800w, tour/capture-saved.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="386" loading="lazy" alt="The Library filtered to Mine, showing the new blueprint with its icons and a message that it is saved"></a>
+        <figcaption>Saved to your Library, ready to use and to share. The test copy is removed.</figcaption></figure>
+    </div>
+
+    <h3>Copy, Move and Delete on the map</h3>
+    <div class="tour">
+      <figure class="shot"><a href="tour/copy.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/copy-800.webp" srcset="tour/copy-800.webp 800w, tour/copy.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="1012" loading="lazy" alt="Copy mode: a long station with all its tracks and signals selected by green circles, 1088 pieces, Ready to place"></a>
+        <figcaption>Copy anything you&rsquo;ve built, however big, and place it somewhere else. This one is 1,088 pieces.</figcaption></figure>
+      <figure class="shot"><a href="tour/move.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/move-800.webp" srcset="tour/move-800.webp 800w, tour/move.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="881" loading="lazy" alt="Move mode: the same station selected in orange, Ready to move"></a>
+        <figcaption>Move picks it all up, tracks and signals included, and puts it down where you click. Switch <strong>Industries</strong> on to take industries with it.</figcaption></figure>
+      <figure class="shot"><a href="tour/delete.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/delete-800.webp" srcset="tour/delete-800.webp 800w, tour/delete.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="958" loading="lazy" alt="Delete mode: a station, bus and truck terminals and roads marked in red for removal"></a>
+        <figcaption>Delete clears everything inside the circles in one go. <strong>Undo</strong> puts it back.</figcaption></figure>
+      <figure class="shot"><a href="tour/copied-tab.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/copied-tab-800.webp" srcset="tour/copied-tab-800.webp 800w, tour/copied-tab.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="700" loading="lazy" alt="The Copied tab listing a recent copy with its icons, next to two copies of the station on the map"></a>
+        <figcaption>Your last 12 copies are kept in the <strong>Copied</strong> tab. Moves have their own <strong>Moved</strong> tab.</figcaption></figure>
+    </div>
+
+    <h3>See what happened</h3>
+    <div class="tour">
+      <figure class="shot wide"><a href="tour/log.webp" target="_blank" rel="noopener" title="Open full size"><img src="tour/log-800.webp" srcset="tour/log-800.webp 800w, tour/log.webp 1600w" sizes="(min-width: 760px) 520px, 100vw" width="1600" height="1038" loading="lazy" alt="The Log tab: the latest messages with times, newest first"></a>
+        <figcaption>The <strong>Log</strong> tab shows every step, newest first. The full history is in <code>blueprint_exchange_log.txt</code> next to the game.</figcaption></figure>
+    </div>
+  </section>
 
   <!-- ============ DOWNLOAD & IMPORT ============ -->
   <section class="panel guide-section" id="download-import">
@@ -80,18 +133,17 @@
 
     <ol class="steps">
       <li><strong>Build your layout</strong> in a sandbox game. Flat ground is best &mdash; use the terrain tool to level a patch first, and your blueprint will place cleanly anywhere. (The map editor has no rails, so build in a game.)</li>
-      <li>Click the <strong>BPX</strong> icon in the bottom bar and open the <strong>Capture a design</strong> tab.</li>
-      <li><strong>Type a name</strong> in the box. The mod will not start a capture without one.</li>
-      <li>Press <strong>Capture</strong>, then <strong>click on the map</strong>. Every click adds a circle and the status line counts what it found. Keep clicking until every building, track and signal is inside a circle. The <strong>Circle size</strong> slider makes the circle bigger or smaller.</li>
-      <li>Press <strong>Save</strong>. Your blueprint is written as a file and appears in your library.</li>
+      <li>Click the <strong>BPX</strong> icon in the bottom bar and press <strong>Capture</strong>.</li>
+      <li><strong>Type a name</strong> and press <strong>Confirm name</strong>.</li>
+      <li><strong>Click on the map</strong> to sweep circles over your layout. Every click adds a circle and the strip counts what it found. <strong>Remove</strong> takes pieces back out, and the slider makes the circle bigger or smaller.</li>
+      <li>Press <strong>Save</strong>. A test copy of your blueprint appears on the cursor: turn it with the slider or the <strong>-90&deg;</strong> and <strong>+90&deg;</strong> buttons and click the map to build it.</li>
+      <li>Look it over. Happy with it? Press <strong>Ready to save</strong>. It goes into your Library and the test copy is removed. Missed a bit? Cancel and capture again with a wider sweep.</li>
     </ol>
 
-    <h3>Check it before you share it</h3>
-    <ol class="steps">
-      <li>Press <strong>Place</strong> and move the mouse over the map: a blue shadow of the whole layout follows the cursor. Turn it with the slider or the <strong>-90</strong> and <strong>+90</strong> buttons, then click to build a test copy.</li>
-      <li>Look it over. Missed a bit? Press <strong>Undo &amp; capture again</strong>, which removes the test copy, then capture again under the same name with a wider chain of circles.</li>
-      <li>Happy with it? Press <strong>Keep blueprint</strong>. Changed your mind about where you put it later? <strong>Undo last blueprint placement</strong> removes everything the last placement built.</li>
-    </ol>
+    <p>As it saves, BPX tidies up small hand-drawn slips: a road drawn at 91&deg; is squared to 90&deg;, and small kinks in a slope are smoothed. Anything attached to a building stays exactly where you put it. The Log tab lists what it changed.</p>
+
+    <h3>Placed it in the wrong spot?</h3>
+    <p>Press <strong>Undo</strong> at the top of the BPX window. It removes everything the last placement built, and it also takes back the last Move or Delete.</p>
 
     <div class="callout">
       <p><strong>Where is the file?</strong> Your blueprint is saved as <code>blueprint_&lt;name&gt;.lua</code> in the Transport Fever 2 folder, right next to <code>TransportFever2.exe</code>. That is the file you upload.</p>
@@ -99,7 +151,7 @@
     </div>
 
     <h3>What gets captured</h3>
-    <p>Player-built constructions (stations, depots, assets) with their names, free-laid track and roads with their switches, bridges and tunnels, and signals. Industries and town buildings are never captured &mdash; the game can&rsquo;t rebuild those.</p>
+    <p>Player-built constructions (stations, depots, assets) with their names, free-laid track and roads with their switches, bridges and tunnels, and signals. Capture leaves industries and town buildings out. To bring an industry along, use <strong>Copy</strong> or <strong>Move</strong> with <strong>Industries</strong> switched on, or place one of the 16 base-game industries from the built-in Library.</p>
   </section>
 
   <!-- ============ UPLOAD & SHARE ============ -->
