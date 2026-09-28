@@ -52,6 +52,22 @@ a { color: var(--accent); }
   background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 5px 10px; }
 .hint { color: var(--ink-2); font-size: 14px; margin: 4px 0 0; }
 
+/* Creator Edition: the flat designer maps (library page) */
+.creator { margin: 0 0 24px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.creator-head p { margin: 0 0 12px; color: var(--ink-2); }
+.creator-head h2 { margin-top: 6px; }
+.creator-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.creator-btns .hint { margin: 0; }
+.creator-eras { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.creator-eras a { display: flex; flex-direction: column; gap: 4px; height: 100%; color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface-2); padding-bottom: 12px; }
+.creator-eras img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 6px; }
+.creator-eras b { font: 600 20px/1.1 "Barlow Condensed", Barlow, sans-serif; padding: 0 12px; }
+.creator-eras span { color: var(--ink-2); font-size: 14px; padding: 0 12px; }
+.creator-eras a:hover b { color: var(--accent); }
+.creator-eras a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 720px) { .creator-eras { grid-template-columns: 1fr; } }
+
 /* ---------- header, navigation, footer (same on every page) ---------- */
 .masthead { display: block; margin: 0 0 14px; font-size: 0; line-height: 0; }
 .masthead img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
