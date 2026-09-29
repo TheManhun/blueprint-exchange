@@ -1,3 +1,4 @@
+-- APPLIED 2026-09-30 (migrations bp_reports_report_a_problem + bp_reports_drop_nul_check).
 -- tfbpx.com "Report a problem" (Epod, 2026-09-30: 'can we add an upload-your-reports page ... only allows lua and
 -- txt ... maybe a scan to make sure it's not a virus'). Run once in the Supabase SQL editor (project aijqcrrcreectihaeqoc).
 --
@@ -47,9 +48,7 @@ begin
     if v_recent >= 5 then
         return jsonb_build_object('ok', false, 'error', 'Thanks -- that is 5 reports this hour. Please try again later.');
     end if;
-    if (v_log is not null and position(chr(0) in v_log) > 0) or (v_blueprint is not null and position(chr(0) in v_blueprint) > 0) then
-        return jsonb_build_object('ok', false, 'error', 'Only plain text files can be sent.');
-    end if;
+    -- (no NUL check: Postgres text cannot hold a NUL byte at all, and chr(0) itself is refused -- live, 2026-09-30)
     if char_length(coalesce(v_log, '')) > 600000 or char_length(coalesce(v_blueprint, '')) > 4000000 then
         return jsonb_build_object('ok', false, 'error', 'A file is too big (log 600 KB, blueprint 4 MB at most).');
     end if;
