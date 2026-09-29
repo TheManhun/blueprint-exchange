@@ -153,7 +153,6 @@
             <option value="all">Everything</option>
             <option value="personal">Yours</option>
             <option value="community">Downloaded</option>
-            <option value="default">Built-in</option>
             <option value="update">Update on the site</option>
           </select>
         </div>
@@ -176,7 +175,7 @@
         <span class="total" id="total"></span>
       </div>
       <div class="msg" id="bpMsg" role="status"></div>
-      <p class="hint">Built-in blueprints come with the mod, so they can be backed up but not deleted here. After deleting, BPX drops the blueprint from its library the next time you open it.</p>
+      <p class="hint">The built-in blueprints that come with BPX aren&rsquo;t listed here &mdash; to hide one, delete it in game (BPX library &rarr; Delete). After deleting here, BPX drops the blueprint from its library the next time you open it.</p>
     </section>
 
     <section class="panel backups">
@@ -310,7 +309,8 @@
 
   // ---- the blueprint list ----
   async function refreshFiles() {
-    files = await BPXFolder.listBlueprints(dir);
+    // built-ins are the mod's own (deleted in game they stay gone; deleted here they come back) -- not shown, so nothing confuses
+    files = (await BPXFolder.listBlueprints(dir)).filter((f) => f.origin !== "default");
     const names = new Set(files.map((f) => f.file));
     [...selected].forEach((n) => { if (!names.has(n)) selected.delete(n); });
     files.forEach((f) => { const site = f.bpxId && byBpx.get(f.bpxId); f.update = site && (site.version || 1) > f.version ? site : null; });
@@ -346,7 +346,7 @@
     $("all").checked = rows.length > 0 && rows.every((f) => selected.has(f.file));
     const sel = files.filter((f) => selected.has(f.file));
     $("backupSel").disabled = !sel.length;
-    $("deleteSel").disabled = !sel.some((f) => f.origin !== "default");
+    $("deleteSel").disabled = !sel.length;
     $("updateSel").disabled = !sel.some((f) => f.update);
   }
   $("rows").addEventListener("change", (e) => {
@@ -387,7 +387,7 @@
   }
 
   $("deleteSel").addEventListener("click", async () => {
-    const sel = files.filter((f) => selected.has(f.file) && f.origin !== "default");
+    const sel = files.filter((f) => selected.has(f.file));
     const bytes = sel.reduce((s, f) => s + f.size, 0);
     const ok = await confirmFiles(`Delete ${sel.length} blueprint${sel.length === 1 ? "" : "s"} (${kb(bytes)})?`,
       "A copy of each goes into BPX backups first, so you can put them back from the Backups list.",
