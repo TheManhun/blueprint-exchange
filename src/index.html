@@ -158,6 +158,22 @@
   <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
 </dialog>
 
+<!-- Epod: 'if you reach 10 downloads, a popup: you downloaded 10 files, move them to the game folder now; a button
+     "I have moved the 10 files and imported them"; warn them not doing this will overwrite the files they downloaded' -->
+<dialog id="fullDlg" aria-labelledby="fullTitle">
+  <h2 id="fullTitle">You&rsquo;ve downloaded 10 blueprints</h2>
+  <p>That fills all 10 download names the mod knows (<code>blueprint_import.lua</code> to <code>blueprint_import_10.lua</code>). Before you download any more:</p>
+  <ol class="steps">
+    <li>Move all 10 files from your Downloads folder into your Transport Fever 2 game folder (the one with <code>TransportFever2.exe</code>) &mdash; or run your <a href="tools.html">one-click importer</a>.</li>
+    <li>In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong>. All 10 land in your library in one press.</li>
+  </ol>
+  <p class="msg bad"><strong>Please do this first.</strong> The next downloads start again at <code>blueprint_import.lua</code>. If the first 10 haven&rsquo;t been moved in and imported, the new files will overwrite them &mdash; and those blueprints will be lost.</p>
+  <div class="row">
+    <button class="primary" id="fullDone" autofocus>I have moved the 10 files and imported them</button>
+    <button id="fullLater">Not yet</button>
+  </div>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="site.js"></script>
 <script>
@@ -173,14 +189,20 @@
   // never a false block.
   const INBOX_SLOT_COUNT = 10;
   const INBOX_KEY = "bpxInboxSlot";
-  const hasSessionStorage = (() => {
-    try { sessionStorage.setItem("bpxTest", "1"); sessionStorage.removeItem("bpxTest"); return true; }
-    catch (err) { return false; }
+  // Kept for the whole site in this browser (every tab shares it -- a new tab used to start again at 0 and hand out
+  // blueprint_import.lua while the first one still waited), in this tab only if the browser blocks that.
+  const inboxStore = (() => {
+    for (const store of [() => localStorage, () => sessionStorage]) {
+      try { const s = store(); s.setItem("bpxTest", "1"); s.removeItem("bpxTest"); return s; }
+      catch (err) { /* try the next */ }
+    }
+    return null;
   })();
+  const hasSessionStorage = inboxStore !== null;   // (the old name: 'the counter can be kept')
 
   function inboxSlotsUsed() {
     if (!hasSessionStorage) return 0;
-    return Number(sessionStorage.getItem(INBOX_KEY) || "0");
+    return Number(inboxStore.getItem(INBOX_KEY) || "0");
   }
 
   function inboxSlotName(n) {
@@ -194,13 +216,13 @@
     const used = inboxSlotsUsed();
     if (used >= INBOX_SLOT_COUNT) return null;
     const next = used + 1;
-    sessionStorage.setItem(INBOX_KEY, String(next));
+    inboxStore.setItem(INBOX_KEY, String(next));
     updateInboxIndicator();
     return inboxSlotName(next);
   }
 
   function resetInboxSlots() {
-    if (hasSessionStorage) sessionStorage.removeItem(INBOX_KEY);
+    if (hasSessionStorage) inboxStore.removeItem(INBOX_KEY);
     updateInboxIndicator();
   }
 
@@ -225,6 +247,13 @@
   }
 
   document.getElementById("inboxResetBtn").addEventListener("click", resetInboxSlots);
+  // the popup at 10 (and on any download tried while full)
+  const fullDlg = document.getElementById("fullDlg");
+  function showInboxFull() { if (!fullDlg.open) fullDlg.showModal(); }
+  document.getElementById("fullDone").addEventListener("click", () => { resetInboxSlots(); fullDlg.close(); });
+  document.getElementById("fullLater").addEventListener("click", () => fullDlg.close());
+  // another tab downloaded or reset: follow it
+  window.addEventListener("storage", (e) => { if (e.key === INBOX_KEY) updateInboxIndicator(); });
 
   // ---- the library ----
   let all = [];
@@ -416,7 +445,7 @@
     // already claimed this session; nothing to write the file as.
     if (inboxSlotsUsed() >= INBOX_SLOT_COUNT && hasSessionStorage) {
       updateInboxIndicator();
-      document.getElementById("inboxBlocked").scrollIntoView({ behavior: "smooth", block: "center" });
+      showInboxFull();
       return;
     }
 
@@ -437,7 +466,7 @@
       // second tab in the same session) -- extremely unlikely, but
       // never hand out an unnamed file.
       updateInboxIndicator();
-      alert("All 10 download slots are full in this session -- move the files in and press \"I've moved them\" before downloading more.");
+      showInboxFull();
       return;
     }
     const url = URL.createObjectURL(new Blob([await stampCommunity(content, row)], { type: "text/plain" }));
@@ -446,8 +475,11 @@
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     document.getElementById("dlgFile").textContent = fileName;
     document.getElementById("dlgName").textContent = fileBase;
-    document.getElementById("dlgBody").textContent = `"${btn.dataset.name}" is in your downloads folder.`;
-    document.getElementById("dlg").showModal();
+    const usedNow = inboxSlotsUsed();
+    document.getElementById("dlgBody").textContent = `"${btn.dataset.name}" is in your downloads folder`
+      + (hasSessionStorage ? ` (download ${usedNow} of ${INBOX_SLOT_COUNT}).` : ".");
+    if (hasSessionStorage && usedNow >= INBOX_SLOT_COUNT) showInboxFull();
+    else document.getElementById("dlg").showModal();
     load();
   });
 
