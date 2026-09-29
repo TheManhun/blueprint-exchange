@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Blueprint Manager</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Manage the Blueprint Exchange blueprints on your PC: back up, delete, restore, send downloads straight to your game and see which mods you already have.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .perms { display: grid; gap: 12px; margin: 14px 0 18px; }
+  .perm { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .perm input { width: 22px; height: 22px; margin: 2px 0 0; grid-row: span 2; accent-color: var(--accent); }
+  .perm label { margin: 0; font-weight: 600; font-size: 17px; cursor: pointer; }
+  .perm ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; }
+  .perm li { margin: 2px 0; }
+  .perm .need { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin-left: 6px; font-weight: 600; }
+  .conn { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 16px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); margin-bottom: 18px; }
+  .conn strong { font-size: 17px; }
+  .conn .spacer { flex: 1; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }
+  .pill.ok { background: var(--ok); color: #fff; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  table.bps { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  table.bps th, table.bps td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+  table.bps th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); background: var(--surface-2); position: sticky; top: 0; cursor: pointer; white-space: nowrap; }
+  table.bps th.nosort { cursor: default; }
+  table.bps td.num, table.bps th.num { text-align: right; }
+  table.bps tr:last-child td { border-bottom: 0; }
+  table.bps td .file { display: block; font: 12px "JetBrains Mono", monospace; color: var(--ink-2); overflow-wrap: anywhere; }
+  table.bps input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+  .tag { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+  .tag.yours { background: var(--accent-soft); color: var(--accent); }
+  .tag.upd { background: var(--warn-soft); color: var(--warn); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+  .actions .total { color: var(--ink-2); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .tbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 10px; }
+  .tbar .search { flex: 1 1 220px; }
+  .tbar input, .tbar select { margin: 0; }
+  .slots { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .slot { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }
+  .slot.waiting { background: var(--ok); color: #fff; }
+  .backups details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 10px 14px; margin: 8px 0; }
+  .backups summary { cursor: pointer; font-weight: 600; }
+  .backups ul { columns: 2 260px; font: 13px "JetBrains Mono", monospace; color: var(--ink-2); margin: 8px 0; }
+  .modcheck li { margin: 4px 0; }
+  dialog ul.names { max-height: 260px; overflow: auto; font: 13px "JetBrains Mono", monospace; background: var(--surface-2); border-radius: 6px; padding: 8px 8px 8px 26px; }
+  section.panel h2 .pill { vertical-align: middle; margin-left: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:tools-->
+
+  <div class="page-head">
+    <h1>Blueprint Manager</h1>
+    <p class="sub">Your blueprints, tidy: back up, delete, put back, and send downloads straight into your game.</p>
+  </div>
+
+  <div class="msg bad" id="unsupported" hidden>
+    <strong>This browser can&rsquo;t open folders for a web page.</strong> The Blueprint Manager works in <strong>Chrome</strong> and <strong>Edge</strong> on a PC.
+    Firefox and Safari don&rsquo;t offer folder access &mdash; you can still download blueprints from the <a href="./">library</a> and move them in by hand, or use the <a href="tools.html">one-click importer</a>.
+  </div>
+
+  <!-- ============ 1. what you allow ============ -->
+  <section class="panel" id="permsPanel">
+    <h2>What you allow</h2>
+    <p class="lede">Nothing happens until you tick a box and press the button. Everything runs here in your browser &mdash; your files are never uploaded. Chrome / Edge will also ask you once more in their own words, and you can take it back any time.</p>
+
+    <div class="perms">
+      <div class="perm">
+        <input type="checkbox" id="cFolder">
+        <label for="cFolder">Manage my blueprint folder <span class="need">needed</span></label>
+        <ul>
+          <li>You pick the folder (your Transport Fever 2 folder, where <code>blueprint_*.lua</code> files live). The page sees only that folder.</li>
+          <li>It reads the first lines of each blueprint file (name, date, version) to list them, and checks whether the mod&rsquo;s 10 import slots (<code>blueprint_import*.lua</code>) are empty so a download never overwrites one that&rsquo;s waiting.</li>
+          <li>It only writes or deletes <code>blueprint_*.lua</code> files when you press a button that names them first. Anything deleted is copied to a <code>BPX backups</code> folder first.</li>
+          <li>It never opens the mod&rsquo;s own files (index, settings, log) or anything else in that folder.</li>
+        </ul>
+      </div>
+      <div class="perm">
+        <input type="checkbox" id="cSignin">
+        <label for="cSignin">Sign me in automatically and remember my downloads <span class="need">optional</span></label>
+        <ul>
+          <li>The page saves a random key in <code>bpx_player_key.txt</code> in that folder. Opening the folder signs you in &mdash; no name, email, password or Steam account.</li>
+          <li>tfbpx.com stores a scrambled copy of the key and the list of blueprints you download here (which one, when, how many times). That&rsquo;s all.</li>
+          <li><strong>Forget me</strong> deletes all of it from the site, straight away.</li>
+        </ul>
+      </div>
+      <div class="perm">
+        <input type="checkbox" id="cMods">
+        <label for="cMods">Compare my mods <span class="need">optional</span></label>
+        <ul>
+          <li>You pick your Steam Workshop and/or mod.io mods folder. The page reads only the folder names &mdash; they&rsquo;re the mod numbers.</li>
+          <li>The list stays in this browser and is never sent to us. The library then shows which blueprints you can place with the mods you have.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <button type="button" class="primary big" id="connectBtn" disabled>Choose my blueprint folder</button>
+      <button type="button" class="big" id="reconnectBtn" hidden>Open my folder again</button>
+      <a class="btn big" href="https://github.com/TheManhun/blueprint-exchange/blob/master/bpx-folder.js" target="_blank" rel="noopener">Read the code</a>
+    </div>
+    <div class="msg" id="connectMsg" role="status"></div>
+
+    <details class="faq" style="margin-top:14px">
+      <summary>Chrome says &ldquo;Can&rsquo;t open this folder because it contains system files&rdquo;</summary>
+      <p>Browsers won&rsquo;t let any web page into <code>C:\Program Files</code> or <code>C:\Program Files (x86)</code>, and that&rsquo;s where Steam puts Transport Fever 2 unless you chose another drive. If your game lives on another drive (like <code>D:\SteamLibrary\...</code>) it works today.</p>
+      <p>The next Blueprint Exchange update keeps your blueprints in <code>Documents\Blueprint Exchange</code>, which every browser can open. Until then, download from the <a href="./">library</a> as usual or use the <a href="tools.html">one-click importer</a>.</p>
+    </details>
+  </section>
+
+  <!-- ============ 2. connected ============ -->
+  <div id="app" hidden>
+    <div class="conn">
+      <span>Folder</span> <strong id="folderName"></strong>
+      <span class="pill" id="signPill">Not signed in</span>
+      <span class="spacer"></span>
+      <button type="button" id="refreshBtn">Refresh</button>
+      <button type="button" id="permsBtn">Change what I allow</button>
+      <button type="button" id="disconnectBtn">Disconnect</button>
+    </div>
+
+    <section class="panel" id="inboxPanel">
+      <h2>Waiting for Import</h2>
+      <p class="lede" id="inboxText"></p>
+      <div class="slots" id="slots"></div>
+    </section>
+
+    <section class="panel">
+      <h2>My blueprints <span class="pill" id="bpCount"></span></h2>
+      <div class="tbar">
+        <div class="search"><label for="q">Search</label><input type="text" id="q" placeholder="Name or file" autocomplete="off"></div>
+        <div><label for="show">Show</label>
+          <select id="show">
+            <option value="all">Everything</option>
+            <option value="personal">Yours</option>
+            <option value="community">Downloaded</option>
+            <option value="default">Built-in</option>
+            <option value="update">Update on the site</option>
+          </select>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table class="bps">
+          <thead><tr>
+            <th class="nosort"><input type="checkbox" id="all" aria-label="Select all shown"></th>
+            <th data-sort="name">Name</th><th data-sort="origin">Kind</th><th data-sort="version" class="num">Ver.</th>
+            <th data-sort="size" class="num">Size</th><th data-sort="modified">Changed</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="backupSel" disabled>Back up selected</button>
+        <button type="button" id="deleteSel" disabled>Delete selected&hellip;</button>
+        <button type="button" id="updateSel" disabled>Get updates</button>
+        <button type="button" id="backupAll">Back up everything</button>
+        <span class="total" id="total"></span>
+      </div>
+      <div class="msg" id="bpMsg" role="status"></div>
+      <p class="hint">Built-in blueprints come with the mod, so they can be backed up but not deleted here. After deleting, BPX drops the blueprint from its library the next time you open it.</p>
+    </section>
+
+    <section class="panel backups">
+      <h2>Backups</h2>
+      <p class="lede">Kept in <code>BPX backups</code> inside your blueprint folder. <strong>Put back</strong> never overwrites a blueprint you have now.</p>
+      <div id="backups"></div>
+      <div class="msg" id="backupMsg" role="status"></div>
+    </section>
+
+    <section class="panel" id="historyPanel" hidden>
+      <h2>My downloads</h2>
+      <p class="lede">Everything you&rsquo;ve downloaded from tfbpx.com while signed in &mdash; send any of them to your game again in one click.</p>
+      <div class="tablewrap">
+        <table class="bps">
+          <thead><tr><th class="nosort">Blueprint</th><th class="nosort">Last downloaded</th><th class="nosort num">Times</th><th class="nosort"></th></tr></thead>
+          <tbody id="history"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" id="forgetBtn">Forget me&hellip;</button>
+        <span class="hint" style="margin:0">Deletes your key and download list from tfbpx.com, and the key file from your folder.</span>
+      </div>
+      <div class="msg" id="historyMsg" role="status"></div>
+    </section>
+
+    <section class="panel" id="modsPanel" hidden>
+      <h2>My mods</h2>
+      <p class="lede">Pick the folder your mods are in. Only the folder names are read, and the list stays in this browser.</p>
+      <div class="row">
+        <button type="button" id="steamMods">Choose my Steam Workshop folder</button>
+        <button type="button" id="modioMods">Choose my mod.io folder</button>
+        <button type="button" id="clearMods">Clear my list</button>
+      </div>
+      <p class="hint">Steam: <code>&hellip;\steamapps\workshop\content\1066780</code> (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files, then go up to <code>steamapps</code>). mod.io: <code>C:\Users\Public\mod.io\6791\mods</code>. A Steam library inside <code>C:\Program Files (x86)</code> can&rsquo;t be opened by a browser &mdash; the next BPX update will tell the page your mods for you.</p>
+      <div class="msg" id="modsMsg" role="status"></div>
+      <div id="modCheck" class="modcheck"></div>
+    </section>
+  </div>
+
+<!--FOOTER-->
+</div>
+
+<dialog id="confirmDlg" aria-labelledby="confirmTitle">
+  <h2 id="confirmTitle"></h2>
+  <p id="confirmBody"></p>
+  <ul class="names" id="confirmNames"></ul>
+  <div class="row">
+    <button class="primary" id="confirmYes"></button>
+    <button id="confirmNo" autofocus>Cancel</button>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script src="bpx-folder.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const kb = (n) => n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`;
+  const when = (t) => new Date(t).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  const KIND = { personal: ["Yours", "yours"], community: ["Downloaded", ""], official: ["Official", ""], default: ["Built-in", ""] };
+  function say(id, text, kind) { const el = $(id); el.textContent = text || ""; el.className = "msg" + (kind ? " " + kind : ""); }
+
+  let dir = null, files = [], library = [], byBpx = new Map(), key = null;
+  let sortKey = "name", sortDir = 1;
+  const selected = new Set();
+
+  // ---- permissions ----
+  function syncPerms() {
+    const c = BPXFolder.consent();
+    $("cFolder").checked = !!c.folder; $("cSignin").checked = !!c.signin; $("cMods").checked = !!c.mods;
+    $("connectBtn").disabled = !$("cFolder").checked;
+  }
+  $("cFolder").addEventListener("change", () => {
+    $("connectBtn").disabled = !$("cFolder").checked;
+    if (dir && !$("cFolder").checked) $("disconnectBtn").click(); // unticking the folder = disconnect
+  });
+  function saveConsent() { BPXFolder.setConsent({ folder: $("cFolder").checked, signin: $("cSignin").checked, mods: $("cMods").checked }); }
+
+  $("connectBtn").addEventListener("click", async () => {
+    saveConsent();
+    try {
+      const got = await BPXFolder.pickFolder();
+      say("connectMsg", got.looks ? "" : "That folder has no blueprints and no TransportFever2.exe. If it's the wrong one, press Disconnect and choose again.", got.looks ? "" : "bad");
+      dir = got.dir;
+      await open();
+    } catch (err) {
+      if (err && err.name === "AbortError") return; // closed the picker
+      say("connectMsg", "The browser didn't open that folder: " + (err && err.message || err), "bad");
+    }
+  });
+  $("reconnectBtn").addEventListener("click", async () => {
+    const st = await BPXFolder.folder(true);
+    if (st.state === "ok") { dir = st.dir; await open(); }
+    else say("connectMsg", "The browser still says no. Press 'Choose my blueprint folder' to pick it again.", "bad");
+  });
+  $("permsBtn").addEventListener("click", () => { $("permsPanel").hidden = false; $("permsPanel").scrollIntoView({ behavior: "smooth" }); });
+  $("disconnectBtn").addEventListener("click", async () => {
+    await BPXFolder.disconnect();
+    dir = null; key = null;
+    $("app").hidden = true; $("permsPanel").hidden = false; $("reconnectBtn").hidden = true;
+    say("connectMsg", "Disconnected. This page can't see your folder any more.", "ok");
+  });
+  // ticking boxes after connecting takes effect straight away
+  $("cSignin").addEventListener("change", () => { if (dir) { saveConsent(); signIn(); } });
+  $("cMods").addEventListener("change", () => { if (dir) { saveConsent(); refreshMods(); } });
+
+  // ---- open the folder ----
+  async function open() {
+    $("permsPanel").hidden = true;
+    $("reconnectBtn").hidden = true;
+    $("app").hidden = false;
+    $("folderName").textContent = dir.name;
+    await Promise.all([loadLibrary(), refreshFiles()]);
+    await Promise.all([refreshInbox(), refreshBackups(), signIn(), refreshMods()]);
+  }
+  $("refreshBtn").addEventListener("click", async () => { await refreshFiles(); refreshInbox(); refreshBackups(); if (key) loadHistory(); });
+
+  async function loadLibrary() {
+    try {
+      const { data } = await sb.rpc("bp_list");
+      library = Array.isArray(data) ? data : [];
+      byBpx = new Map(library.filter((b) => b.blueprint_id).map((b) => [b.blueprint_id, b]));
+    } catch (err) { library = []; }
+  }
+
+  // ---- the blueprint list ----
+  async function refreshFiles() {
+    files = await BPXFolder.listBlueprints(dir);
+    const names = new Set(files.map((f) => f.file));
+    [...selected].forEach((n) => { if (!names.has(n)) selected.delete(n); });
+    files.forEach((f) => { const site = f.bpxId && byBpx.get(f.bpxId); f.update = site && (site.version || 1) > f.version ? site : null; });
+    renderFiles();
+  }
+  function shownFiles() {
+    const q = $("q").value.trim().toLowerCase();
+    const show = $("show").value;
+    return files
+      .filter((f) => show === "all" || (show === "update" ? f.update : (show === "community" ? (f.origin === "community" || f.origin === "official") : f.origin === show)))
+      .filter((f) => !q || (f.name + " " + f.file).toLowerCase().includes(q))
+      .sort((a, b) => {
+        const x = a[sortKey], y = b[sortKey];
+        return (typeof x === "string" ? x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" }) : (x || 0) - (y || 0)) * sortDir;
+      });
+  }
+  function renderFiles() {
+    const rows = shownFiles();
+    $("rows").innerHTML = rows.map((f) => {
+      const [label, cls] = KIND[f.origin] || [f.origin, ""];
+      return `<tr>
+        <td><input type="checkbox" data-file="${esc(f.file)}" ${selected.has(f.file) ? "checked" : ""} aria-label="Select ${esc(f.name)}"></td>
+        <td>${esc(f.name)}${f.update ? ` <span class="tag upd">v${f.update.version} on the site</span>` : ""}<span class="file">${esc(f.file)}</span></td>
+        <td><span class="tag ${cls}">${label}</span></td>
+        <td class="num">${f.version}</td>
+        <td class="num">${kb(f.size)}</td>
+        <td>${when(f.modified)}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="6" class="hint">No blueprints match.</td></tr>`;
+    const bytes = files.reduce((s, f) => s + f.size, 0);
+    $("bpCount").textContent = `${fmt(files.length)} files`;
+    $("total").textContent = `${fmt(files.length)} blueprints, ${kb(bytes)}${selected.size ? ` · ${selected.size} selected` : ""}`;
+    $("all").checked = rows.length > 0 && rows.every((f) => selected.has(f.file));
+    const sel = files.filter((f) => selected.has(f.file));
+    $("backupSel").disabled = !sel.length;
+    $("deleteSel").disabled = !sel.some((f) => f.origin !== "default");
+    $("updateSel").disabled = !sel.some((f) => f.update);
+  }
+  $("rows").addEventListener("change", (e) => {
+    const box = e.target.closest("input[data-file]");
+    if (!box) return;
+    box.checked ? selected.add(box.dataset.file) : selected.delete(box.dataset.file);
+    renderFiles();
+  });
+  $("all").addEventListener("change", () => { shownFiles().forEach((f) => $("all").checked ? selected.add(f.file) : selected.delete(f.file)); renderFiles(); });
+  $("q").addEventListener("input", renderFiles);
+  $("show").addEventListener("change", renderFiles);
+  document.querySelectorAll("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+    sortDir = sortKey === th.dataset.sort ? -sortDir : (["size", "modified", "version"].includes(th.dataset.sort) ? -1 : 1);
+    sortKey = th.dataset.sort; renderFiles();
+  }));
+
+  // ---- confirm dialog: every change names its files first ----
+  function confirmFiles(title, body, list, yes) {
+    return new Promise((resolve) => {
+      $("confirmTitle").textContent = title; $("confirmBody").textContent = body; $("confirmYes").textContent = yes;
+      $("confirmNames").innerHTML = list.map((f) => `<li>${esc(f)}</li>`).join("");
+      const dlg = $("confirmDlg");
+      const done = (v) => { dlg.close(); $("confirmYes").onclick = $("confirmNo").onclick = null; resolve(v); };
+      $("confirmYes").onclick = () => done(true); $("confirmNo").onclick = () => done(false);
+      dlg.addEventListener("cancel", () => resolve(false), { once: true });
+      dlg.showModal();
+    });
+  }
+
+  $("backupSel").addEventListener("click", () => doBackup([...selected], "selected"));
+  $("backupAll").addEventListener("click", () => doBackup(files.map((f) => f.file), "everything"));
+  async function doBackup(names, label) {
+    try {
+      const r = await BPXFolder.backup(dir, names, label);
+      say("bpMsg", `Backed up ${r.count} blueprint${r.count === 1 ? "" : "s"} to ${r.folder}.`, "ok");
+      refreshBackups();
+    } catch (err) { say("bpMsg", "Backup failed: " + (err.message || err), "bad"); }
+  }
+
+  $("deleteSel").addEventListener("click", async () => {
+    const sel = files.filter((f) => selected.has(f.file) && f.origin !== "default");
+    const bytes = sel.reduce((s, f) => s + f.size, 0);
+    const ok = await confirmFiles(`Delete ${sel.length} blueprint${sel.length === 1 ? "" : "s"} (${kb(bytes)})?`,
+      "A copy of each goes into BPX backups first, so you can put them back from the Backups list.",
+      sel.map((f) => `${f.file}  (${f.name})`), `Delete ${sel.length}`);
+    if (!ok) return;
+    try {
+      const r = await BPXFolder.remove(dir, sel.map((f) => f.file));
+      sel.forEach((f) => selected.delete(f.file));
+      say("bpMsg", `Deleted ${sel.length}. Copies are in ${r.folder}.`, "ok");
+    } catch (err) { say("bpMsg", "Nothing was deleted: " + (err.message || err), "bad"); }
+    await refreshFiles(); refreshBackups();
+  });
+
+  // updates: the new version goes through the inbox like any download (the mod imports it over the old one)
+  $("updateSel").addEventListener("click", async () => {
+    const sel = files.filter((f) => selected.has(f.file) && f.update);
+    let sent = 0, full = false;
+    for (const f of sel) {
+      const r = await sendRow(f.update);
+      if (r === null) { full = true; break; }
+      if (r) sent++;
+    }
+    say("bpMsg", `${sent} update${sent === 1 ? "" : "s"} sent to your game${full ? " -- the 10 import slots are full, press Import downloads in BPX first" : ""}. In game: BPX → Import downloads.`, full ? "bad" : "ok");
+    refreshInbox();
+  });
+
+  // ---- download a library row straight into the folder (signed in: recorded in My downloads) ----
+  async function sendRow(row) {
+    const { data: content, error } = key
+      ? await sb.rpc("bp_player_download", { p_key: key, p_id: Number(row.id) })
+      : await sb.rpc("bp_download", { p_id: Number(row.id) });
+    if (error || !content) return false;
+    return BPXFolder.sendToGame(dir, await stampCommunity(content, row));
+  }
+
+  // ---- inbox ----
+  async function refreshInbox() {
+    const st = await BPXFolder.inboxState(dir);
+    const waiting = st.filter((s) => s.waiting).length;
+    $("slots").innerHTML = st.map((s, i) => `<span class="slot${s.waiting ? " waiting" : ""}" title="${esc(s.name)}${s.waiting ? " -- waiting" : " -- free"}">${i + 1}</span>`).join("");
+    $("inboxText").innerHTML = waiting
+      ? `<strong>${waiting} download${waiting === 1 ? "" : "s"} waiting.</strong> In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong> brings ${waiting === 1 ? "it" : "them all"} into your library and frees the slots.`
+      : "Nothing waiting. Downloads you send to your game from the library land here, in the mod's 10 import slots.";
+  }
+
+  // ---- backups ----
+  async function refreshBackups() {
+    const list = await BPXFolder.listBackups(dir);
+    $("backups").innerHTML = list.length ? list.map((b, i) => `<details>
+        <summary>${esc(b.name)} &middot; ${b.files.length} file${b.files.length === 1 ? "" : "s"}</summary>
+        <ul>${b.files.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+        <button type="button" data-restore="${i}">Put back</button>
+      </details>`).join("") : `<p class="hint">No backups yet.</p>`;
+    $("backups").onclick = async (e) => {
+      const btn = e.target.closest("button[data-restore]");
+      if (!btn) return;
+      const b = list[Number(btn.dataset.restore)];
+      if (!await confirmFiles(`Put back ${b.files.length} blueprint${b.files.length === 1 ? "" : "s"}?`, "Blueprints you have now are left alone; only missing ones come back.", b.files, "Put back")) return;
+      const r = await BPXFolder.restore(dir, b.name, b.files);
+      say("backupMsg", `Put back ${r.done.length}.${r.skipped.length ? ` ${r.skipped.length} already there, left alone.` : ""} Open BPX in game and they're in your library.`, "ok");
+      refreshFiles();
+    };
+  }
+
+  // ---- sign-in ----
+  async function signIn() {
+    key = null;
+    $("historyPanel").hidden = true;
+    $("signPill").textContent = "Not signed in"; $("signPill").className = "pill";
+    if (!BPXFolder.consent().signin) return;
+    try {
+      const k = await BPXFolder.playerKey(dir, true);
+      const { data, error } = await sb.rpc("bp_player_hello", { p_key: k });
+      if (error || !data || !data.ok) throw new Error((data && data.reason) || (error && error.message) || "no answer");
+      key = k;
+      $("signPill").textContent = data.new ? "Signed in -- welcome!" : "Signed in"; $("signPill").className = "pill ok";
+      $("historyPanel").hidden = false;
+      loadHistory();
+    } catch (err) {
+      $("signPill").textContent = "Sign-in failed"; $("signPill").className = "pill warn";
+      say("historyMsg", "Couldn't sign in: " + (err.message || err), "bad");
+    }
+  }
+  async function loadHistory() {
+    const { data, error } = await sb.rpc("bp_player_history", { p_key: key });
+    if (error) { say("historyMsg", "Couldn't load your downloads.", "bad"); return; }
+    const rows = data || [];
+    const have = new Set(files.map((f) => f.bpxId).filter(Boolean));
+    $("history").innerHTML = rows.map((r) => `<tr>
+        <td>${esc(r.name)} <span class="hint">by ${esc(r.author || "anonymous")}</span>${have.has(r.bpx_id) ? ' <span class="tag yours">in your folder</span>' : ""}</td>
+        <td>${when(r.last_at)}</td><td class="num">${r.times}</td>
+        <td><button type="button" data-send="${r.blueprint_id}">Send to game</button></td>
+      </tr>`).join("") || `<tr><td colspan="4" class="hint">Nothing yet. Download from the <a href="./">library</a> and it shows up here.</td></tr>`;
+  }
+  $("history").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-send]");
+    if (!btn) return;
+    const row = library.find((b) => String(b.id) === btn.dataset.send);
+    if (!row) { say("historyMsg", "That blueprint isn't in the library any more.", "bad"); return; }
+    btn.disabled = true;
+    const r = await sendRow(row);
+    btn.disabled = false;
+    say("historyMsg", r ? `"${row.name}" is in your game folder as ${r}. In game: BPX → Import downloads.` : r === null ? "All 10 import slots are waiting -- press Import downloads in BPX first." : "Download failed -- try again in a moment.", r ? "ok" : "bad");
+    refreshInbox(); loadHistory();
+  });
+  $("forgetBtn").addEventListener("click", async () => {
+    if (!await confirmFiles("Forget me?", "tfbpx.com deletes your key and your download list now. The key file in your folder is deleted too, and 'Sign me in' is unticked.", [BPXFolder.KEY_FILE], "Forget me")) return;
+    const { error } = await sb.rpc("bp_player_forget", { p_key: key });
+    if (error) { say("historyMsg", "The site didn't answer -- nothing was deleted. Try again in a moment.", "bad"); return; }
+    await BPXFolder.dropKey(dir);
+    $("cSignin").checked = false; saveConsent();
+    await signIn();
+    say("connectMsg", "Done: you're forgotten. Your blueprints are untouched.", "ok");
+  });
+
+  // ---- mods ----
+  async function pickMods(kind) {
+    try {
+      const r = await BPXFolder.readModFolder(kind);
+      BPXFolder.setMyMods(kind, r.ids);
+      say("modsMsg", `${fmt(r.ids.length)} mod${r.ids.length === 1 ? "" : "s"} found in ${r.folder}.${r.ids.length ? "" : " Is it the right folder? It should hold one numbered folder per mod."}`, r.ids.length ? "ok" : "bad");
+      refreshMods();
+    } catch (err) { if (!err || err.name !== "AbortError") say("modsMsg", "The browser didn't open that folder: " + (err.message || err), "bad"); }
+  }
+  $("steamMods").addEventListener("click", () => pickMods("workshop"));
+  $("modioMods").addEventListener("click", () => pickMods("modio"));
+  $("clearMods").addEventListener("click", () => { BPXFolder.clearMyMods(); say("modsMsg", "Cleared.", "ok"); refreshMods(); });
+  function refreshMods() {
+    $("modsPanel").hidden = !BPXFolder.consent().mods;
+    if ($("modsPanel").hidden) { $("modCheck").innerHTML = ""; return; }
+    const mine = BPXFolder.myMods();
+    const needMods = library.filter((b) => Array.isArray(b.mods) && b.mods.length);
+    if (!mine) { $("modCheck").innerHTML = `<p class="hint">${needMods.length} library blueprints use mods. Choose a folder above to see which you can place.</p>`; return; }
+    const ws = new Set(mine.workshop || []), mio = new Set(mine.modio || []);
+    const has = (m) => (m.workshop_id && ws.has(String(m.workshop_id))) || (m.modio_id && mio.has(String(m.modio_id)));
+    const ready = needMods.filter((b) => b.mods.every(has));
+    const missing = needMods.filter((b) => !b.mods.every(has));
+    $("modCheck").innerHTML = `<p><strong>${fmt((mine.workshop || []).length + (mine.modio || []).length)} mods</strong> on your PC. Of the ${needMods.length} library blueprints that use mods, you can place <strong>${ready.length}</strong>.</p>`
+      + (missing.length ? `<ul>${missing.map((b) => `<li>${esc(b.name)} &mdash; needs ${b.mods.filter((m) => !has(m)).map((m) => { const l = bpxModLink(m); return l ? `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(m.name)}</a>` : esc(m.name); }).join(", ")}</li>`).join("")}</ul>` : "")
+      + `<p class="hint">The <a href="./">library</a> marks these too. Blueprints that use no mods are always ready.</p>`;
+  }
+
+  // ---- start ----
+  (async () => {
+    if (!BPXFolder.supported) {
+      $("unsupported").hidden = false;
+      $("connectBtn").disabled = true;
+      document.querySelectorAll(".perm input").forEach((i) => { i.disabled = true; });
+      return;
+    }
+    syncPerms();
+    const st = await BPXFolder.folder(false);
+    if (st.state === "ok") { dir = st.dir; await open(); }
+    else if (st.state === "needs-click") { $("reconnectBtn").hidden = false; say("connectMsg", `Your folder "${st.dir.name}" is remembered -- press "Open my folder again" and allow it.`); }
+  })();
+  trackVisit();
+</script>
+</body>
+</html>

@@ -105,6 +105,7 @@
         <button type="button" data-filter="official" aria-pressed="false">Official</button>
         <button type="button" data-filter="community" aria-pressed="false">Community</button>
         <button type="button" data-filter="preinstalled" aria-pressed="false">Pre-installed</button>
+        <button type="button" data-filter="canplace" aria-pressed="false" id="canPlaceChip" hidden title="Uses no mods, or only mods the Blueprint Manager found on your PC">I can place</button>
       </div>
       <div>
         <label for="sort">Sort</label>
@@ -131,7 +132,6 @@
       <div class="row" style="margin-top:10px"><button id="inboxResetBtn">I&rsquo;ve moved them &mdash; reset downloads</button></div>
     </div>
 
-    <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
     <div class="catchips" id="catChips" role="group" aria-label="Blueprint type" hidden></div>
     <div class="grid" id="grid"></div>
     <nav class="pager" id="pager" aria-label="Pages" hidden></nav>
@@ -173,7 +173,24 @@
     <li>In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong>. It lands in your library as <code id="dlgName"></code> &mdash; one press picks up everything you moved in, not just this one.</li>
     <li><strong>Place</strong>, aim, click. Need more help? See the <a href="guides.html#download-import">download and import guide</a>.</li>
   </ol>
+  <p class="hint">Tip: the <a href="manager.html">Blueprint Manager</a> (Chrome / Edge) can put downloads straight into your game folder &mdash; no moving files.</p>
   <div class="row"><button class="primary" id="dlgClose">Got it</button></div>
+</dialog>
+
+<!-- Blueprint Manager connected: the download went straight into the game folder -->
+<dialog id="sentDlg" aria-labelledby="sentTitle">
+  <h2 id="sentTitle">Sent to your game</h2>
+  <p>&ldquo;<span id="sentName"></span>&rdquo; is in <strong id="sentFolder"></strong> as <code id="sentFile"></code>.</p>
+  <ol class="steps">
+    <li>In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong>. Send a few first if you like &mdash; one press brings them all in.</li>
+    <li><strong>Place</strong>, aim, click.</li>
+  </ol>
+  <div class="row"><button class="primary" id="sentClose" autofocus>Got it</button> <a class="btn" href="manager.html">Blueprint Manager</a></div>
+</dialog>
+<dialog id="slotsFullDlg" aria-labelledby="slotsFullTitle">
+  <h2 id="slotsFullTitle">10 downloads are waiting in your game folder</h2>
+  <p>All 10 import slots are full, and nothing is overwritten. In game: <strong>BPX</strong> &rarr; <strong>Import downloads</strong> brings them in and frees the slots &mdash; then send more.</p>
+  <div class="row"><button class="primary" id="slotsFullClose" autofocus>OK</button></div>
 </dialog>
 
 <!-- Epod: 'if you reach 10 downloads, a popup: you downloaded 10 files, move them to the game folder now; a button
@@ -194,6 +211,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="site.js"></script>
+<script src="bpx-folder.js"></script>
 <script>
   // Decision 30/31 (mod side) -- a fixed set of inbox names the mod
   // checks in one press. blueprint_import.lua is slot 1 (unchanged, so
@@ -337,7 +355,8 @@
       .filter((b) => filterMode === "all"
         || (filterMode === "official" && b.official)
         || (filterMode === "community" && !b.official && !b.preinstalled)
-        || (filterMode === "preinstalled" && b.preinstalled))
+        || (filterMode === "preinstalled" && b.preinstalled)
+        || (filterMode === "canplace" && !(bpxModsCheck(b) || {}).missing))
       .filter((b) => !catFilter || (b.categories || []).includes(catFilter))
       .filter((b) => !q || [b.name, b.author, b.description, (b.categories || []).join(" "), JSON.stringify(b.requires || {})].join(" ").toLowerCase().includes(q))
       .sort((a, b) => (sortKey !== "az" && (!!a.preinstalled - !!b.preinstalled))
@@ -410,54 +429,36 @@
     });
   });
 
-  // Lua %q-style string literal.
-  const luaStr = (s) => '"' + String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, "\\n") + '"';
-
-  // The file the page hands out is the stored text with identity stamped
-  // in: origin -> "community", plus author/description/version so they
-  // travel with the file even when it's passed on by hand. Any existing
-  // origin/author/description/version keys are replaced.
-  //
-  // Mod names travel too: the mod records a Workshop mod by id only, so the
-  // game would show "Workshop 1234567". The library knows each mod's name
-  // (bp_dependency_report), so the file gets modNames = { ["id"] = "name" },
-  // and -- for an older upload with no requiredMods record at all -- a
-  // requiredMods list built from the same report, so the game can name what
-  // is missing instead of counting files.
-  async function modStamp(text, row) {
-    if (!row.requires) return "";
-    const { data, error } = await sb.rpc("bp_dependency_report", { p_requires: row.requires });
-    if (error || !Array.isArray(data)) return "";
-    const mods = new Map(); // workshop id -> { name, paths }
-    for (const item of data) {
-      const m = item && item.status === "mod" && item.mod;
-      if (!m || !/^\d+$/.test(String(m.workshop_id))) continue;
-      const id = String(m.workshop_id);
-      if (!mods.has(id)) mods.set(id, { name: m.name || "", paths: [] });
-      mods.get(id).paths.push(item.path);
-    }
-    if (!mods.size) return "";
-    const names = [...mods].map(([id, m]) => `[${luaStr(id)}] = ${luaStr(m.name)}`).join(", ");
-    let stamp = `modNames = {${names}}, `;
-    if (!/\brequiredMods\s*=/.test(text)) {
-      const list = [...mods].map(([id, m]) => `{workshopId = ${luaStr(id)}, modName = ${luaStr(m.name)}, resources = {${m.paths.map(luaStr).join(", ")}}}`).join(", ");
-      stamp += `requiredMods = {${list}}, `;
-    }
-    return stamp;
-  }
-
-  async function stampCommunity(text, row) {
-    let out = text.replace(/\b(origin|author|description|version) = (?:"(?:[^"\\]|\\.)*"|\d+|nil)\s*,?\s*/g, "");
-    let mods = "";
-    try { mods = await modStamp(out, row); } catch (_) { mods = ""; } // names are a nicety: never block a download
-    const stamp = `origin = ${row.official ? '"official"' : '"community"'}, version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, ${mods}`;
-    out = out.replace(/return\s*\{/, "return {" + stamp);
-    return out.replace(/^-- Origin: .*$/m, `-- Origin: ${row.official ? "official" : "community"} | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
-  }
+  // luaStr / modStamp / stampCommunity live in site.js (the Blueprint Manager uses them too).
 
   document.getElementById("grid").addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-id]");
     if (!btn) return;
+
+    const row = all.find((b) => String(b.id) === btn.dataset.id) || {};
+
+    // Blueprint Manager connected: straight into the game folder's import slots (and My downloads when signed in).
+    const conn = BPXFolder.supported && BPXFolder.consent().folder ? await BPXFolder.folder(true) : null;
+    if (conn && conn.state === "ok") {
+      btn.disabled = true;
+      let sent = false;
+      try {
+        const k = BPXFolder.consent().signin ? await BPXFolder.playerKey(conn.dir, false) : null;
+        const { data: text, error: err } = k
+          ? await sb.rpc("bp_player_download", { p_key: k, p_id: Number(btn.dataset.id) })
+          : await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
+        if (!err && text) sent = await BPXFolder.sendToGame(conn.dir, await stampCommunity(text, row));
+      } catch (e2) { console.error(e2); }
+      btn.disabled = false;
+      if (sent === null) { document.getElementById("slotsFullDlg").showModal(); return; }
+      if (!sent) { alert("Download failed -- try again in a moment."); return; }
+      document.getElementById("sentName").textContent = row.name || "";
+      document.getElementById("sentFile").textContent = sent;
+      document.getElementById("sentFolder").textContent = conn.dir.name;
+      document.getElementById("sentDlg").showModal();
+      load();
+      return;
+    }
 
     // Block BEFORE spending a download -- all 10 known slots are
     // already claimed this session; nothing to write the file as.
@@ -468,7 +469,6 @@
     }
 
     btn.disabled = true;
-    const row = all.find((b) => String(b.id) === btn.dataset.id) || {};
     const { data: content, error } = await sb.rpc("bp_download", { p_id: Number(btn.dataset.id) });
     btn.disabled = false;
     if (error || !content) { alert("Download failed -- try again in a moment."); return; }
@@ -502,6 +502,9 @@
   });
 
   document.getElementById("dlgClose").addEventListener("click", () => document.getElementById("dlg").close());
+  document.getElementById("sentClose").addEventListener("click", () => document.getElementById("sentDlg").close());
+  document.getElementById("slotsFullClose").addEventListener("click", () => document.getElementById("slotsFullDlg").close());
+  document.getElementById("canPlaceChip").hidden = !bpxMyModSets();
 
   // ---- visitors: count this visit, then show the running total ----
   async function loadVisitorStat() {

@@ -273,6 +273,9 @@ select { max-width: 100%; }
 a.btn.small { font-size: 13px; padding: 3px 9px; }
 .reqs { margin: 6px 0 4px; font-size: 14px; }
 .reqs summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.modhave { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-left: 4px; white-space: nowrap; }
+.modhave.ok { background: var(--ok); color: #fff; }
+.modhave.miss { background: var(--warn-soft); color: var(--warn); }
 .reqs .reqhead { font-weight: 600; margin: 8px 0 2px; color: var(--ink-2); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
 .reqs ul { margin: 0; padding-left: 1.1em; }
 .reqs li { margin: 3px 0; overflow-wrap: anywhere; }

@@ -145,6 +145,22 @@ function bpxFailText(r) {
 // The only mod.io link the pages ever show: the exact shape mod.io uses for Transport Fever 2.
 const bpxModioUrl = (url) => /^https:\/\/mod\.io\/g\/transportfever2\/m\/[A-Za-z0-9_-]{1,80}$/.test(String(url || "")) ? url : null;
 // Link + label for a mod of either kind, as returned by bp_list / bp_dependency_report.
+// Blueprint Manager 'Compare my mods': the mod numbers the player chose to read from their own mods folders, kept in
+// this browser only (bpx-folder.js, localStorage bpxMyMods). null when they haven't -- then cards say nothing.
+function bpxMyModSets() {
+  try {
+    const m = JSON.parse(localStorage.getItem("bpxMyMods") || "null");
+    return m ? { ws: new Set(m.workshop || []), mio: new Set(m.modio || []) } : null;
+  } catch (err) { return null; }
+}
+function bpxModsCheck(b) {
+  const mods = Array.isArray(b.mods) ? b.mods : [];
+  const mine = mods.length && bpxMyModSets();
+  if (!mine) return null;
+  const missing = mods.filter((m) => !((m.workshop_id && mine.ws.has(String(m.workshop_id))) || (m.modio_id && mine.mio.has(String(m.modio_id))))).length;
+  return { missing };
+}
+
 function bpxModLink(m) {
   if (m && m.platform === "modio") {
     const u = bpxModioUrl(m.url);
@@ -286,8 +302,9 @@ function blueprintCardHtml(b, opts) {
   // Workshop mods BPX has identified, and any external content it could not.
   const mods = Array.isArray(b.mods) ? b.mods : [];
   const unresolved = Array.isArray(b.unresolved) ? b.unresolved : [];
+  const modsCheck = bpxModsCheck(b);
   const reqHtml = (mods.length || unresolved.length) ? `<details class="reqs">
-      <summary>${mods.length ? `Requires: ${mods.length} Workshop mod${mods.length === 1 ? "" : "s"}` : "Requires external content"}${mods.length && unresolved.length ? " + unidentified content" : ""}</summary>
+      <summary>${mods.length ? `Requires: ${mods.length} Workshop mod${mods.length === 1 ? "" : "s"}` : "Requires external content"}${mods.length && unresolved.length ? " + unidentified content" : ""}${modsCheck ? (modsCheck.missing ? ` <span class="modhave miss">you're missing ${modsCheck.missing}</span>` : ` <span class="modhave ok">you have ${mods.length === 1 ? "it" : "them all"}</span>`) : ""}</summary>
       ${mods.length ? `<div class="reqhead">Required Mods</div><ul>${mods.map((m) => { const link = bpxModLink(m); return `<li>${esc(m.name)}${link ? ` <a class="btn small" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>` : ""}</li>`; }).join("")}</ul>` : ""}
       ${unresolved.length ? `<div class="reqhead">Unresolved external content:</div><ul>${unresolved.map((p) => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : ""}
     </details>` : "";
@@ -400,3 +417,52 @@ function bpxReadOwnership(text) {
 const BPX_KEEP_SAFE_HTML = `<strong>Keep your original blueprint .lua file safe.</strong>
   <p>It is your ownership/recovery key for editing this upload later.</p>
   <p>Your public downloadable blueprint does not contain the private edit key.</p>`;
+
+// ---------------------------------------------------------------------------
+// The downloaded file (moved here from the library page so the Blueprint Manager's
+// 'Send to game' stamps files exactly the same way).
+// ---------------------------------------------------------------------------
+// Lua %q-style string literal.
+const luaStr = (s) => '"' + String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, "\\n") + '"';
+
+// The file the page hands out is the stored text with identity stamped
+// in: origin -> "community", plus author/description/version so they
+// travel with the file even when it's passed on by hand. Any existing
+// origin/author/description/version keys are replaced.
+//
+// Mod names travel too: the mod records a Workshop mod by id only, so the
+// game would show "Workshop 1234567". The library knows each mod's name
+// (bp_dependency_report), so the file gets modNames = { ["id"] = "name" },
+// and -- for an older upload with no requiredMods record at all -- a
+// requiredMods list built from the same report, so the game can name what
+// is missing instead of counting files.
+async function modStamp(text, row) {
+  if (!row.requires) return "";
+  const { data, error } = await sb.rpc("bp_dependency_report", { p_requires: row.requires });
+  if (error || !Array.isArray(data)) return "";
+  const mods = new Map(); // workshop id -> { name, paths }
+  for (const item of data) {
+    const m = item && item.status === "mod" && item.mod;
+    if (!m || !/^\d+$/.test(String(m.workshop_id))) continue;
+    const id = String(m.workshop_id);
+    if (!mods.has(id)) mods.set(id, { name: m.name || "", paths: [] });
+    mods.get(id).paths.push(item.path);
+  }
+  if (!mods.size) return "";
+  const names = [...mods].map(([id, m]) => `[${luaStr(id)}] = ${luaStr(m.name)}`).join(", ");
+  let stamp = `modNames = {${names}}, `;
+  if (!/\brequiredMods\s*=/.test(text)) {
+    const list = [...mods].map(([id, m]) => `{workshopId = ${luaStr(id)}, modName = ${luaStr(m.name)}, resources = {${m.paths.map(luaStr).join(", ")}}}`).join(", ");
+    stamp += `requiredMods = {${list}}, `;
+  }
+  return stamp;
+}
+
+async function stampCommunity(text, row) {
+  let out = text.replace(/\b(origin|author|description|version) = (?:"(?:[^"\\]|\\.)*"|\d+|nil)\s*,?\s*/g, "");
+  let mods = "";
+  try { mods = await modStamp(out, row); } catch (_) { mods = ""; } // names are a nicety: never block a download
+  const stamp = `origin = ${row.official ? '"official"' : '"community"'}, version = ${Number(row.version) || 1}, author = ${luaStr(row.author || "anonymous")}, description = ${luaStr(row.description || "")}, ${mods}`;
+  out = out.replace(/return\s*\{/, "return {" + stamp);
+  return out.replace(/^-- Origin: .*$/m, `-- Origin: ${row.official ? "official" : "community"} | Id: ${row.blueprint_id || "?"} | Version: ${row.version || 1}`);
+}
