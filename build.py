@@ -41,7 +41,7 @@ def render(name, header, footer):
         key = marker.group(1)
         marked = re.sub(r'(<a class="navbtn" href="[^"]*" data-nav="%s")' % re.escape(key),
                         r'\1 aria-current="page"', header)
-        if marked == header:
+        if marked == header and key != "none":   # HEADER:none -- a page with no nav button of its own
             raise SystemExit("%s: no nav link with data-nav=%r" % (name, key))
         text = text.replace(marker.group(0), marked.rstrip("\n"))
     if "<!--FOOTER-->" in text:
