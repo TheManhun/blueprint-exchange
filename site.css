@@ -73,8 +73,8 @@ a { color: var(--accent); }
 .masthead { display: block; margin: 0 0 14px; font-size: 0; line-height: 0; }
 .masthead img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
 .site-nav { display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 0 0 28px; }
-.navbtn { position: relative; display: block; height: 52px; border-radius: 10px; }
-.navbtn img { display: block; width: auto; height: 52px; }
+.navbtn { position: relative; display: block; height: 46px; border-radius: 10px; }
+.navbtn img { display: block; width: auto; height: 46px; }
 .navbtn img.on { position: absolute; inset: 0; opacity: 0; }
 .navbtn:hover img.on, .navbtn:focus-visible img.on, .navbtn[aria-current="page"] img.on { opacity: 1; }
 .navbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
