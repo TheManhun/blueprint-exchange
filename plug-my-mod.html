@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
+  /* Workshop previews are square (or 4:3): show the whole picture, never crop the mod's own title art */
+  .card .thumb { aspect-ratio: 1 / 1; object-fit: contain; }
   .lookup { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
   .lookup .field { flex: 1 1 260px; }
   .lookup input[type=text] { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
@@ -168,8 +170,8 @@
 
   function modCardHtml(m, opts) {
     const img = opts.image
-      ? `<img class="thumb" src="${esc(opts.image)}" alt="Preview of ${esc(m.title)}" width="480" height="270" loading="lazy"${opts.noReferrer ? ' referrerpolicy="no-referrer"' : ""}>`
-      : `<img class="thumb" src="card-noimage.webp" alt="No preview image for ${esc(m.title)}" width="480" height="270" loading="lazy">`;
+      ? `<img class="thumb" src="${esc(opts.image)}" alt="Preview of ${esc(m.title)}" width="480" height="480" loading="lazy"${opts.noReferrer ? ' referrerpolicy="no-referrer"' : ""}>`
+      : `<img class="thumb" src="card-noimage.webp" alt="No preview image for ${esc(m.title)}" width="480" height="480" loading="lazy">`;
     return `<article class="card">
       ${img}
       <h3>${esc(m.title)}</h3>
