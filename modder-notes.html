@@ -394,6 +394,16 @@ end</pre>
           <li>Town roads have 3 m pavements; country roads a 5 m outer lane and a 2 m verge.</li>
         </ul>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 base road traffic lanes, measured <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>From street.zip laneConfigs, in metres, left to right; the <code>_old</code> twins match.</p>
+        <ul>
+          <li><strong>Town</strong> (3 m pavements): xsmall 4 / 4 &middot; small 5 / 5 &middot; medium 5 4 / 4 5 &middot; large 5 4 4 / 4 4 5</li>
+          <li><strong>Country</strong> (2 m verges): small 5 / 5 &middot; medium 5 4 / 4 5 &middot; large 5 4 4 / 4 4 5</li>
+          <li><strong>highway_new, one-way:</strong> small 5 (2 m shoulders) &middot; medium 5 5 &middot; large 5 5 5 (4 m shoulders, no vehicles)</li>
+          <li><strong>town_new_one_way:</strong> xsmall 4 4 &middot; small 5 5 &middot; medium 5 4 4 5 (four lanes), all with 3 m pavements</li>
+        </ul>
+      </article>
       <article class="note" data-g="tf2">
         <h3>Base-game facts read from the game files <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <ul>
@@ -515,6 +525,10 @@ end</pre>
       <article class="note" data-g="tf2">
         <h3>Fix off-centre models in the .con, not in Blender <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p>A "skewed" gantry was a model authored with its origin at one edge. Fix it with per-model dx/dy offsets in the .con transform (and the terrain patch). Check the bounding box and named parts in the compiled <code>.mdl</code> before blaming the mesh. Helper transforms are tricky too: <code>transf.rotZYXTransl(rot, transl)</code> takes yaw from <code>rot.x</code>. Read <code>res/scripts/transf.lua</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Stretching one model to fit any road <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A model scaled across the road in a .con transf (a Y scale) moves every part about its origin. Per-lane parts land on the lanes only if they are symmetric about the origin <em>and</em> the scale is measured from the road the model was drawn for, not from its bounding box (posts outside the pavement make the box wider than the traffic). Two one-way gantries with an off-centre lane layout missed the lanes on every road until their heads were centred.</p>
       </article>
       <article class="note" data-g="tf2 crash">
         <h3>Never point a .con at a model that isn't there yet <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
@@ -772,7 +786,35 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
           <li>Glow materials import as PHYSICAL; set EMISSIVE. EMISSIVE quads are opaque, so a full-panel glow quad blacks out the panel.</li>
           <li>Blender light strengths arrive in the thousands; TF3 uses about 1-3. Base street lights: 60-70° cones, strength 0.5-1, radius 20-25.</li>
           <li>It saves into the mod chosen in the <strong>top</strong> dropdown, and copies sources into content.</li>
+          <li>It reopens on the mod used last (<code>pathOptions.lastOpenedMod</code> in its settings), so imports kept landing in the wrong mod. Check the top dropdown before every import, and close the editor normally so the choice is saved.</li>
+          <li>Give glow its own mesh: shaped like the letters (a few mm proud of the panel) or only over the lamp faces.</li>
         </ul>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>You can write a TF3 model without the Model Editor <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>An imported model is just <code>&lt;name&gt;.mdl</code> plus, per part, <code>msh\&lt;part&gt;_lod&lt;n&gt;.msh</code> (a short text header) and a binary <code>.msh.blob</code>.</p>
+        <ul>
+          <li><strong>The .blob:</strong> de-duplicated float32 value streams (position xyz, uv0, normal xyz, tangent xyz + bitangent sign), then one uint32 index stream per attribute, three per triangle.</li>
+          <li><strong>The header:</strong> each attribute's count and byte offset, keys in alphabetical order.</li>
+          <li><strong>Mesh space is Y-up:</strong> Blender (x, y, z) becomes (x, &minus;z, y). Each .mdl node carries the transf the editor writes: <code>{ 1,0,0,0, 0,-1.62921e-07,-1,0, 0,1,-1.62921e-07,0, 0,0,0,1 }</code>.</li>
+        </ul>
+        <p>A writer built from this matched the editor's output (one test mesh decoded identical; elsewhere only the quad diagonal and tangent averaging differed), and its models work in game. It's also the way to update a model in place, which the editor won't do.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>The Model Editor won't overwrite an existing model <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Importing under a name that already exists doesn't replace the model. Either save the new version under a new name and repoint the <code>.con</code>, or rewrite the model's files directly (above). Delete old model folders only with TF3 and the editor closed.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Worst LOD over 256 KB: join meshes, add a far LOD <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The editor warns <code>Worst LOD (LOD 0) has mesh data of 346.9 KB, exceeding the limit of 256.0 KB</code>. The limit applies to the lowest-detail LOD, and every mesh adds overhead: a gantry imported as 71 small meshes hit it at 3,516 triangles. Joining meshes by material (71 to about a dozen) and adding a silhouette <code>&lt;name&gt;_lod1.fbx</code> (about 60 KB) cleared it, with fewer draw calls as a bonus.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Blender to Model Editor: FBX settings that import cleanly <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Export with <code>export_scene.fbx(axis_forward="-Z", axis_up="Y", global_scale=1, apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE", use_tspace=True, add_leaf_bones=False, bake_anim=False)</code>, and tick "Blender coordinates" in the editor. Before export, apply object transforms, triangulate n-gons, and join objects that share a material into one mesh.</p>
+      </article>
+      <article class="note" data-g="tf3 inferred">
+        <h3>Road-edge models run along X; boundingInfo ignores node transforms <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>An <code>.edge.lua</code> repeats its <code>repModel</code> along the road edge (<code>length</code>, <code>stretch</code>, <code>verticalAlignment = "Shear"</code>, <code>snapMode = "Side"</code>). The base models run along X: <code>barrier_a.mdl</code> reuses a fence mesh that runs along Y, with a node transf turning it 90&deg; and scaling it 1.5. A .mdl's <code>boundingInfo</code> is computed from the raw mesh <em>without</em> node transforms, so reading it can point you the wrong way. Untested: a node transf of <code>{ -1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1 }</code> should turn a model 180&deg; without a re-import.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3 build-menu art sizes <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -789,6 +831,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
   <section class="fn-sec" id="perf">
     <h2>Performance</h2>
     <div class="fn-list">
+      <article class="note" data-g="tf3">
+        <h3>Share materials across a set <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>One pack's textures dropped from 494 MB to 145 MB by giving each design set ONE shared material set (the same .mtl and .dds files) instead of a copy per model. Keep prop textures at 512 px or less, and flat colours at 64 px.</p>
+      </article>
       <article class="note" data-g="tf2">
         <h3>Dry runs on the GUI thread are expensive <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p><code>makeProposalData</code> grows steeply with layout size and map density: about 8 s for 79 segments on a full map, and it froze the game on 398. Never re-validate what the game's own tool just validated.</p>
@@ -858,6 +904,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 tf3">
         <h3>Keep a decision log, and say what was seen <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>Every change gets a numbered entry: what, why, and "not yet seen in game" until it is. When something breaks three times in one function, that log shows the pattern. It's also where this page came from.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Render it from the player's side before import <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Render each model from where the player will see it: the drivers' side for anything facing traffic, at night for anything that glows. One pass caught 12 gantries built facing away from their drivers before any import.</p>
       </article>
       <article class="note" data-g="tf2 tf3">
         <h3>Read the log before guessing <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
