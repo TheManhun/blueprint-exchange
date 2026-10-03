@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Transport Fever Modder Field Notes</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Deep Transport Fever 2 and 3 modding knowledge: engine rules, fatal assertions and the exact API calls that work, learned building Blueprint Exchange and the PYT mods.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .fn-intro { max-width: 70ch; }
+  .fn-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+  .fn-bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--ground); padding-block: 10px; margin: 18px 0 8px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .fn-bar input[type=search] { flex: 1 1 240px; min-width: 0; font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+  .fn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fn-chip { font: 600 13px/1 Barlow, sans-serif; letter-spacing: .03em; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+  .fn-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .fn-chip:focus-visible, .fn-bar input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .fn-count { font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .fn-toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; margin: 8px 0 26px; padding: 0; list-style: none; font-size: 15px; }
+  .fn-sec { margin: 34px 0 0; scroll-margin-top: 80px; }
+  .fn-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 4px; text-wrap: balance; }
+  .fn-sec > p.lede { margin-bottom: 12px; }
+  .fn-list { display: grid; gap: 10px; }
+  .note { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+  .note h3 { font-size: 17px; margin: 0 0 4px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .note p { margin: 0; max-width: 78ch; }
+  .note ul { margin: 6px 0 0; padding-left: 20px; max-width: 76ch; }
+  .note li { margin: 2px 0; }
+  .tags { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+  .tag { font: 600 11px/1 Barlow, sans-serif; letter-spacing: .06em; text-transform: uppercase; border-radius: 4px; padding: 4px 6px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface-2); }
+  .tag.tf2 { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .tag.tf3 { color: var(--ok); border-color: var(--ok); background: transparent; }
+  .tag.crash { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+  .tag.inferred { color: var(--warn); border-color: var(--warn); background: var(--warn-soft); }
+  .note code, .fn-intro code { font: 13.5px/1.4 "JetBrains Mono", monospace; background: var(--surface-2); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; }
+  .note pre { margin: 8px 0 0; background: var(--code-ground); color: var(--code-ink); border-radius: 6px; padding: 10px 12px; overflow-x: auto; font: 13px/1.5 "JetBrains Mono", monospace; }
+  .fn-empty { color: var(--ink-2); border: 1px dashed var(--line); border-radius: 8px; padding: 18px; text-align: center; margin: 20px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">Field notes &middot; work in progress &middot; not yet linked from the site</p>
+    <h1>Transport Fever Modder Field Notes</h1>
+    <p class="sub">The things the docs don't tell you about modding Transport Fever&nbsp;2 and&nbsp;3, learned the hard way.</p>
+  </div>
+
+  <div class="fn-intro">
+    <p>Building Blueprint Exchange, Pay Your Tolls, Insider Trader and the PYT family meant hundreds of crashes, refused builds and silent failures. Each one was written down with what caused it and what fixed it. This page collects the lessons that apply to <em>any</em> Transport Fever mod: engine rules, fatal assertions with their exact text, and the API calls that really work.</p>
+    <div class="fn-legend">
+      <span><span class="tag tf2">TF2</span> / <span class="tag tf3">TF3</span> which game</span>
+      <span><span class="tag crash">Fatal</span> crashes the game; <code>pcall</code> can't catch it</span>
+      <span><span class="tag inferred">Inferred</span> a diagnosis not yet confirmed in game. Everything else was seen in game, in a log or in a crash dump.</span>
+    </div>
+  </div>
+
+  <div class="fn-bar" role="search">
+    <label class="visually-hidden" for="fnSearch">Search the notes</label>
+    <input type="search" id="fnSearch" placeholder="Search: assertion text, API name, topic&hellip;" autocomplete="off">
+    <div class="fn-chips" role="group" aria-label="Filter">
+      <button type="button" class="fn-chip" id="chipAll" data-f="all" aria-pressed="true">All</button>
+      <button type="button" class="fn-chip" id="chipTf2" data-f="tf2" aria-pressed="false">TF2</button>
+      <button type="button" class="fn-chip" id="chipTf3" data-f="tf3" aria-pressed="false">TF3</button>
+      <button type="button" class="fn-chip" id="chipCrash" data-f="crash" aria-pressed="false">Fatal only</button>
+    </div>
+    <span class="fn-count" id="fnCount" aria-live="polite"></span>
+  </div>
+
+  <ul class="fn-toc" id="fnToc">
+    <li><a href="#debugging">Debugging &amp; reading crashes</a></li>
+    <li><a href="#threads">Threads &amp; Lua states</a></li>
+    <li><a href="#files">Files, saves &amp; persistence</a></li>
+    <li><a href="#proposals">Building from script</a></li>
+    <li><a href="#edges">Track, roads, nodes &amp; signals</a></li>
+    <li><a href="#removal">Removing things</a></li>
+    <li><a href="#constructions">Constructions (.con)</a></li>
+    <li><a href="#decorations">Decorations &amp; trees</a></li>
+    <li><a href="#entities">Entities, queries &amp; vehicles</a></li>
+    <li><a href="#money">Money, time &amp; game data</a></li>
+    <li><a href="#gui2">TF2 GUI</a></li>
+    <li><a href="#gui3">TF3 React UI</a></li>
+    <li><a href="#art">Models, textures &amp; images</a></li>
+    <li><a href="#perf">Performance</a></li>
+    <li><a href="#release">Workshop, mod.io &amp; release</a></li>
+    <li><a href="#practice">How to work</a></li>
+  </ul>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="debugging">
+    <h2>Debugging &amp; reading crashes</h2>
+    <p class="lede">The first step after any crash is reading the file that names the real assertion.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 tf3">
+        <h3>The real error is in stdout.txt <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>The engine writes the native assertion (C++ file, line and condition) to <code>&lt;steam userdata&gt;\&lt;app id&gt;\local\crash_dump\stdout.txt</code>, with older runs in <code>stdout_old.txt</code> or <code>&lt;guid&gt;_stdout.txt</code>. Nothing else contains it. App ids are 1066780 for TF2 and 3493540 for TF3. Count the <code>.dmp</code> files before and after a quit to catch crashes that happen on exit.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Don't trust the thread or mod named in a crash dump <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A dump blamed another mod's <code>guiUpdate</code> thread. That was only the thread running when the game aborted. A log line printed by an unrelated mod just before the assertion was a red herring too, and so were bursts of <code>terrain_util::GetHeightAt: pos not valid: (-nan(ind)&hellip;)</code>. The cause was an assertion further back in an older log rotation.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Why was my build refused? Read errorState <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p><code>tostring(res)</code> prints only <code>userdata: 0000&hellip;</code>. The reasons are in <code>res.resultProposalData.errorState.messages</code> and <code>.critical</code>. What was hit is in <code>collisionInfo.collisionEntities</code>: its entries are records with an <code>.entity</code> field, not bare ids.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Dry run first: makeProposalData <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p><code>api.engine.util.proposal.makeProposalData(proposal, context)</code> builds nothing. It returns the costs (era-scaled in TF3), <code>errorState</code> and <code>collisionInfo</code> synchronously, while the async build callback can hide the messages.</p>
+        <ul>
+          <li><strong>Critical with 0 messages and 0 entities</strong> usually means an invalid reference: a dead node id, or a type lookup that returned "not found".</li>
+          <li><strong>"Construction not possible"</strong> is the engine's catch-all. Dry-run each piece on its own to name the culprit. Pieces that pass alone can still fail together.</li>
+          <li><strong>TF3 build 40408:</strong> the tealdef declares <code>Proposal</code>, but the game takes a <code>SimpleProposal</code>.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>A dry run on top of existing geometry lies <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>makeProposalData</code> makes every node fresh, with no snapping. An edge ending on a construction it will join reports "Collision", or "Construction not possible" over open grass. A proposal lying exactly on an identical existing piece is judged fine, and the same pieces are then refused elsewhere. To get the game's verdict on a piece, probe it about 400 m to the side, clear of its original.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Listen to the game's own verdict while the player aims <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>While a construction is being aimed, the placement tool sends <code>builder.proposalCreate</code> to <code>guiHandleEvent</code>, carrying <code>errorState</code> and <code>collisionInfo</code>. Negative collision ids are entities inside the proposal itself (it is colliding with itself); positive ids are real world entities.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>builder.apply shows how the game's own tools work <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Log <code>guiHandleEvent</code> for <code>builder.apply</code> and you can read the game's recipes. The track upgrade tool, for example, arrives as <code>streetTrackModifier</code>. It re-submits the <em>same</em> pieces in <code>addedSegments</code>, with the same ids and nodes and the new <code>trackEdge.catenary</code>/<code>trackType</code>, and its signals still in <code>comp.objects</code>. It does not delete and rebuild.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Player builds reach guiHandleEvent only after you subscribe <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>builder.proposalApply</code> arrives only if the script has subscribed to it (<code>LISTEN_ONLY</code> is enough). On the GUI side the param is a <strong>list</strong> <code>{proposal, data, result}</code>: use <code>param[1]</code>. Ids seen: <code>constructionBuilder</code>, <code>streetTerminalBuilder</code> (a hand-placed signal), <code>streetTrackModifier</code>. Town road rebuilds send no builder event at all, so re-check periodically.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>"Thread did not respond to ping" can be the engine, not you <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The watchdog fired while mod descriptions were loading, before any script had run. It wasn't a mod bug.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Test pure-Lua modules outside the game <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Modules with no game API calls (data, serialisers, geometry) run unmodified in <code>lupa</code>, Python's embedded Lua. Give the harness a global table that refuses new globals to catch strict-global errors offline.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="threads">
+    <h2>Threads &amp; Lua states</h2>
+    <p class="lede">The game runs your code in several Lua states, and what is legal in each one differs.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 crash">
+        <h3>game.interface write calls from the GUI thread are fatal <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p><code>game.interface.sendScriptEvent</code> called from GUI code died with <code>!gameState.GetGameScriptStack().entries.empty()</code> (cmd_interface.cpp). <code>pcall</code> does not catch it. The same applies to <code>upgradeConstruction</code>, <code>setPlayer</code> and <code>bulldoze</code>. Send an event from the GUI instead and do the work in the game script:</p>
+<pre>-- GUI side
+api.cmd.sendCommand(api.cmd.make.sendScriptEvent("my_script.lua", "my_id", "", { ids = ids }))
+-- game script
+handleEvent = function(src, id, name, param)
+    if src == "my_script.lua" and id == "my_id" then ... end
+end</pre>
+        <p>Read-only calls (<code>getEntity</code>, <code>getEntities</code>, <code>getGameTime</code>) are fine from the GUI.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>A callback on sendCommand crashes the game at quit <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p><code>api.cmd.sendCommand(cmd, callback)</code> hands the engine a Lua function, which it frees at exit after the Lua state is gone. The result is an access violation on every quit, and "Internal error" on an in-game load. It was found by bisection. Where you can, send without a callback, remember what you sent, and check the engine state on a later tick with a timeout.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>update() doesn't run while the game is paused <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Work queued for the game script's <code>update()</code> never ran on a paused map. Do event-triggered engine work directly inside <code>handleEvent</code>. Background schedules belong in the game script's <code>guiUpdate</code>/<code>update</code> with your own throttles, never in code that only runs while a window is open.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: one Lua state per sim thread <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>On the engine side, <code>update()</code> runs on many "Sim Pool" threads, each with its <strong>own</strong> Lua state, so module-level locals are per thread: a "run once" flag ran 22 times. Keep engine-side state in the game script's <code>state</code>, which TF3 saves inside the savegame.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: what exists where <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li><code>app</code> is GUI-side only. On the engine side: <code>attempt to index global 'app' (a boolean value)</code>.</li>
+          <li><code>io</code> is nil on both sides. <code>os</code> is a table, and <code>require</code>/<code>ug_require</code> exist.</li>
+          <li>The GUI reads the engine <code>state</code> read-only and changes it only with <code>api.cmd.makeScriptingSendEventCmd("", "&lt;ns&gt;", name, param)</code>.</li>
+          <li>Any <code>content/**/X.gs.lua</code> becomes a game script with no registration (log: <code>Creating entity for GameScript &hellip;</code>).</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3 inferred">
+        <h3>TF3: a plain-Lua game script may never be called <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A plain <code>.script.lua</code> game script never ran (no log line at all). Rewritten as Teal (<code>.script.tl</code>), it worked. Every working game script we have is Teal. The fact is seen; the cause is a guess.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: subscribe to events on the start-up events <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Call <code>state:subscribeToEvent</code> inside <code>handleEvent</code> on the start-up events (id <code>""</code> with <code>initNewGame</code> / <code>handleLegacy</code> / <code>initNewGameFromMap</code>), as the base company script does. A mod added to an existing save <em>does</em> get <code>handleLegacy</code>. An old save's subscriptions don't cover events added in a later mod version, so track which ones the save has and subscribe the missing ones.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Component params are an engine wrapper, not a table <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>api.engine.getComponent(id, CONSTRUCTION).params</code> refused edits with <code>cannot call erase on lua::Table</code>. <code>game.interface.getEntity(id).params</code> is a plain Lua table you can copy and change.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Strict globals and declaration order <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Assigning an undeclared global fails with <code>res/scripts/init.lua:130: creating globals by assignment is not allowed</code>. That usually means a file-level <code>local</code> was declared <em>below</em> the function that uses it. Likewise, a <code>local function</code> defined below its caller is nil at the call: <code>attempt to call global '&hellip;' (a nil value)</code>.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="files">
+    <h2>Files, saves &amp; persistence</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 crash">
+        <h3>TF2: data() save/load hooks crashed when used for mod state <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>The game script's save/load functions exist, and base scripts use them, but eight attempts to keep mod state in them crashed. The engine calls <code>load()</code> more than once inside <code>CGame::StartGameSim</code> (Game.cpp:330) and asserts that the saved outputs match. Plain <code>io.open</code> files survived quit and relaunch, so that is the route.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>TF2 file sandbox: what works <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li><code>io.open</code> works in the game script, the loader state and a <code>.con</code> updateFn. Paths resolve from the game exe folder (<code>steamapps/common/Transport Fever 2</code>); relative paths like <code>../../workshop/&hellip;</code> work.</li>
+          <li><code>os.rename</code> and <code>os.remove</code> silently do nothing. To "delete", overwrite the file with a one-line tombstone. To rotate, copy by read and write into a fixed ring of slots.</li>
+          <li>There is no directory listing.</li>
+          <li><code>loadstring</code>/<code>setfenv</code> were missing in a <code>.con</code> updateFn; parse plain text with <code>string.gmatch</code>. Elsewhere, run untrusted data files under <code>setfenv(chunk, {})</code>.</li>
+          <li>The engine-thread game script could not write the mod's log file, but its <code>print()</code> reaches stdout.txt.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Your files are global, not per save, so key them per map <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The TF2 API exposes no save or map id, and a new game inherited stale data from another save. A fix that works: hash the sorted set of town <code>id=name</code> pairs (fixed for a map) into the file name, for example djb2 to 8 hex digits. Files can also run ahead of a save reloaded without saving, so record the last game date written and roll back when the loaded save is older.</p>
+      </article>
+      <article class="note" data-g="tf2 inferred">
+        <h3>The first ticks after a load can see no towns <span class="tags"><span class="tag tf2">TF2</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Gate loading on a readiness check. Never prune or overwrite saved data against an empty town list in the first ticks.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 userdata: app.saveUserdata and friends <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>app.saveUserdata / loadUserdata / getAllUserdata / removeUserdata</code> work on the GUI side only. Files land in <code>&hellip;\3493540\local\&lt;dir&gt;\</code> as <code>function data() return {&hellip;} end</code>. <strong>Sparse integer keys are dropped</strong>, so store lists of pairs. Check <code>getAllUserdata</code> before loading to avoid log errors. Engine-side state lives in the game script's <code>state</code>, inside the savegame.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 translations: strings.json <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>TF3 reads <code>strings.json</code> in the mod root: <code>{ "ru": { "English text": "translation" } }</code>, for the 13 game languages. TF2-style <code>strings.lua</code> and <code>.mo</code> files are not read. The game language is <code>api.util.getLanguage().code</code>. For a language the game lacks, carry your own table and look it up yourself.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a script copy can find its own mod; another mod can be detected <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>debug.getinfo(1, "S").source</code> gives <code>"&lt;modId&gt;::/path"</code> in UI scripts, so a file shipped byte-identical in several mods knows which copy it is. <code>api.res.constructionRep.find("&lt;modId&gt;::/&lt;path&gt;.con")</code> on another mod's key entry tells you whether that mod is installed.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Entity ids are reused <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>A record keyed by id alone matched a quarry that had taken an old town's id ("% Owned 9434.40%"). An undo "new since my snapshot" diff picked up four of the player's rebuilt track pieces. Never cache "what this id is" across passes. Store the type, and the position where it stood, with the id, and re-check both before acting.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="proposals">
+    <h2>Building from script</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2">
+        <h3>A TF2 Context that works <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Copied field for field from Copy It: <code>cleanupStreetGraph = false</code>, <code>checkTerrainAlignment = false</code>, <code>gatherBuildings = true</code>, <code>gatherFields = true</code>, <code>player = api.engine.util.getPlayer()</code>. Build with <code>api.cmd.make.buildProposal(p, ctx, ignoreErrors)</code>, then <code>api.cmd.sendCommand</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Building from script in TF3 <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Send a <code>SimpleProposal</code> through <code>api.cmd.makeWorldBuildProposalCmd(proposal, context, ignoreErrors, playerInitiated)</code> with a callback. It also accepts a full <code>api.type.Proposal</code>. Errors are in <code>resultProposalData.errorState</code>. It works from the GUI side for track, roads and <code>constructionsToAdd</code>.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Transforms: userdata, not tables <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>transf.rotZTransl</code> returns a plain 16-number table, and <code>ConstructionEntity.transf</code> rejects it ("expected userdata"). Build four <code>api.type.Vec4f</code> columns into <code>api.type.Mat4f.new</code>. Where a position must be <code>vec3.new(&hellip;)</code>, a plain <code>{x,y,z}</code> gives <strong>no error</strong> and silently drops the translation. An explicit <code>transf</code> is respected exactly (moved 0.000 m).</p>
+      </article>
+      <article class="note" data-g="tf2 tf3 crash">
+        <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Captured params: clear upgrade, clamp dropdowns <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A modular station's captured params can carry <code>upgrade = true</code>. Clear it to <code>nil</code> for a fresh build (Move It's choice). A <code>.con</code> combobox built from installed content (for example <code>listTrackTypes</code>) stores an <strong>index</strong> into the creator's list. On a machine with fewer mods, index 213 pointed past the end, and proposal creation threw the error object <code>false</code>. Clamp every param to this machine's declared range from <code>constructionRep.get</code>.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>A pasted station is "just models" until registered <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>After the build, set <code>playerEntity</code> (the current player) on each <code>ConstructionEntity</code>. Then run an engine-side <code>game.interface.upgradeConstruction</code> with the seed removed (Copy It's "dummy upgrade"). Without it the station has no icon and can't be selected. The construction id survives the upgrade, but its free <strong>node</strong> ids die (it is removed and re-added internally), so build edges that use them before the upgrade.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>upgradeConstruction can refuse, and pcall catches that <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>On one save every attempt was refused with <code>Assertion !proposalData.errorState.critical</code>, raised as "internal error". <code>pcall</code> caught it, with no crash. It also crashed on an airfield, which carries Construction + FIELD (two identities). To upgrade a station in place, rename its platform-track modules in <code>getEntity(id).params</code> and call <code>upgradeConstruction</code> from the engine side. The id stays the same.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>An industry built without a name crashes 2 s later <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p><code>ecs::Engine::GetComponentDataIndex: Assertion 'it != components.end()' failed</code>, Component Type 19 (Name), on its SimBuilding: the new-industry notice reads the name. Always set <code>construction.name</code>. Industry type check: <code>constructionRep.get(i).type</code>, with INDUSTRY = 10 and TOWN_BUILDING = 13.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Industries: what the engine allows <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li>"Players can't build industries" is only a build-menu rule. A proposal is accepted.</li>
+          <li><strong>Move</strong> an industry in ONE proposal: the original in <code>constructionsToRemove</code> and the copy in <code>constructionsToAdd</code> (same file, params with <code>upgrade = nil</code>, name kept, no playerEntity). The engine returns the <em>same</em> entity id.</li>
+          <li>Farm fields are only made for farms the game spawns. No mod can create fields.</li>
+          <li><code>makeProposalData</code> says "Construction not possible" for industries every time (and takes 1-1.8 s), yet the real build succeeds.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Station names live on the station group <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A station's <code>getEntities</code> record says "no name". The real name is reached through <code>CONSTRUCTION.stations</code>, then <code>stationGroupSystem.getStationGroup</code>, then <code>game.interface.getName</code>. <code>ConstructionEntity.name</code> doesn't survive the upgrade pass. Re-apply it with <code>api.cmd.make.setName</code> on the group about 30 ticks later. Cyrillic names survive.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: one construction per proposal <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Several constructions in one proposal collided with each other (<code>collidesWith</code> shows the same-proposal, negative ids). Send them one at a time.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: road stations need a refresh after their road <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A road station or depot sets up its entrance when it is built. If its road comes later, send <code>api.engine.util.proposal.refreshConstruction(entity)</code> through <code>makeWorldBuildProposalCmd</code>, otherwise you get "Could Not Connect Stations".</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>The engine does not auto-join roads to a new construction <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>After build and upgrade, each free node still had exactly one segment. Joining the edges is your job.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>Ghosts with mixed passenger and cargo terminals crash <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A construction or build ghost holding passenger <em>and</em> cargo terminal-defining models died with <code>Assertion allPersonEdgesHaveTransportModePerson != allPersonEdgesHaveTransportModeCargo failed</code>. A ghost carrying terminal models plus rail station track died with <code>StationSystem.cpp:113 EntityAdded: Assertion pr.second failed</code>. Any new <em>kind</em> of model in a ghost is a crash risk. Model metadata (<code>modelRep.get(i).metadata.transportNetworkProvider.terminals</code>) is readable from the GUI to screen them.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="edges">
+    <h2>Track, roads, nodes &amp; signals</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2">
+        <h3>The street proposal shape <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>In <code>proposal.streetProposal</code>: <code>NodeAndEntity</code> and <code>SegmentAndEntity</code> with negative ids, and type 0 = street, 1 = track. Resolve types with <code>trackTypeRep / streetTypeRep / bridgeTypeRep / tunnelTypeRep .find</code>. New edges join existing nodes by their plain positive id. <code>buildProposal(p, ctx, true)</code> ignores non-critical errors and returns the expanded proposal (<code>.proposal.proposal.addedNodes / frozenNodes / addedSegments</code>).</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Rep lookups return uint32 "not found" <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A missing name returns 4294967295, not −1, so <code>== -1</code> never fires. Check for a sane index <em>and</em> that <code>getName(index)</code> answers. Offsets differ too: <code>streetTypeRep.find()</code> is used as-is, while <code>modelRep</code> needed −1 in one mod (two street types shared a record otherwise).</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Signals must point at the new segments <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A signal's <code>edgeEntity</code> must be in −1&hellip;−N for N added segments, or the build fails with <code>eo.edgeEntity.GetId() &lt; 0 &amp;&amp; eo.edgeEntity.GetId() &gt;= -(int)result.proposal.addedSegments.size()</code>. Number segments −1, −2, &hellip; and keep node ids in a separate range. <code>EdgeObject.model</code> is documented as an int, but the binding wants the model <strong>name</strong> (a string): <code>stack index 3, expected string, received number</code>. A dry run does not check edge-object types.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: signals can't simply be scripted <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A <code>SimpleStreetProposal.EdgeObject</code> with a <code>.con</code> model was fatal: <code>map_util.h:22 Get "it != map.end()"</code>. With a <code>.mdl</code> it was accepted and nothing was built. A researched route (from Automatic Signal Spacing) is untested: the stored <code>edgeObjectConstruction</code> value as the model, placeholder ids from −400000000, and <code>playerInitiated</code>.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>The node-to-segment map: index it, never walk it <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p><code>api.engine.system.streetSystem.getNode2SegmentMap()</code> is a native map. <code>pairs()</code> over it died <strong>natively</strong> ("Internal error", ignoring <code>pcall</code>). What works: fetch it once, then index it per node id you want, with a <code>pcall</code> on each access, and copy the list out.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3 crash">
+        <h3>Snap nodes need exactly one edge <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>TF2: <code>Assertion it-&gt;second.second == 1 failed</code> when two edges ended at a construction snap node. TF3: <code>Assertion nodeInfo.edgeCount == 1</code>. Very short snap pieces in TF3 also crashed on hover: <code>it2 != nodeSegment2minDist.end()</code>.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Curvature and slope: the real limits <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li><strong>Track</strong> (<code>track/standard.lua</code>): maxSlopeBuild 0.075, maxSlope 0.12, maxSlopeShape ×1.25.</li>
+          <li><strong>Curve radius:</strong> minCurveRadiusBuild 60 is only what the player may <em>draw</em>. minCurveRadius is 44, and the engine refuses at about 44.0 m. The local radius <em>inside</em> a Hermite piece can be much tighter than its end-to-end arc.</li>
+          <li><strong>Curve speed</strong> (m/s) = a·(radius + b)^c: standard .85/30/.6, high-speed .9/15/.63.</li>
+          <li><strong>Streets</strong> state no limits. Seen live: accepted 28.8% while turning 88°; refused ("Too much curvature") at 32.8% with a 90° turn.</li>
+          <li><strong>Two roads leaving a node at 0°</strong> are refused: "Narrow angle".</li>
+          <li><strong>Signals near switches:</strong> a signal inside a switch's diverging span blocks the curve. Place it span + 5-10 m clear.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Bridges: piers depend on drawing direction <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>"Bridge pillar collision" is non-critical: the game's tool and <code>buildProposal(&hellip;, true)</code> place the piers anyway, while an <code>ignoreErrors = false</code> bundle is refused. The end a bridge piece is drawn <em>from</em> decides where piers go: the same 208 m bridge drawn one way cleared a station, and drawn the other way it collided. stone.lua: pillarMinDist 12, pillarMaxDist 48, pillarTargetDist 12.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Upgrade track and roads in place, as the game does <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Urban Games' own <code>replace_street.lua</code> recipe: one SimpleProposal with <code>edgesToRemove[k]</code> = the old piece and <code>edgesToAdd[k]</code> = a <code>SegmentAndEntity</code> copying its BASE_EDGE plus a <code>trackEdge</code>/<code>streetEdge</code> with the new type. The pieces stay on their nodes and signals ride along. Swap signals with <code>edgeObjectsToRemove</code> + <code>edgeObjectsToAdd</code>. The price comes from <code>makeProposalData</code>'s costs.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Street era twins <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Base streets: <code>_new</code> has yearFrom 1925 and <code>_old</code> has yearTo 1925 (from inclusive, to exclusive). A <code>_new</code> road in a pre-1925 save is refused with "Construction not possible". To hide a street, use a forward but unreachable range (yearFrom 1 / yearTo 2). A <strong>backwards</strong> range (yearFrom 1925 / yearTo 1) survived a fresh launch but broke every in-game load.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: lane-splitting nodes need node configs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A node joining a multi-lane road to several roads without a <code>BaseNodeConfig</code> crashed: Engine.h:323 <code>it != components.end()</code>, Component Type 35. Add one <code>nodeConfigsToAdd</code> entry (<code>api.type.BaseNodeLaneConnectionAndEntity</code>, entity = the node's temporary id) per new node. An <strong>empty</strong> config gives a red no-entry sign, so copy the real <code>laneConnections</code>. Removing pieces while far-end nodes still list them was fatal too: <code>lc.segment0 / lc.segment1 not found</code> (StreetShapeFactory).</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: road ends sit off the node <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The street builder leaves road ends 5-6 m off the node. Copy those offsets or junctions pinch. Never offset an end that joins an <em>existing</em> node: the game answers "Construction Not Possible".</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 BaseEdge and lane facts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li><code>BaseEdge.distance</code> is the edge-decoration (noise barrier) offset, <strong>not</strong> a length. Normal pieces store <code>typeIndex</code> −1.</li>
+          <li>Tracks are street templates; electrified is a separate <code>*_catenary.street_template</code>. TF3 keeps <code>roadTemplate</code>/<code>roadStyle</code> on the edge.</li>
+          <li>laneConfigs transportModes: {0,1} pavements, {2,3,4} road vehicles, {7,8,14,15} track. <code>laneConfig.offset</code> is not in metres. Lanes run left to right looking node0 → node1.</li>
+          <li>Town roads have 3 m pavements; country roads a 5 m outer lane and a 2 m verge.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Base-game facts read from the game files <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li><strong>No traffic-side setting:</strong> the base game always drives on the right.</li>
+          <li><strong>Station module eras:</strong> a &lt; 1920, b 1920-1980, c ≥ 1980.</li>
+          <li><strong>Bridge eras:</strong> iron 1910, suspension 1940, cement 1970, cable 2000. One-way streets arrive in 1925.</li>
+          <li><strong>Signals:</strong> <code>signal_path_a</code> until 1925, then <code>signal_path_c</code>, each with a <code>_one_way</code> twin. <code>left = false</code> applies to trains running the edge's n0 → n1 direction.</li>
+          <li><strong>Runtime street speed</strong> is m/s (27.78 = 100 km/h), not the config's km/h.</li>
+          <li><strong>Modular station layout:</strong> each unbroken run of track modules is its own stop. Cargo platforms are two slots wide. The maximum length is 840 m.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="removal">
+    <h2>Removing things</h2>
+    <p class="lede">Removal is where most of the fatal assertions are.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 crash">
+        <h3>constructionsToRemove: exactly one identity per id <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Every id must have exactly ONE identity: Construction, AssetGroup or Field. Fatal cases seen: an <code>asset/</code> construction (two identities), an airfield (Construction + FIELD), a dead id (none), and a double removal. Screen every id first: exists, one identity, not already removed.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Assign whole tables to constructionsToRemove <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>p.constructionsToRemove[i] = id</code> silently did nothing (it evidently writes into a copy). <code>p.constructionsToRemove = { ids }</code> works. The street lists do accept indexed writes.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>Nodes: remove only when all their segments go <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>List a node in <code>nodesToRemove</code> only if <em>every</em> segment at it is also removed. Otherwise: <code>!ContainsEntity(m_proposal-&gt;removedNodes, entity)</code> in ProposalStreetGraph::GetNode. Never list frozen edges or nodes, since they go with their construction. Remove track first, then constructions, as two commands.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>Remove signals with their edges <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Removing an edge that still has objects on it: <code>Assertion 'it != object2edge.end()' failed</code>. Put each edge's <code>BASE_EDGE.objects</code> into <code>streetProposal.edgeObjectsToRemove</code> in the same proposal.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>ignoreErrors on removal: use with care <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <ul>
+          <li><code>ignoreErrors = true</code> can report success for a removal the engine didn't do.</li>
+          <li>Pieces <em>built</em> with ignoreErrors can't be removed without it ("Internal error"), because the state already holds tolerated overlaps.</li>
+          <li>Forcing removal of arbitrary world objects (served stations, streets with buildings) was fatal: "Assertion found failed".</li>
+          <li>"Vehicle in the way" is only reported at the buildings stage, after the roads have gone.</li>
+          <li>Town-street parcels are <code>leftParcels</code>/<code>rightParcels</code> (not <code>leftEntities</code>).</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Removal is asynchronous <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>After sending a removal, the entity can still exist on the next scan (more than 5 ticks at a station). Wait on <code>api.engine.entityExists</code>, and claim a caught entity at once: catching it twice removed an already-removed entity, which was fatal.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Build results are a native vector; diff instead <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>res.resultEntities</code> is a native vector. Read it with <code>#</code> and <code>[i]</code>, because <code>pairs</code> can yield nothing. An edge build reported 0 created entities. To know what a build made, snapshot the area before and after and diff the ids, checking position too, because ids get reused.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="constructions">
+    <h2>Constructions (.con)</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf3">
+        <h3>TF3: models draw only inside subconstructions <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A top-level <code>result.models</code> draws nothing, even beside edgeLists. You get no model, or the pink placeholder cube with "Collision".</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A model-only construction becomes a decoration <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>A construction holding only a model, with no ground paint, roads or snap patch, is flattened into an ASSET_GROUP (a decoration), not a CONSTRUCTION. It can't be clicked, and its <code>.con</code> is never read again. Only position and rotation are kept, so scale is lost. Adding <code>groundFaces</code> or a snapPoint ground patch, or owning roads, keeps it a construction. This is a trap for toll booths, and the key to pasting decorations (see below).</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>The held tool caches its preview <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The game runs a construction's <code>updateFn</code> when the tool is picked up and caches the result. It never re-reads your data file. Click another asset, then this one, to refresh. No API opens or pokes the placement tool from script. Construction icon textures load only at game launch (160×100, 32-bit uncompressed TGA).</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>edgeLists in a .con: bridges need their type <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>edgeLists render native ghosts with native collision and snapping, and snapNodes are 0-based row indices. Bridge or tunnel geometry needs <code>edgeType = "BRIDGE"</code>/<code>"TUNNEL"</code> plus <code>edgeTypeName</code> (for example <code>cement.lua</code>), as cloverleaf/t_interchange do. Without it, elevated track counts as a ground crossing and the ghost collides with itself.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Only STREET_CONSTRUCTION joins the road graph <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>An <code>ASSET_DEFAULT</code> with <code>snapping = { road = true }</code> only snaps the placement ghost; it has no road-graph membership. <code>skipCollision</code> is fixed per file, so a dropdown can't toggle it; ship twin <code>.con</code> files instead.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: snapping to roads <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The con-level <code>snapping = { road = true }</code> did nothing. <code>result.snapPoint = { transf, snapToBaseEdgeTypes = {"STREET"}, allowSnapToBaseEdgeEnds = true }</code> works, but snaps to the road's <em>edge</em>, so offset by half the road width.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: edge objects snap only as stops or signals <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>edgeObject = { snapToStreet = true }</code> with <code>result.edgeModels</code> snaps only if the object is a stop or a signal (EdgeObjectType has only STOP_LEFT / STOP_RIGHT / SIGNAL). The result is an EDGE_OBJECT entity that the game treats as a bus stop. The placement preview ignores an edgeModels translation.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: roads inside constructions <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Use your <strong>own</strong> street templates in <code>result.edgeLists</code>: base highway templates came out as dirt roads. Roads join only at an identical end point. An edge entry can carry a third value, a <strong>tag</strong> (<code>{pos, tangent, tag}</code>): ends with the same tag become ONE node even at different positions, which fixed a pinched lane split. At a construction-built junction, the first piece added is wired as the through road.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: script lanes need a station or depot <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>laneLists</code> in a subconstruction, at the top level, or in model metadata were dropped (no lanes in route view), even with a dummy station.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: collision can depend on rotation <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Construction junctions collided at some angles only. Sweep angles with dry runs (<code>makeProposalData</code> per angle step and params variant) to find them, and space pieces off the junction point.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 .con basics that bite <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li>Param values arrive as <strong>1-based</strong> indexes.</li>
+          <li>Model paths are <strong>case-sensitive</strong>; a wrong case gives the pink cube. Renaming a model breaks old saves ("N models are missing").</li>
+          <li>Top-level <code>result.cost</code> is multiplied by <code>costs.infrastructureCostScale</code> (era inflation: ×1 in 1900, ×6 later).</li>
+          <li>A maintenanceCost of 0 or missing becomes cost/6 a year; set 1 to make it negligible.</li>
+          <li>No construction script sees the game year, so era variants are separate entries with yearFrom/yearTo. yearTo 1 hides an entry but keeps it for old saves.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: build-menu tabs are data <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>gui/construction/menu/menu_categories/category_&lt;x&gt;.res.lua</code> returns <code>{ type = "menu_category", data = { category, order, name, icon, menu = "ROADS" } }</code>. The icon is 48×48 white-on-black, @2x. Put your entries in that category and they get their own tab.</p>
+      </article>
+      <article class="note" data-g="tf3 inferred">
+        <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Fix off-centre models in the .con, not in Blender <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A "skewed" gantry was a model authored with its origin at one edge. Fix it with per-model dx/dy offsets in the .con transform (and the terrain patch). Check the bounding box and named parts in the compiled <code>.mdl</code> before blaming the mesh. Helper transforms are tricky too: <code>transf.rotZYXTransl(rot, transl)</code> takes yaw from <code>rot.x</code>. Read <code>res/scripts/transf.lua</code>.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>Never point a .con at a model that isn't there yet <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A <code>.con</code> offering a <code>.mdl</code> that doesn't exist yet is a hard "material/model not found" crash. Wire a dropdown option only after its model is compiled.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Ship shared assets byte-identical <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>A save refers to constructions and models by file name. If two mods ship identical files, either mod loads the other's saves, and removing one keeps the placed objects. Any difference forks behaviour. Keep a checker script that compares the copies.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="decorations">
+    <h2>Decorations &amp; trees</h2>
+    <p class="lede">For years this was "the game doesn't allow it". It turns out a mod can capture, plant and remove decorations and trees.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 tf3">
+        <h3>Decorations and trees are ASSET_GROUPs <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Assets-menu props (fences, benches, lamps, kiosks, rocks) <em>and</em> trees are ASSET_GROUP entities, not constructions. Each group's <code>MODEL_INSTANCE_LIST</code> lists its models: <code>fatInstances[i].transf</code> (translation at [13], [14], [15]; yaw = <code>atan2(t[2], t[1])</code>) or <code>thinInstances[i].pos</code> (position only). The name comes from <code>api.res.modelRep.getName(modelId)</code>; cache it per id. A natural forest can be one group of thousands of trees.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>TF2: find them with getEntities, with includeData <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>game.interface.getEntities({ pos = p, radius = r }, { type = "ASSET_GROUP", includeData = true })</code>. <strong>Without <code>includeData = true</code> it returns a LIST</strong>, so <code>pairs()</code> walks the indexes 1, 2, 3 instead of entity ids.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: find them with the octree <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>getEntitiesWithComponent</code>/<code>forEachEntityWithComponent</code> refuse ASSET_GROUP ("Cannot loop over this component type"). <code>api.engine.util.octree.findEntitiesInCircle(Vec2f, r, ComponentType.ASSET_GROUP)</code> works. Note it is in <code>api.engine.util.octree</code>, not <code>api.engine.util</code>.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Planting a decoration: a one-model construction <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>There is no plant-a-tree or place-an-asset command. A generic <code>ASSET_DEFAULT</code> construction holding ONE model chosen by a param, with no ground paint and <code>skipCollision</code>, does the job. Built by proposal, the game turns it into a real decoration. Each one becomes its own new group, never merged into the player's groups. Trees work exactly the same way. You don't need to know the original asset's <code>.con</code>.</p>
+<pre>-- res/construction/asset/my_prop.con (sketch)
+type = "ASSET_DEFAULT", skipCollision = true,
+updateFn = function(params)
+    return { models = { { id = params.my_model, transf = IDENTITY } },
+             terrainAlignmentLists = { { type = "EQUAL", faces = {} } }, cost = 0 }
+end
+-- and build it with params = { my_model = "&lt;model&gt;.mdl", seed = 0 }</pre>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>TF2: removing a decoration <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A group id in <code>SimpleProposal.constructionsToRemove</code> is refused at command creation (no crash). What works is <code>game.interface.bulldoze(id)</code>, called one id at a time from the <strong>game script</strong> (send the ids from the GUI as a script event).</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: removing a decoration <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>These fail: SimpleProposal <code>constructionsToRemove</code> ("Unknown exception"), and <code>createProposalRemove(group)</code> with or without a context. The bulldozer's own shape works:</p>
+<pre>local p = api.type.Proposal.new()
+p.toRemove = { group }
+api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Rules for copying decorations safely <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li><strong>Remove a group only when every model in it is selected.</strong> Otherwise copy it and leave the original.</li>
+          <li><strong>Take trees only inside the selection circle,</strong> never whole groups, or you sweep the forest.</li>
+          <li><strong>For an undo,</strong> a group counts as "ours" only if it is new <em>and</em> none of its models stood there before. Keep its models and spots, and remove it only if it still holds exactly those.</li>
+          <li><strong>Building a new road through a decoration removes it,</strong> but widening an existing road does not (TF3).</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="entities">
+    <h2>Entities, queries &amp; vehicles</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2">
+        <h3>getEntity for data; raw components are opaque <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>game.interface.getEntity(id)</code> returns rich plain data, for example industry <code>itemsProduced</code>/<code>itemsShipped</code> with <code>_sum</code>/<code>_lastYear</code>/<code>_lastMonth</code> per cargo, and player balance and loan. Raw <code>api.engine.getComponent</code> objects are userdata that <code>pairs()</code> can't enumerate. Named-field access may still work, so a failed dump doesn't prove a field is missing.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Where a construction's models live <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The construction's <code>MODEL_INSTANCE_LIST.fatInstances</code> holds only the furniture (plus <code>.module</code> names that aren't models). The bulk (platform slabs, station bodies) is in <code>thinInstances</code>: modelId, position, yaw, scale. No component exposes groundFaces. <code>tn_*</code> helpers are mesh-less lane carriers. <code>BOUNDING_VOLUME.bbox</code> is world-axis-aligned, which is wrong for rotated stations. Re-read the CONSTRUCTION transform for positions, because the getEntities record can be more than 2 m off.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Cars, buses and people are not what you'd think <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>TF2 has no bus carrier: buses are ROAD like trucks, so classify by <code>capacities.PASSENGERS</code>. Private cars are not vehicle entities. They are SIM_PERSON with <code>lastMoveMode == 1</code> (0 walk, 1 car, 2 line). lastMoveMode stays "car" after the person parks and walks, so also require <strong>no MODEL_PERSON</strong> component, or pedestrians get counted (TF3 uses MOVE_PATH and no MODEL_PERSON).</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Finding vehicles in an area <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>TF2: <code>getEntities({pos, radius}, {type = "VEHICLE"})</code> is a cheap circle query for line vehicles, and <code>getVehicles({carrier = &hellip;})</code> gives counts per carrier. TF3: the octree returns <strong>no moving</strong> transport vehicles, and <code>transportVehicleSystem.getVehicles</code> returned one. <code>api.engine.util.vehicle.getVehiclesByCarrier(Carrier.ROAD)</code> plus <code>getPosition</code> works. Neither game has a vehicle-passed event, so polling is the only way.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Poll intervals must scale with game speed <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A car crosses an 18 m circle in about 1.2 game seconds, which is about 0.3 real seconds at 4×. Polling on real seconds missed 19-45% of cars at fast-forward. Divide the interval by the measured game rate.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Events and line commands worth knowing <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li><code>handleEvent</code> receives <code>SimCargoSystem / OnToArriveAtDestination</code> and <code>SimPersonSystem / OnCompletedLineUsage</code>.</li>
+          <li><code>api.cmd.make.createLine / updateLine / deleteLine</code> work.</li>
+          <li><code>api.engine.system.stationSystem.forEach</code> lists every station.</li>
+          <li>Writing <code>Line.Stop.terminal</code> and calling updateLine moves a terminal; the UI shows the raw value + 1.</li>
+          <li>The native road-ownership tool makes PLAYER_OWNED (75) components. <code>BASE_EDGE_STREET</code> tells streets from track.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: whole-map octree queries spike <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>One whole-map circle (83,559 groups) took about 51 ms, with 50-93 ms spikes. Cutting the map into 2048 m patches, one per look, brought it to 4.6 ms per look (worst 34 ms, 1.1% of the time). "Invalid entity" for something removed mid-scan is normal.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="money">
+    <h2>Money, time &amp; game data</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 crash">
+        <h3>TF2: moving money with bookJournalEntry <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <ul>
+          <li>Build it with <code>api.type.JournalEntry.new()</code>. <code>.time</code> must be −1, or you get the fatal <code>Assertion 'cmd.journalEntry.time == -1'</code>.</li>
+          <li>Position must be <code>vec3.new(x, y, z)</code>.</li>
+          <li>Category must be <code>api.type.JournalEntryCategory.new()</code>; a table gives "bad argument into 'void(JournalEntry::Category)'".</li>
+          <li><code>.amount</code> must be a whole integer. A fractional amount fails <strong>silently</strong> (success = false). Negative amounts subtract.</li>
+          <li>The money shows under "Other" in Finances.</li>
+        </ul>
+        <p>The balance from <code>getEntity(player).balance</code> is stale for a tick after the command (inferred), so track pending amounts yourself.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: paying money from script <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Use <code>api.type.JournalEntry.new()</code> with amount, <code>time = -1</code> and <code>category.type = JournalEntry.Type.INCOME</code>, then send <code>api.cmd.makeJournalBookAssetCmd(api.engine.util.getPlayer(), e, Vec3f)</code>. It shows as company revenue.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>getPlayerJournal can hard-crash a save <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p><code>game.interface.getPlayerJournal(playerId, timeMillis, short)</code> is undocumented (learned from Advanced Statistics). Its <code>_sum</code> is cumulative profit, so two calls can be differenced. On a save carrying many mod-written journal entries, it hit <code>Assertion '(int)entry.category.carrier &lt; numCarrier'</code> in legacy/interface.cpp:1726.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Game time is not the calendar <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>TF2: <code>getGameTime().time</code> tracks roughly real seconds of play. The calendar is <code>getGameTime().date</code> = {day, month, year}. TF3: <code>os.clock</code> is real time at any speed, the year is <code>api.engine.util.getYear()</code>, and the speed is the world's GAME_SPEED <code>speedup</code> (which may not read 2 at 2×).</p>
+      </article>
+      <article class="note" data-g="tf2 inferred">
+        <h3>math.randomseed seemed to do nothing <span class="tags"><span class="tag tf2">TF2</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Two fresh games rolled identical values even when seeded from <code>os.time</code>, <code>os.clock</code> and a heap address. The workaround derives variation from map data. Also guard <code>math.random() == 0</code> before taking a log.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="gui2">
+    <h2>TF2 GUI</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 crash">
+        <h3>Don't mix gui.lua and raw api.gui trees <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Putting a native <code>api.gui.comp.*</code> object into a gui.lua-managed layout threw inside <code>boxLayout_addItem</code>, then crashed at game close with <code>Assertion 'CComponent::NumInstances() == 0' failed</code>. Windows built only from raw <code>api.gui.comp.*</code>/<code>api.gui.layout.*</code> close cleanly. A component can have only one parent. Raw Slider and ComboBox are safe.</p>
+      </article>
+      <article class="note" data-g="tf2 crash">
+        <h3>Mouse listeners must always return a boolean <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A listener added with <code>getGameUI():getMainRendererComponent():insertMouseListener(fn)</code> that returns nil causes an unprotected native error (SIGABRT). Always <code>pcall</code>-wrap it and return a real boolean. A left click is <code>type == 2</code>, <code>button == 0</code>. The listener also sees clicks on menus and windows, so test <code>api.gui.util.getMouseScreenPos()</code> against the UI first. A click on the game menu once started a 398-segment build.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>No keyboard, no modifier keys <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>insertKeyListener</code> doesn't exist, and MouseEvent has no shift/ctrl fields (eight candidates probed). Rotating with keys is only possible in the game's own placement tool.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>TextView doesn't wrap; sizes aren't what you set <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li><code>TextView</code> has no word wrap and clips. Wrap by hand (about 7.8 px per character).</li>
+          <li>The default style sheet pads every TextView 20 px wider than its width, plus 5 px between items.</li>
+          <li>ScrollArea scrolls vertically only. The gui.lua scrollArea wrapper renders blank; <code>api.gui.comp.ScrollArea.new(content, id)</code> works.</li>
+          <li>On a raw window, <code>setMinimumSize</code>/<code>setMaximumSize</code> change nothing; use <code>setSize</code>. setSize is in unscaled units, while <code>setPosition</code> is in physical pixels.</li>
+          <li><code>api.gui.util.Size.new</code> rejects non-integers.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Text colour only through a style sheet <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The only text-colour route is a style sheet in <code>res/config/style_sheet/*.lua</code> plus <code>setStyleClassList</code>; fontSize works too. Buttons take backgroundColor/borderColor. New textures and style sheets need a full restart. For toolbar icons, cap both the ImageView and the Button, or the button stretches.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>setZone: 0-1 colours, and the only overlay <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>game.interface.setZone</code>'s <code>drawColor</code> takes 0-1 floats; 0-255 values clamp to solid white. There is no model tinting or ghost API, so flat zones are the only overlay. Hundreds of zones per redraw are expensive, so cap them and re-send only after the cursor moves.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Guard NaN before moving the camera <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>A non-finite position passed to <code>game.gui.setCamera</code> can feed the engine bad terrain lookups. Check x, y and z are finite first.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="gui3">
+    <h2>TF3 React UI</h2>
+    <p class="lede">TF3's UI is React-style, written in Teal (<code>.tl</code>). Nearly everything from TF2's GUI is different.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf3">
+        <h3>A toolbar button: the mod button area plugin <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A <code>.res.lua</code> of type <code>"react-plugin ::MainModButtonAreaExtension"</code> whose <code>data.filePath</code> points at a <code>react.RegisterPluginRecipe</code>. It shows at the top left, beside the layers button, in one row shared with other mods. <code>ModEntryPointExtension</code> drew nothing visible.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>A plugin must return a layout <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Otherwise the UI stops with <code>Recipe child must be a layout</code>. That happens with a bare Button, and also when the plugin calls a separately registered recipe. Wrap the content in a BoxLayout and build the body inline.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>Windows must be wrapper recipes <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Register with <code>react.RegisterWrapperRecipe(name, builtin.Window, fn)</code> and open through <code>game_react_globals.getDefaultWindowApi().addSingletonWindow</code>. A plain <code>RegisterRecipe</code> crashed TF3: <code>Assertion id &gt;= 0 &amp;&amp; id &lt; (int)m_data-&gt;nodes.size() failed</code> while transforming WindowContainer. <code>initialX</code>/<code>initialY</code> (0-1) set the window's <strong>top-left</strong> corner.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Unattached recipes flood the log <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Building recipes that never get attached floods stdout.txt with <code>Preserved props &hellip; a recipe was called but not attached to the tree</code>: 1.1 million lines, 573 MB in about 10 minutes. Build only the rows actually shown, and build each element once, without replacing it afterwards.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Restyled elements keep their old fields <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The UI reuses elements and applies only the style fields you give, so <code>styleSheet = nil</code> does not clear an earlier background. Always set every field explicitly (for example a transparent <code>{0,0,0,0}</code> background).</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Sizing, scrolling and tables <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li>Put the size style on the TextView or Button itself; a sized Component wrapper hid its content.</li>
+          <li>StyleSheet has no text alignment.</li>
+          <li>Buttons are wider than set unless <code>padding</code> and <code>borderWidth</code> are <code>Vec4f(0,0,0,0)</code>.</li>
+          <li>ScrollArea content must be <code>builtin.Component { layout = &hellip; }</code> ("ScrollArea does not accept a Layout as content"), and it needs a size. Scrolling was unreliable, so pages are safer.</li>
+          <li>TableLayout drew nothing; a BoxLayout of rows works.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Live data into the UI, and other hooks <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li>Push data with <code>api.gui.fireReactEvent("name", data)</code> and listen with <code>react.onEvent</code>. <code>useStepStateTimer</code> polling didn't refresh in the mod area.</li>
+          <li>A <code>"react-plugin ::EmptyConstructionEowExtensionPoint"</code> adds a card to a construction's window.</li>
+          <li>A <code>react-replacement-config</code> resource wraps game UI modules at load. Always chain to the previous function, because other mods may wrap it too.</li>
+          <li><code>react.fireEvent(nil, "constructionMenuSelectTabForConstruction", { resName = "&lt;modId&gt;::/x.con" })</code> opens the build menu on an entry. Avoid <code>setMenuFilter</code>, which sticks.</li>
+          <li>Camera: <code>api.gui.camera.getCameraData()</code> and <code>api.gui.camera.focusPosition</code>. Rename things with <code>api.cmd.makeEntitySetNameCmd</code>.</li>
+          <li>UI scripts reload with "Reload UI" on the UI error screen. Loading a save re-reads scripts and <code>.con</code> files.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="art">
+    <h2>Models, textures &amp; images</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf3">
+        <h3>TF3 reads TGAs bottom-up and ignores the origin flag <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The first stored row is the <strong>bottom</strong>. Bottom-up files (flag 0x08, Pillow's default) are right as they are; top-down files (0x28) must be flipped. UI images and build-menu icons follow the same rule. Some textures on meshes also show flipped vertically, so store those upside down.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>TF2 TGA quirks <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>In one pipeline, grayscale (type 3) TGAs needed a horizontal mirror and colour (type 2) TGAs needed their rows reversed, with the same 0x28 descriptor. Measure a PNG's real alpha with a histogram before converting, because "whiteness to alpha" destroyed it. <code>image_00.tga</code> is the in-game mod icon (768×768).</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>Material texture paths: relative or ::/, never a mod path <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A texture <code>fileName</code> pointing into another model's folder by mod path (<code>&lt;modId&gt;::/&hellip;</code>) failed the Validation Report ("Model verification: Texture &hellip;") and crashed a tester's game. Use relative paths or game paths (<code>::/&hellip;</code>). To share textures, share whole <code>.mtl</code> files: an <code>.mdl</code> can point at another folder's material.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>DDS headers must match the Model Editor's <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Pillow's DDS headers fail model verification. Match the Model Editor's: mips down to 1×1, <code>pitchOrLinearSize</code> = the top level's byte size, depth 1, RGB bit count 0 for DXT, and the <code>'A2XY'</code> marker for BC5. Every texture side must be a power of two, and paths should be lower case (Linux is case-sensitive, and the validator warns).</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 Model Editor gotchas <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li>It only accepts <code>*_lod0.fbx</code>.</li>
+          <li>Textures are matched by name (<code>&lt;material&gt;_albedo / _metal_gloss_ao / _normal</code>). With "overwrite materials" off, it reuses old placeholders.</li>
+          <li>A re-save resets the collider to BOX. Set NONE for things that stand over roads or inside other models.</li>
+          <li>Glow materials import as PHYSICAL; set EMISSIVE. EMISSIVE quads are opaque, so a full-panel glow quad blacks out the panel.</li>
+          <li>Blender light strengths arrive in the thousands; TF3 uses about 1-3. Base street lights: 60-70° cones, strength 0.5-1, radius 20-25.</li>
+          <li>It saves into the mod chosen in the <strong>top</strong> dropdown, and copies sources into content.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3 build-menu art sizes <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Icon <code>&lt;name&gt;@2x.tga</code> 240×150 plus a 1× 120×75. Preview <code>&lt;name&gt;_preview@2x.tga</code> 720×405 plus 360×202. A missing preview leaves flat blue. Base glyphs in gui.zip are white and tinted by the UI; reference them without "@2x".</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Blender bake gotchas <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Put the backdrop behind the content, and un-hide the light for the render. World strength can wash out materials. An RGBA TGA can render blank under the DITHERED render method, so strip the alpha. A decal inside another solid bakes blank.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="perf">
+    <h2>Performance</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2">
+        <h3>Dry runs on the GUI thread are expensive <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p><code>makeProposalData</code> grows steeply with layout size and map density: about 8 s for 79 segments on a full map, and it froze the game on 398. Never re-validate what the game's own tool just validated.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Drive scans from events, not timers <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Scanning every construction within 20 km every 20 ticks stuttered a map of 734k people. Scanning in a short burst after the game's <code>builder.apply</code> GUI event, plus a slow safety scan, fixed it.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Spread work over frames, and build a meter <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Staggering per-object due times, slicing scans and saves, and re-serialising only what changed took the worst frame on a 60-town map from 394 ms to 77 ms. Build an in-mod meter (share of real time, worst frame, and which section caused it), and skip the first 20 s after a load. For stress tests, <code>experimentalMapSizes = true</code> in settings.lua gives a 24×24 km map with 60 towns.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="release">
+    <h2>Workshop, mod.io &amp; release</h2>
+    <div class="fn-list">
+      <article class="note" data-g="tf2">
+        <h3>The folder suffix is the mod id: never rename it <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>The <code>_1</code> folder suffix is the mod id stored in every save, and the major version. The game shows <code>&lt;folder number&gt;.&lt;minorVersion&gt;</code>. Put a "version 2" in the title only. Set <code>severityRemove = "WARNING"</code> if removing the mod loses placed objects.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Move non-mod files out before uploading <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>The uploader sends the whole folder: one mod went from 33 MB to 15 MB once art_source, documents, tools and .git were moved out. Move them <em>outside</em> staging_area (inside it, the game scans them as a mod), publish, then move them back with a move-only script. Keep <code>workshop_fileid.txt</code>, which is how the uploader updates the same item.</p>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Steam page details <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <ul>
+          <li>The uploader replaces the page description with mod.lua's short one, so re-paste the full BBCode after each upload.</li>
+          <li>Change notes are plain text; Steam ignores Markdown.</li>
+          <li>The preview is capped at 1 MB. A JPEG saved by PIL with <code>jfif_unit=0</code> was refused ("JPEG couldn't be read"); <code>dpi=(96, 96)</code> fixed it.</li>
+          <li>Save a creator map with only the mods it needs, or subscribers inherit the rest.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf2">
+        <h3>Where installed mods live (TF2) <span class="tags"><span class="tag tf2">TF2</span></span></h3>
+        <p>Steam Workshop: <code>steamapps/workshop/content/1066780/&lt;id&gt;/</code>, with installed ids in <code>appworkshop_1066780.acf</code>. mod.io: <code>C:\Users\Public\mod.io\6791\mods\&lt;id&gt;\</code> (6791 = TF2), with names in <code>metadata\state.json</code>. Resource reps hold only <em>active</em> mods, so "installed" and "enabled" can be told apart. In the loader, <code>addModifier("loadConstruction", fn)</code> (and loadModel, loadStreet&hellip;) fires lazily, and <code>getCurrentModId()</code> names the owning mod.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: publishing on mod.io <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li>Publish from TF3's mod manager: Validate (PC + Console), then Upload. TF3 builds the console version, so this can't be skipped. <strong>Run the Validation Report before any zip or upload.</strong></li>
+          <li>A missing summary shows a generic "check your network" box (error 13009). The log says "The summary field is required" (250 characters max).</li>
+          <li>Unaccepted mod.io terms give 403 (error_ref 11074).</li>
+          <li>Keep <code>_metadata/mod.io_fileid.txt</code> so the button reads Update. An update replaces the page's tags with modinfo.json's.</li>
+          <li>The mod picture is <code>_metadata/0.png</code> at 1920×1080.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: don't remove mod folders while the game runs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Deleting or renaming a staging mod folder while TF3 or the Model Editor is running crashed: <code>Assertion 'inAddMods &amp;&amp; "cannot remove mods in game"'</code>. Close both first.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================== -->
+  <section class="fn-sec" id="practice">
+    <h2>How to work</h2>
+    <p class="lede">These habits did more than any single trick.</p>
+    <div class="fn-list">
+      <article class="note" data-g="tf2 tf3">
+        <h3>Never invent an API call; prove it first <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Read the base game's own scripts and well-used mods (Advanced Statistics, AI Builder, Copy It, Move It, Automatic Signal Spacing) to learn the real calls and which thread they run on. TF3 ships its API as Teal definitions in <code>api/tealdef</code>. Build a throwaway in-game probe and record the result, positive or negative. <strong>Save before any probe that writes game state</strong>, because native assertions can't be caught.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Keep a decision log, and say what was seen <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Every change gets a numbered entry: what, why, and "not yet seen in game" until it is. When something breaks three times in one function, that log shows the pattern. It's also where this page came from.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>Read the log before guessing <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Give your mod its own log with a clear line for every step that matters, and a diagnostic line when something comes back empty. More than once the fix was obvious from one log line, for example asset-group ids coming back as 1, 2, 3.</p>
+      </article>
+    </div>
+  </section>
+
+  <p class="fn-empty" id="fnEmpty" hidden>No notes match &mdash; try a shorter search or another filter.</p>
+
+  <p class="hint" style="margin-top:30px">Written by Epod and Claude from the decision logs of Blueprint Exchange, Pay Your Tolls, Insider Trader and the PYT mods, October 2026. Transport Fever builds change, so treat version-specific details (TF3 build 40408) as a starting point and re-check.</p>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange is a fan-made community project for Transport Fever 2 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange is free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+<script>
+(function () {
+  var search = document.getElementById("fnSearch");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".fn-chip"));
+  var notes = Array.prototype.slice.call(document.querySelectorAll(".note"));
+  var secs = Array.prototype.slice.call(document.querySelectorAll(".fn-sec"));
+  var count = document.getElementById("fnCount");
+  var empty = document.getElementById("fnEmpty");
+  var filter = "all";
+  notes.forEach(function (n) { n._text = n.textContent.toLowerCase(); });
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    notes.forEach(function (n) {
+      var g = " " + (n.getAttribute("data-g") || "") + " ";
+      var ok = (filter === "all" || g.indexOf(" " + filter + " ") >= 0) && (!q || n._text.indexOf(q) >= 0);
+      n.hidden = !ok;
+      if (ok) shown++;
+    });
+    secs.forEach(function (s) { s.hidden = !s.querySelector(".note:not([hidden])"); });
+    count.textContent = shown + " of " + notes.length + " notes";
+    empty.hidden = shown > 0;
+  }
+  chips.forEach(function (c) {
+    c.addEventListener("click", function () {
+      filter = c.getAttribute("data-f");
+      chips.forEach(function (o) { o.setAttribute("aria-pressed", String(o === c)); });
+      apply();
+    });
+  });
+  search.addEventListener("input", apply);
+  apply();
+})();
+</script>
+</body>
+</html>
