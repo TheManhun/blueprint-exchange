@@ -528,6 +528,17 @@ end</pre>
         <p>The module bulldozer (key B) refuses to remove the last model of a construction: "Empty Construction". If the base only has ground paint and one module holds the only model, that module can never be swapped. Give the base a small permanent model (for example the base game's <code>::/assets/streets/cable_junction.mdl</code>). In the module builder, swapping is remove (B), then pick the new module and click the slot.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: a live build ghost with ProposalViewer, and loading your own scripts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Inside a tool's action, <code>builtin.ProposalViewer { simpleProposal = sp }</code> draws a whole planned build as the game's own see-through preview: roads, track and stations. Rebuild <code>sp</code> when the cursor moves a few metres. The game colours it red when the proposal has errors. Several stations in one proposal collide with each other, so check with <code>makeProposalData(sp).errorState</code> / <code>collisionInfo</code>.</p>
+        <p>Read the cursor from the Selector's mouse Moved events. A step timer mostly saw no terrain position, so the outline it drew kept vanishing.</p>
+        <p>Loading code from your own mod in a UI script:</p>
+        <ul>
+          <li><code>ug_require "/bpx/bpx_select_core.tl"</code> found a plain module.</li>
+          <li><code>ug_require "/bpx/bpx_dev.script.tl"</code> was looked up in the base game (<code>::/bpx/...</code>, "not found").</li>
+          <li>A <code>.script</code> file loads with the full mod path: <code>ug_require "yourmod_1::/bpx/bpx_dev.script.tl"</code>.</li>
+        </ul>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: removing road / track by script -- use the engine's helper <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>SimpleProposal.constructionsToRemove</code> removes stations and other constructions fine. Road and track pieces are different: a <code>SimpleProposal</code> with <code>streetProposal.edgesToRemove</code>, with or without <code>nodesToRemove</code> and <code>edgeObjectsToRemove</code>, made <code>makeWorldBuildProposalCmd</code> throw "Unknown exception", even with nothing else in it. The engine has a helper for it: <code>api.engine.util.proposal.makeSegmentsRemoveProposal({ pieces })</code> returns a full <code>Proposal</code> to pass to <code>makeWorldBuildProposalCmd</code>.</p>
         <p>In the same table:</p>
