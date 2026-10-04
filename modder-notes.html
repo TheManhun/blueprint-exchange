@@ -552,6 +552,17 @@ end</pre>
         </ul>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: change vanilla data live with a postRunScript <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Learned by reading SteveB's "Country Roads 100 km/h" (mod.io; method only). In <code>mod.json</code>, set <code>"postRunScript": { "fileName": "yourmod_1::/mod.script@postRunFn" }</code>. That function runs once every resource has loaded. To change a road type:</p>
+        <ol>
+          <li>Get it with <code>api.res.streetTemplateRep.find(name)</code>.</li>
+          <li>Read it as a table with <code>getAsTable(id)</code>.</li>
+          <li>Change it (here every <code>laneConfigs[i].speed</code>, in metres per second: 100 / 3.6).</li>
+          <li>Write it back with <code>setAsTable(id, t)</code>.</li>
+        </ol>
+        <p>The game's own roads change, including ones already built, with no new road types. Read the template back to check, since some builds don't return the advertised success value.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: timers run on the simulation threads; userdata has no sub-folders <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>The function you give <code>engine_react_util.useStepStateTimer(fn, seconds)</code> runs on the simulation threads ("Main Pool N" in the log), not the UI thread. There, <code>app.loadUserdata</code> fails with "API is currently restricted". Keep the timer's function to reading state and maths, return a value, and do file work only from a mouse or keyboard event (UI thread). We saw a tool's render run on the simulation threads too, so the render isn't safe either. For anything rebuilt while the mouse moves, load the data once and keep it in memory.</p>
         <p><code>app.saveUserdata(folder, name, data)</code> refuses a slash in the folder: "Forbidden file name (blueprint_exchange/saved) detected, another valid version could be 'saved'". Use side-by-side folders such as <code>mymod_saved</code>.</p>
