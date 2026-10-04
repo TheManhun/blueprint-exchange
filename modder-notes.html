@@ -525,7 +525,7 @@ end</pre>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: build-menu tabs are data <span class="tags"><span class="tag tf3">TF3</span></span></h3>
-        <p><code>gui/construction/menu/menu_categories/category_&lt;x&gt;.res.lua</code> returns <code>{ type = "menu_category", data = { category, order, name, icon, menu = "ROADS" } }</code>. The icon is 48×48 white-on-black, @2x. Put your entries in that category and they get their own tab.</p>
+        <p><code>gui/construction/menu/menu_categories/category_&lt;x&gt;.res.lua</code> returns <code>{ type = "menu_category", data = { category, order, name, icon, menu = "ROADS" } }</code>. The icon is 48×48 white-on-black, @2x. Put your entries in that category and they get their own tab. The icon must be an <strong>8-bit greyscale</strong> TGA (type 3): white is the glyph, black is see-through, and the game tints it like its own tabs. A full-colour RGBA icon shows its background as a dark square. <code>menu = "LANDSCAPING"</code> works the same way, and a tile there can open a window: fire a react event when its action mounts.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a template whose preview fails crashes the build menu <span class="tags"><span class="tag tf3">TF3</span></span></h3>
