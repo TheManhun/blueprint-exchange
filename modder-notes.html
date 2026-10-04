@@ -540,6 +540,10 @@ end</pre>
         <p>The module bulldozer (key B) refuses to remove the last model of a construction: "Empty Construction". If the base only has ground paint and one module holds the only model, that module can never be swapped. Give the base a small permanent model (for example the base game's <code>::/assets/streets/cable_junction.mdl</code>). In the module builder, swapping is remove (B), then pick the new module and click the slot.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: a construction that owns roads can't take modules <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A road-owning construction (a toll plaza that builds its booth lanes through <code>result.edgeLists</code>) with a module slot shows its modules in Configure, but placing one is refused: "Construction Not Possible", with the construction's own lane pieces drawn red. This happened joined to roads or not, and with collider-free models. The module builder won't rebuild a construction's own road pieces. The fix that works: two constructions. The road one owns the roads, and a road-free one placed over it carries the slots and swaps freely.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: a module's model collider counts against its own construction <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A module whose model still had a BOX collider (from the Model Editor's default) was refused on a road-owning construction: "Construction Not Possible", with the construction's own lane pieces drawn red where the box overlapped them. Set the collider to <code>NONE</code> on models that stand over roads or inside other pieces, modules included. The Model Editor resets it to BOX on every re-save.</p>
       </article>
