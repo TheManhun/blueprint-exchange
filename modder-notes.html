@@ -519,6 +519,14 @@ end</pre>
         <p><code>gui/construction/menu/menu_categories/category_&lt;x&gt;.res.lua</code> returns <code>{ type = "menu_category", data = { category, order, name, icon, menu = "ROADS" } }</code>. The icon is 48×48 white-on-black, @2x. Put your entries in that category and they get their own tab.</p>
       </article>
       <article class="note" data-g="tf3 inferred">
+        <h3>TF3: a template whose preview fails crashes the build menu <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>For a <code>constructionTemplates</code> (DYNAMIC) entry, the build menu builds a preview result while you hover it (<code>api.engine.util.construction.getConstructionResult</code>). If your script fails, the game's own code crashes the UI: <code>bad argument #1 to 'pairs' (table expected, got nil)</code> in <code>table_util.tl(107): shallowCopy</code>, from <code>construction.tl(3674): getNameAndDescription</code>. Follow the base modular pieces (headquarter.script.tl): put everything (models, groundFaces, terrainAlignmentLists, colliders) in <code>result.subconstructions[1]</code>, with only <code>slots</code> at the top, and give the subconstruction a <code>metadata</code> table, because the menu reads <code>subconstruction.metadata</code>.</p>
+      </article>
+      <article class="note" data-g="tf3 inferred">
+        <h3>TF3: a module's addModel doesn't work <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A <code>.module.lua</code>'s updateScript gets <code>(captureParams, result, transform, tag, slotId, addModel, params)</code>, but the base game names that <code>addModel</code> argument <code>_addModelFnInvalid</code> and never calls it. A module inserts its models into <code>result.subconstructions[1].models</code> itself, with its <code>tag</code>, usually at the slot's transform from <code>result.slots</code>.</p>
+      </article>
+      <article class="note" data-g="tf3 inferred">
         <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
         <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
       </article>
