@@ -530,6 +530,10 @@ end</pre>
         <h3>TF3: a modular construction's base needs a model of its own <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>The module bulldozer (key B) refuses to remove the last model of a construction: "Empty Construction". If the base only has ground paint and one module holds the only model, that module can never be swapped. Give the base a small permanent model (for example the base game's <code>::/assets/streets/cable_junction.mdl</code>). In the module builder, swapping is remove (B), then pick the new module and click the slot.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a red slot means the slot itself collides <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>An empty module slot drawn red, with the module ghost refusing to snap anywhere, meant the slot's own volume collided with something nearby: the base's own model inside it, a street light. <code>result.slotConfig = { &lt;slotType&gt; = { skipCollisionCheck = true } }</code> fixed it (the finished construction is still collision-checked), and the slot turned blue and took the module. Slot fields from <code>api/tealdef/api/type.d.tl</code>: <code>id, type, transf, spacing</code> (left, right, south, north), <code>height, shape</code> (0 square, 1 triangle, 2 rectangle), <code>alignToTerrain, autoFill, replaceable</code>. Setting <code>replaceable = true</code> alone did <strong>not</strong> let a module be placed over an occupied slot in our test.</p>
+      </article>
       <article class="note" data-g="tf3 inferred">
         <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
         <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
