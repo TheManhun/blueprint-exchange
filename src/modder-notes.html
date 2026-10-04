@@ -528,6 +528,17 @@ end</pre>
         <p>The module bulldozer (key B) refuses to remove the last model of a construction: "Empty Construction". If the base only has ground paint and one module holds the only model, that module can never be swapped. Give the base a small permanent model (for example the base game's <code>::/assets/streets/cable_junction.mdl</code>). In the module builder, swapping is remove (B), then pick the new module and click the slot.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: removing road / track by script -- use the engine's helper <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>SimpleProposal.constructionsToRemove</code> removes stations and other constructions fine. Road and track pieces are different: a <code>SimpleProposal</code> with <code>streetProposal.edgesToRemove</code>, with or without <code>nodesToRemove</code> and <code>edgeObjectsToRemove</code>, made <code>makeWorldBuildProposalCmd</code> throw "Unknown exception", even with nothing else in it. The engine has a helper for it: <code>api.engine.util.proposal.makeSegmentsRemoveProposal({ pieces })</code> returns a full <code>Proposal</code> to pass to <code>makeWorldBuildProposalCmd</code>.</p>
+        <p>In the same table:</p>
+        <ul>
+          <li><code>createProposalReplaceConstruction(entity, params, newResName)</code> rebuilds a construction with new parameters.</li>
+          <li><code>refreshConstruction(entity)</code> refreshes a construction.</li>
+          <li>A segment refresh that takes a new street template rebuilds a road or track piece with a different template.</li>
+        </ul>
+        <p>Never remove a construction's own pieces (its <code>frozenEdges</code>) by hand.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: a custom tool's mouse, and a fatal zero-length line <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A <code>construction_tool</code> (a <code>.res.lua</code> of that type whose <code>getDefinition</code> returns <code>action = "ACTION_CUSTOM"</code> plus <code>customAction = { recipe }</code>, as in the base game's Marketing Campaign tool) can put a <code>builtin.Selector</code> on the map. Its <code>onProcessMouseEvent(evt)</code> receives events: Entered 3, Moved 5, PressedOutside 8, Pressed 0, but after a Pressed we saw no Released. Three more findings:</p>
         <ul>
