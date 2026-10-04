@@ -534,6 +534,18 @@ end</pre>
         <h3>TF3: a red slot means the slot itself collides <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>An empty module slot drawn red, with the module ghost refusing to snap anywhere, meant the slot's own volume collided with something nearby: the base's own model inside it, a street light. <code>result.slotConfig = { &lt;slotType&gt; = { skipCollisionCheck = true } }</code> fixed it (the finished construction is still collision-checked), and the slot turned blue and took the module. Slot fields from <code>api/tealdef/api/type.d.tl</code>: <code>id, type, transf, spacing</code> (left, right, south, north), <code>height, shape</code> (0 square, 1 triangle, 2 rectangle), <code>alignToTerrain, autoFill, replaceable</code>. Setting <code>replaceable = true</code> alone did <strong>not</strong> let a module be placed over an occupied slot in our test.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: templates: 1-based params, and marks don't persist <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A DYNAMIC template's <code>data.params</code> are the menu's parameters. <code>createTemplateFn(captureParams, params)</code> gets them <strong>1-based</strong> (the default 4th choice arrived as <code>4</code>), plus <code>params.year</code>, and returns the starting modules <code>{ [slotId] = "path.module" }</code>. A value you set on <code>params</code> inside createTemplateFn (a "this one is new" mark) did <strong>not</strong> reach the construction's later <code>updateFn</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: loading a save doesn't re-run construction scripts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Changing a <code>.con</code>'s script (for example making it modular) doesn't change constructions already in a save: they keep the result saved with them until something rebuilds them. Existing pieces only get the new behaviour (here, a module slot) after a rebuild, for example <code>api.engine.util.proposal.refreshConstruction</code> or an upgrade. New placements use the new script at once.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a react-plugin's condition hides the whole plugin <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A <code>react-plugin</code> resource can name a <code>condition</code> function. When it returns false, the plugin isn't built at all (no log line, nothing). Don't let the condition do double duty, such as also flagging something for a UI replacement: change one meaning and you silently lose the other.</p>
+      </article>
       <article class="note" data-g="tf3 inferred">
         <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
         <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
