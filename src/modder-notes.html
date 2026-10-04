@@ -530,6 +530,7 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: a construction that owns roads can't take modules <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A road-owning construction (a toll plaza that builds its booth lanes through <code>result.edgeLists</code>) with a module slot shows its modules in Configure, but placing one is refused: "Construction Not Possible", with the construction's own lane pieces drawn red. This happened joined to roads or not, and with collider-free models. The module builder won't rebuild a construction's own road pieces. The fix that works: two constructions. The road one owns the roads, and a road-free one placed over it carries the slots and swaps freely.</p>
+        <p>The road-free layer can find exact spots (lamps, barriers) without copying them: in the same <code>.script.lua</code>, keep the returned table in a local (<code>local T; T = { ... }; return T</code>). The layer's updateFn calls <code>T.updateFnRoad(captureParams, {its size params})</code> and reads the models it would place, then puts a slot at each one. An empty slot can still draw the default model, so the layer looks finished before anyone configures it. One module can fit several kinds of spot if the base stores per-slot data in an extra <code>result</code> field (keyed by slotId) that the module reads.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a module's model collider counts against its own construction <span class="tags"><span class="tag tf3">TF3</span></span></h3>
