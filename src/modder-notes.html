@@ -543,6 +543,10 @@ end</pre>
         <h3>TF3: a react-plugin's condition hides the whole plugin <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A <code>react-plugin</code> resource can name a <code>condition</code> function. When it returns false, the plugin isn't built at all (no log line, nothing). Don't let the condition do double duty, such as also flagging something for a UI replacement: change one meaning and you silently lose the other.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a construction that owns roads can't swap modules <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A road-owning construction (a toll plaza that builds its booth lanes through <code>result.edgeLists</code>) with a module slot showed its modules in Configure, but placing a different module was refused: "Construction Not Possible", with the construction's own lane pieces drawn red. That happened both joined to roads and on open ground with nothing joined. The module builder won't rebuild a construction's own road pieces. Keep swappable parts in a separate construction that owns no roads, placed over the road one.</p>
+      </article>
       <article class="note" data-g="tf3 inferred">
         <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
         <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
