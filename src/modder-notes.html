@@ -541,7 +541,7 @@ end</pre>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: timers run on the simulation threads; userdata has no sub-folders <span class="tags"><span class="tag tf3">TF3</span></span></h3>
-        <p>The function you give <code>engine_react_util.useStepStateTimer(fn, seconds)</code> runs on the simulation threads ("Main Pool N" in the log), not the UI thread. There, <code>app.loadUserdata</code> fails with "API is currently restricted". Keep the timer's function to reading state and maths, return a value, and do the file and proposal work in the render, on the UI thread.</p>
+        <p>The function you give <code>engine_react_util.useStepStateTimer(fn, seconds)</code> runs on the simulation threads ("Main Pool N" in the log), not the UI thread. There, <code>app.loadUserdata</code> fails with "API is currently restricted". Keep the timer's function to reading state and maths, return a value, and do file work only from a mouse or keyboard event (UI thread). We saw a tool's render run on the simulation threads too, so the render isn't safe either. For anything rebuilt while the mouse moves, load the data once and keep it in memory.</p>
         <p><code>app.saveUserdata(folder, name, data)</code> refuses a slash in the folder: "Forbidden file name (blueprint_exchange/saved) detected, another valid version could be 'saved'". Use side-by-side folders such as <code>mymod_saved</code>.</p>
       </article>
       <article class="note" data-g="tf3">
