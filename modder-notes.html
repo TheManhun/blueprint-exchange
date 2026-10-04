@@ -526,6 +526,10 @@ end</pre>
         <h3>TF3: a module's addModel doesn't work <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A <code>.module.lua</code>'s updateScript gets <code>(captureParams, result, transform, tag, slotId, addModel, params)</code>, but the base game names that <code>addModel</code> argument <code>_addModelFnInvalid</code> and never calls it. A module inserts its models into <code>result.subconstructions[1].models</code> itself, with its <code>tag</code>, usually at the slot's transform from <code>result.slots</code>.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a modular construction's base needs a model of its own <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The module bulldozer (key B) refuses to remove the last model of a construction: "Empty Construction". If the base only has ground paint and one module holds the only model, that module can never be swapped. Give the base a small permanent model (for example the base game's <code>::/assets/streets/cable_junction.mdl</code>). In the module builder, swapping is remove (B), then pick the new module and click the slot.</p>
+      </article>
       <article class="note" data-g="tf3 inferred">
         <h3>TF3: Configure is the module builder <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
         <p>The Configure button opens TF3's module builder (<code>setModuleBuilderEntity</code>). Its panel lists only params marked <code>postConstructionModifiable</code>, and it has no close button (Esc only). Modular constructions use <code>constructionTemplates</code> (type DYNAMIC), <code>createTemplateScript</code>, <code>result.slots</code> and <code>.module.lua</code> files. Untested beyond that.</p>
