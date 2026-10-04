@@ -540,6 +540,11 @@ end</pre>
         </ul>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: timers run on the simulation threads; userdata has no sub-folders <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The function you give <code>engine_react_util.useStepStateTimer(fn, seconds)</code> runs on the simulation threads ("Main Pool N" in the log), not the UI thread. There, <code>app.loadUserdata</code> fails with "API is currently restricted". Keep the timer's function to reading state and maths, return a value, and do the file and proposal work in the render, on the UI thread.</p>
+        <p><code>app.saveUserdata(folder, name, data)</code> refuses a slash in the folder: "Forbidden file name (blueprint_exchange/saved) detected, another valid version could be 'saved'". Use side-by-side folders such as <code>mymod_saved</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: removing road / track by script -- use the engine's helper <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>SimpleProposal.constructionsToRemove</code> removes stations and other constructions fine. Road and track pieces are different: a <code>SimpleProposal</code> with <code>streetProposal.edgesToRemove</code>, with or without <code>nodesToRemove</code> and <code>edgeObjectsToRemove</code>, made <code>makeWorldBuildProposalCmd</code> throw "Unknown exception", even with nothing else in it. The engine has a helper for it: <code>api.engine.util.proposal.makeSegmentsRemoveProposal({ pieces })</code> returns a full <code>Proposal</code> to pass to <code>makeWorldBuildProposalCmd</code>.</p>
         <p>In the same table:</p>
