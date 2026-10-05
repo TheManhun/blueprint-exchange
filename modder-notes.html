@@ -1031,6 +1031,19 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>TF3: _content.json decides which files players get <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>A mod installed from mod.io is loaded through the file list in its root <code>_content.json</code> (the log says "Reading content cache from json"). A file that is in the mod but not in that list doesn't exist for players. Your staging copy loads the real folder, so everything works on your PC. Pay Your Tolls shipped two versions with a list from an older release: 47 newer files were invisible, so a whole window add-on and a set of model materials were missing for everyone, and a hidden button came back and crashed games. Regenerate the list from the content folder before every upload, and compare it first whenever a player reports something missing that works for you.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: reading a userdata file that isn't there is a Lua error, even inside pcall <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>app.loadUserdata(folder, name)</code> on a file that doesn't exist yet makes the game log <code>Failed to load userdata</code> &mdash; <code>cannot open .../&lt;folder&gt;/&lt;name&gt;.lua</code> as a Lua error, and players see red messages, even though your <code>pcall</code> catches it and your code carries on. You'll never see it on your own PC, where those files exist: a new player has none. Blueprint Exchange 1.0 logged 38 of them on a fresh install, most while its tab opened, and a player reported red messages and a crash there. Listing a folder is silent, even a missing one (it creates the folder), so look before you read:</p>
+        <pre><code>local function loadUD(folder, name)
+    local ok, all = pcall(function() return app.getAllUserdata(folder) end)
+    if not ok or all == nil then return nil end
+    for _, f in ipairs(all) do
+        if f == name then return app.loadUserdata(folder, name) end
+    end
+    return nil
+end</code></pre>
+        <p>Test as a brand-new player before each release: move your mod&rsquo;s userdata folders aside and play the mod.io download, not your staging copy.</p>
+      </article>
       <article class="note" data-g="tf3 crash">
         <h3>TF3: don't remove mod folders while the game runs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Deleting or renaming a staging mod folder while TF3 or the Model Editor is running crashed: <code>Assertion 'inAddMods &amp;&amp; "cannot remove mods in game"'</code>. Close both first.</p>
