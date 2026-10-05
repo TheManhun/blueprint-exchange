@@ -146,8 +146,15 @@
     const content = [];
     const files = [];
     const add = (path, data) => files.push({ path: folder + "/" + path, data: data });
+    // BPX as the pack's dependency: TF3's mod window lists it with its own Activate button (format SEEN 2026-10-07 --
+    // Mod.ModDependency in the game's API files: mod = ModRef { modId, revisionMin, revisionMax }, optional, loadBefore, modInfo)
     add("mod.json", JSON.stringify({
-      dependencies: null, incompatibilities: null, modId: folder + "_1", options: null, params: null,
+      dependencies: [{
+        mod: { modId: "epod_blueprint_exchange_tf3_1", revisionMin: 1, revisionMax: 1000 },
+        optional: false, loadBefore: false,
+        modInfo: { displayName: "PYT - Blueprint Exchange", url: BPX_URL },
+      }],
+      incompatibilities: null, modId: folder + "_1", options: null, params: null,
       postRunScript: { fileName: "" }, preRunScript: { fileName: "" }, revision: 1, runScript: { fileName: "" },
       severityAdd: "None", severityRemove: "None",
     }, null, 4) + "\n");

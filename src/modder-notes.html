@@ -1036,6 +1036,17 @@ end</code></pre>
         <h3>TF3: don't remove mod folders while the game runs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Deleting or renaming a staging mod folder while TF3 or the Model Editor is running crashed: <code>Assertion 'inAddMods &amp;&amp; "cannot remove mods in game"'</code>. Close both first.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: declaring that your mod needs another mod (mod.json dependencies) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The <code>dependencies</code> list in <code>mod.json</code> takes the shape of <code>Mod.ModDependency</code> in the game's API files. This worked first time: the mod window's Dependencies box listed the other mod by name, with its own Activate button, and the log stayed clean. Use the other mod's id from its own <code>mod.json</code>. The full TF3 restart is needed, since <code>mod.json</code> is read at start-up.</p>
+        <pre><code>"dependencies": [ {
+    "mod": { "modId": "other_mod_id_1", "revisionMin": 1, "revisionMax": 1000 },
+    "optional": false,
+    "loadBefore": false,
+    "modInfo": { "displayName": "Other Mod", "url": "https://mod.io/g/transportfever3/m/other-mod" }
+} ]</code></pre>
+        <p>The in-game mod browser also reads mod.io's own dependencies (<code>hasDependencies</code>, and a dependency list in the mod details), so set them on the mod.io page too. Neither forces a subscribe; say what's needed in the first line of the description as well.</p>
+      </article>
     </div>
   </section>
 
