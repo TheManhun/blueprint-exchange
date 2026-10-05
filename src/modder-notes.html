@@ -648,6 +648,14 @@ end</pre>
         <h3>Ship shared assets byte-identical <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>A save refers to constructions and models by file name. If two mods ship identical files, either mod loads the other's saves, and removing one keeps the placed objects. Any difference forks behaviour. Keep a checker script that compares the copies.</p>
       </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>TF2 modular-station slots carry over to TF3 <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Both games build a rail station's slot ids with the same <code>GetId</code>: type base (3400000 buildings, 6400000 cargo platforms, 7400000 passenger platforms, 8400000 track, 10400000 roofs) <code>+ 1000 i + 10 j</code> for platforms and track, <code>+ 3000 i + 40 j + 10 k + o</code> for buildings. So a TF2 station's modules map slot for slot. Three changes: module paths gain <code>::/stations/rail/modular_station/</code>; a track slot holds a track type, not <code>platform_track.module</code> (<code>::/trainstation___/infrastructure/track/standard/standard.street_template</code>); and the building-size digit <code>o</code> (the slot id's last digit) differs. TF2 uses 0 / 1 for main buildings and 5 / 6 / 7 for side buildings of size 1 / 2 / 3; TF3 keeps 0 / 1 / 5 for size 2 / 3 / 1, main and side alike. Map 6 to 0 and 7 to 1. Station <code>params.length</code> is one higher in TF3 (its length table starts one earlier).</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3's era years (base content) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Track: simple always, simple catenary from 1921, standard 1930, high speed 1980. Roads: <code>_old_</code> to 1940, <code>_new_</code> from 1940, and one-way roads are new-only (from 1940; town small and medium only, no large). Signals: <code>signal_path_a</code> to 1950, <code>_c</code> from 1950. Rail station modules: <code>_era_a</code> to 1950, <code>_b</code> to 1990, <code>_c</code> after. Bridges: stone always, steel and suspension 1940, concrete 1970, cable 2000. Road tunnel <code>tunnel_a_car</code> from 1900. Read them from the <code>availability</code> blocks in <code>base/content/*/*.zip</code>; anything placed from a script for another era should be swapped to the year's version first.</p>
+      </article>
     </div>
   </section>
 
