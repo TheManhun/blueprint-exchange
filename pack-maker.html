@@ -195,7 +195,9 @@
       if (!r.ok) { refuse(r.why); continue; }
       const key = PM.fileKey(f.name);
       if (items.some((it) => it.file === f.name && it.body === r.body)) { refuse("already in the pack."); continue; }
-      items.push({ key: uniqueKey(key), name: PM.niceName(key), description: "", body: r.body, file: f.name });
+      let bp = null;
+      try { bp = PM.parseLuaData(r.body); } catch (e) { bp = null; } // only for the picture: a file that won't draw still goes in
+      items.push({ key: uniqueKey(key), name: PM.niceName(key), description: "", body: r.body, file: f.name, bp: bp });
     }
     renderList();
   }
@@ -251,25 +253,54 @@
     for (let x = 0; x <= W; x += 40) { ctx.fillStyle = x % 200 === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)"; ctx.fillRect(x, 0, 2, H); }
     for (let y = 0; y <= H; y += 40) { ctx.fillStyle = y % 200 === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)"; ctx.fillRect(0, y, W, 2); }
     ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 4; ctx.strokeRect(60, 60, W - 120, H - 120);
-    // the title block, as on a drawing
+    // the title block, left, as on a drawing
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffd36e"; ctx.font = '600 44px "Barlow Condensed", sans-serif';
     ctx.fillText("BPX BLUEPRINT PACK", 140, 230);
-    ctx.fillStyle = "#ffffff"; ctx.font = '700 150px "Barlow Condensed", sans-serif';
-    const title = wrapLines(ctx, nameEl.value.trim() || "Your pack's name", W - 280, 2);
-    title.forEach((ln, i) => ctx.fillText(ln, 140, 380 + i * 150));
-    let y = 380 + (title.length - 1) * 150 + 90;
+    const drawn = items.filter((it) => it.bp && PM.geometry(it.bp).lines.length + PM.geometry(it.bp).boxes.length > 0);
+    const leftW = drawn.length ? 700 : W - 280;
+    let size = 140, title;
+    for (;;) { // the name, as big as fits in three lines
+      ctx.font = '700 ' + size + 'px "Barlow Condensed", sans-serif';
+      title = wrapLines(ctx, nameEl.value.trim() || "Your pack's name", leftW, 3);
+      if ((title.every((ln) => ctx.measureText(ln).width <= leftW) && (title.length < 3 || size <= 90)) || size <= 60) break; // never below 60 px
+      size -= 10;
+    }
+    ctx.fillStyle = "#ffffff";
+    title.forEach((ln, i) => ctx.fillText(ln, 140, 230 + size * 1.05 + i * size));
+    let y = 230 + size * 1.05 + (title.length - 1) * size + 80;
     ctx.fillStyle = "#cfe0f5"; ctx.font = '500 52px Barlow, sans-serif';
     ctx.fillText("by " + (authorEl.value.trim() || "you"), 140, y);
-    y += 100;
+    y += 90;
     ctx.font = '500 40px Barlow, sans-serif'; ctx.fillStyle = "#e8f0fa";
-    const names = items.map((it) => it.name.trim() || "Blueprint");
-    const shown = names.slice(0, 4);
-    shown.forEach((n, i) => ctx.fillText("\u25b8  " + n, 150, y + i * 56));
-    if (names.length > shown.length) ctx.fillText("+ " + (names.length - shown.length) + " more", 150, y + shown.length * 56);
+    if (drawn.length) {
+      ctx.fillText(items.length + " blueprint" + (items.length === 1 ? "" : "s") + ", ready to paste", 140, y);
+    } else {
+      const names = items.map((it) => it.name.trim() || "Blueprint"), shown = names.slice(0, 4);
+      shown.forEach((n, i) => ctx.fillText("\u25b8  " + n, 150, y + i * 56));
+      if (names.length > shown.length) ctx.fillText("+ " + (names.length - shown.length) + " more", 150, y + shown.length * 56);
+    }
+    // the drawings, right: up to four, each in its own frame with its name, like sheets on a drawing board
+    const show = drawn.slice(0, 4);
+    const gx = 900, gy = 130, gw = 900, gh = 760, gap = 30;
+    // long, thin layouts (most railway ones) get full-width rows; compact ones (junctions, yards) a 2 x 2 grid
+    const long = show.every((it) => { const f = PM.laidFlat(it.bp); return f && f.aspect >= 2.5; });
+    const cols = !long && show.length >= 3 ? 2 : 1;
+    const rows = long ? Math.max(1, show.length) : (show.length === 1 ? 1 : 2);
+    const cw = (gw - (cols - 1) * gap) / cols, ch = (gh - (rows - 1) * gap) / rows;
+    show.forEach((it, k) => {
+      const cx = gx + (k % cols) * (cw + gap), cy = gy + Math.floor(k / cols) * (ch + gap);
+      ctx.fillStyle = "rgba(5,22,48,.55)"; ctx.fillRect(cx, cy, cw, ch);
+      ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 2; ctx.setLineDash([]); ctx.strokeRect(cx, cy, cw, ch);
+      PM.drawBlueprint(ctx, it.bp, cx + 10, cy + 10, cw - 20, ch - 64, { scale: show.length > 2 ? 0.8 : 1 });
+      ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.fillRect(cx, cy + ch - 48, cw, 2);
+      ctx.fillStyle = "#ffffff"; ctx.font = '600 30px "Barlow Condensed", sans-serif';
+      ctx.fillText(wrapLines(ctx, (it.name.trim() || "Blueprint").toUpperCase(), cw - 40, 1)[0], cx + 18, cy + ch - 14);
+    });
     ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = '600 38px "Barlow Condensed", sans-serif';
     ctx.textAlign = "right";
-    ctx.fillText(items.length + " BLUEPRINT" + (items.length === 1 ? "" : "S") + "  \u00b7  FOR PYT - BLUEPRINT EXCHANGE  \u00b7  TRANSPORT FEVER 3", W - 140, H - 120);
+    const more = drawn.length > show.length ? "+" + (drawn.length - show.length) + " MORE  \u00b7  " : "";
+    ctx.fillText(more + items.length + " BLUEPRINT" + (items.length === 1 ? "" : "S") + "  \u00b7  FOR PYT - BLUEPRINT EXCHANGE  \u00b7  TRANSPORT FEVER 3", W - 140, H - 120);
     ctx.textAlign = "left";
   }
   function drawOwn() {
