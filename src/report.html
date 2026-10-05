@@ -19,6 +19,11 @@
   .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
   @media (max-width: 640px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
   #sendBtn { margin-top: 18px; }
+  .game-pick { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 14px; }
+  .game-pick label { display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 14px; border: 1px solid var(--line);
+    border-radius: 8px; cursor: pointer; font-weight: 600; background: var(--ground); }
+  .game-pick label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  code.path { overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -32,7 +37,16 @@
 
   <section class="panel">
     <h2>Before you send</h2>
-    <ol class="steps report-steps">
+    <div class="game-pick" role="radiogroup" aria-label="Which game">
+      <label><input type="radio" name="game" value="TF3" checked> Transport Fever 3</label>
+      <label><input type="radio" name="game" value="TF2"> Transport Fever 2</label>
+    </div>
+    <ol class="steps report-steps" id="stepsTf3">
+      <li>Make the problem happen once more. <strong>If the game crashed, don&rsquo;t start it again yet</strong> &mdash; it writes a new log every time it starts.</li>
+      <li>Open File Explorer and go to <code class="path">C:\Program Files (x86)\Steam\userdata</code>, then your number folder, then <code>3493540</code> &rarr; <code>local</code> &rarr; <code>crash_dump</code>.</li>
+      <li>Attach <code>stdout.txt</code> from there. It has everything we need, including your list of mods.</li>
+    </ol>
+    <ol class="steps report-steps" id="stepsTf2" hidden>
       <li>Do it again in the game, until the problem shows (for example &ldquo;This spot won&rsquo;t take it&rdquo;). <strong>Then stop</strong> &mdash; the log keeps only the last few hundred lines.</li>
       <li>Open your Transport Fever 2 folder (Steam &rarr; right-click Transport Fever 2 &rarr; Manage &rarr; Browse local files). The files are next to <code>TransportFever2.exe</code>.</li>
       <li>Attach <code>blueprint_exchange_log.txt</code>, and if it is about one of your own blueprints, its <code>blueprint_&lt;name&gt;.lua</code>.</li>
@@ -56,17 +70,19 @@
       </div>
     </div>
 
-    <label for="logFile">The log &mdash; <code>blueprint_exchange_log.txt</code> (optional, but it helps most)</label>
+    <label for="logFile">The log &mdash; <code id="logName">stdout.txt</code> (optional, but it helps most)</label>
     <div class="filebox">
       <input type="file" id="logFile" accept=".txt,text/plain">
       <p class="fileinfo" id="logInfo" aria-live="polite"></p>
     </div>
 
+    <div id="bpBlock" hidden>
     <label for="bpFile">The blueprint &mdash; <code>blueprint_&lt;name&gt;.lua</code> (optional)</label>
     <div class="filebox">
       <input type="file" id="bpFile" accept=".lua,text/plain">
       <p class="fileinfo" id="bpInfo" aria-live="polite"></p>
       <p class="hint">Your private edit key is removed from the file before it is sent &mdash; nobody but you can ever update your blueprint.</p>
+    </div>
     </div>
 
     <button type="button" class="btn primary big" id="sendBtn">Send report</button>
@@ -84,6 +100,25 @@
   trackVisit();
 
   const LIMITS = { log: 600000, bp: 4000000 };
+  const READ_MAX = 50 * 1024 * 1024; // a log bigger than this isn't read at all
+  const game = () => (document.querySelector('input[name="game"]:checked') || {}).value || "TF3";
+  function showGame() {
+    const tf3 = game() === "TF3";
+    document.getElementById("stepsTf3").hidden = !tf3;
+    document.getElementById("stepsTf2").hidden = tf3;
+    document.getElementById("bpBlock").hidden = tf3; // the blueprint check knows TF2 files only
+    document.getElementById("logName").textContent = tf3 ? "stdout.txt" : "blueprint_exchange_log.txt";
+    if (tf3) { files.bp = null; document.getElementById("bpFile").value = ""; document.getElementById("bpInfo").textContent = ""; }
+  }
+  document.querySelectorAll('input[name="game"]').forEach((r) => r.addEventListener("change", showGame));
+  // a long log keeps its start (start-up, the list of mods) and its end (where it crashed) -- the server takes 600,000
+  function trimLog(text) {
+    const max = LIMITS.log - 200;
+    if (text.length <= max) return { text, cut: 0 };
+    const head = Math.floor(max * 0.25), tail = max - head;
+    const cut = text.length - head - tail;
+    return { text: text.slice(0, head) + "\n\n[... " + Math.round(cut / 1024) + " KB from the middle left out by the report page ...]\n\n" + text.slice(-tail), cut };
+  }
   const files = { log: null, bp: null };
 
   // Read a picked file as TEXT and check it is text of the right kind (the server checks again).
@@ -110,7 +145,7 @@
     const ext = kind === "log" ? /\.txt$/i : /\.lua$/i;
     const bad = (why) => { info.textContent = why; info.className = "fileinfo bad"; input.value = ""; };
     if (!ext.test(file.name)) return bad(kind === "log" ? "Please pick the .txt log file." : "Please pick a .lua blueprint file.");
-    if (file.size > LIMITS[kind]) return bad("That file is too big (" + Math.round(file.size / 1024) + " KB).");
+    if (file.size > (kind === "log" ? READ_MAX : LIMITS[kind])) return bad("That file is too big (" + Math.round(file.size / 1024) + " KB).");
     let text;
     try { text = await readText(file); } catch (e) { return bad("That file could not be read."); }
     if (hasBinary(text)) return bad("That is not a plain text file.");
@@ -119,11 +154,18 @@
       if (codeWords(text)) return bad("That file contains code, not just layout data -- it cannot be sent.");
       text = text.replace(/ownerSecret\s*=\s*"[^"]*"\s*,?/g, "");     // never send the private edit key
     }
+    let note = "";
+    if (kind === "log") {
+      const t = trimLog(text);
+      if (t.cut > 0) note = " -- long, so we kept its start and its end (where any crash is)";
+      text = t.text;
+    }
     files[kind] = text;
     const lines = text.split("\n").length;
-    info.textContent = "✓ " + file.name + " -- " + Math.max(1, Math.round(text.length / 1024)) + " KB, " + lines + " lines" + (kind === "bp" ? ", edit key removed" : "");
+    info.textContent = "✓ " + file.name + " -- " + Math.max(1, Math.round(text.length / 1024)) + " KB, " + lines + " lines" + (kind === "bp" ? ", edit key removed" : "") + note;
   }
 
+  showGame();
   document.getElementById("logFile").addEventListener("change", (e) => pick("log", e.target, document.getElementById("logInfo")));
   document.getElementById("bpFile").addEventListener("change", (e) => pick("bp", e.target, document.getElementById("bpInfo")));
 
@@ -137,7 +179,7 @@
       const { data, error } = await sb.rpc("bp_report_submit", {
         p_name: document.getElementById("name").value.trim() || null,
         p_contact: document.getElementById("contact").value.trim() || null,
-        p_message: message, p_game_version: null,
+        p_message: message, p_game_version: game(),
         p_log: files.log, p_blueprint: files.bp,
       });
       if (error) throw error;
