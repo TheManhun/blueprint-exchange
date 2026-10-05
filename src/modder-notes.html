@@ -1012,6 +1012,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         </ul>
       </article>
       <article class="note" data-g="tf3 crash">
+        <h3>TF3: _content.json decides which files players get <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A mod installed from mod.io is loaded through the file list in its root <code>_content.json</code> (the log says "Reading content cache from json"). A file that is in the mod but not in that list doesn't exist for players. Your staging copy loads the real folder, so everything works on your PC. Pay Your Tolls shipped two versions with a list from an older release: 47 newer files were invisible, so a whole window add-on and a set of model materials were missing for everyone, and a hidden button came back and crashed games. Regenerate the list from the content folder before every upload, and compare it first whenever a player reports something missing that works for you.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
         <h3>TF3: don't remove mod folders while the game runs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Deleting or renaming a staging mod folder while TF3 or the Model Editor is running crashed: <code>Assertion 'inAddMods &amp;&amp; "cannot remove mods in game"'</code>. Close both first.</p>
       </article>
