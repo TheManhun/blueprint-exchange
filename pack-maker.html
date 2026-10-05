@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>BPX Pack Maker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Turn your Transport Fever 3 blueprints into a mod anyone can subscribe to on mod.io. Made in your browser, nothing uploaded.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-drop { position: relative; display: block; border: 2px dashed var(--line); border-radius: 10px; padding: 26px 18px; text-align: center; cursor: pointer;
+    background: var(--ground); transition: border-color .15s, background .15s; }
+  .pm-drop:hover, .pm-drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .pm-drop strong { display: block; font: 700 22px/1.2 "Barlow Condensed", sans-serif; margin-bottom: 4px; }
+  .pm-drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .pm-drop:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code.path { font: 13px "JetBrains Mono", monospace; background: var(--surface-2); border-radius: 4px; padding: 2px 6px; overflow-wrap: anywhere; }
+  .pm-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+  .pm-item { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 8px 12px; align-items: end;
+    padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--ground); }
+  .pm-item label { margin: 0 0 4px; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+  .pm-item .file { grid-column: 1 / -1; font: 12px "JetBrains Mono", monospace; color: var(--ink-2); margin: 0; overflow-wrap: anywhere; }
+  .pm-refused { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+  .pm-refused li { background: var(--bad-soft); color: var(--bad); border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+  .pm-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; }
+  .pm-pic { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .pm-pic canvas { display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); }
+  .pm-pic .row { margin-top: 10px; }
+  .pm-count { font-variant-numeric: tabular-nums; }
+  .pm-folder { font: 14px "JetBrains Mono", monospace; overflow-wrap: anywhere; }
+  @media (max-width: 720px) {
+    .pm-item, .pm-grid, .pm-pic { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pm-drop { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools" aria-current="page"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">Transport Fever 3 &middot; PYT - Blueprint Exchange</p>
+    <h1>Blueprint Pack Maker</h1>
+    <p class="sub">Put your blueprints in a pack that anyone can subscribe to on mod.io. Once subscribed, the pack&rsquo;s blueprints appear in their BPX Library &mdash; no files to move.</p>
+  </div>
+
+  <section class="panel" id="pmFiles">
+    <h2>1. Add your blueprints</h2>
+    <p class="lede">The blueprints you named in BPX are files in your <strong>myblueprints</strong> folder:
+      <code class="path">C:\Program Files (x86)\Steam\userdata\<em>your number</em>\3493540\local\myblueprints</code></p>
+    <label class="pm-drop" id="pmDrop">
+      <strong>Drop blueprint files here</strong>
+      <span class="hint">or click to choose them &mdash; the <code>.lua</code> files from myblueprints</span>
+      <input type="file" id="pmInput" accept=".lua" multiple>
+    </label>
+    <ul class="pm-refused" id="pmRefused" aria-live="polite"></ul>
+    <p class="hint pm-count" id="pmCount" aria-live="polite">No blueprints yet.</p>
+    <ol class="pm-list" id="pmList"></ol>
+  </section>
+
+  <section class="panel" id="pmAbout">
+    <h2>2. Name your pack</h2>
+    <div class="pm-grid">
+      <div>
+        <label for="pmName">Pack name</label>
+        <input type="text" id="pmName" maxlength="60" placeholder="Like: Mainline Junctions" autocomplete="off">
+      </div>
+      <div>
+        <label for="pmAuthor">Your name, as players will see it</label>
+        <input type="text" id="pmAuthor" maxlength="40" placeholder="Your mod.io name" autocomplete="off">
+      </div>
+    </div>
+    <label for="pmSummary">One line about it <span class="hint">(optional)</span></label>
+    <input type="text" id="pmSummary" maxlength="200" placeholder="Like: Six double-track junctions with signals, ready to paste." autocomplete="off">
+    <label for="pmDesc">More about it <span class="hint">(optional, for its mod.io page)</span></label>
+    <textarea id="pmDesc" maxlength="3000" placeholder="What's in it, which era it suits, any mods it needs..."></textarea>
+
+    <div class="pm-pic">
+      <div>
+        <canvas id="pmCanvas" width="1920" height="1080" aria-label="The pack's mod.io picture"></canvas>
+      </div>
+      <div>
+        <h3>The picture</h3>
+        <p class="hint">This shows on mod.io. We make one from your pack&rsquo;s name, or use your own screenshot &mdash; it&rsquo;s cropped to 16:9.</p>
+        <div class="row">
+          <label class="btn" for="pmPicInput" style="margin:0">Use my own picture</label>
+          <input type="file" id="pmPicInput" accept="image/*" class="visually-hidden">
+          <button type="button" id="pmPicReset" hidden>Use the made one</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="pmDownload">
+    <h2>3. Download, try it, upload it</h2>
+    <div class="row" style="margin-top:0">
+      <button type="button" class="primary big" id="pmGo" disabled>Download the pack</button>
+      <span class="hint" id="pmWhy" aria-live="polite">Add blueprints, a pack name and your name first.</span>
+    </div>
+    <div class="msg" id="pmMsg" role="status"></div>
+    <ol class="steps" style="margin-top:20px">
+      <li><strong>Unzip it</strong> and move the folder inside (it starts with <code>bpxpack_</code>) into your <strong>staging_area</strong> folder:
+        <code class="path">C:\Program Files (x86)\Steam\userdata\<em>your number</em>\3493540\local\staging_area</code></li>
+      <li><strong>Try it.</strong> Start Transport Fever 3 and load a game with <strong>PYT - Blueprint Exchange</strong> and your pack switched on. In the BPX Library pick <strong>Show: Packs</strong> and paste one.</li>
+      <li><strong>Upload it</strong> from the game to mod.io as you would any mod &mdash; run its Validation Report first.</li>
+      <li><strong>Keep the folder.</strong> The game remembers your mod.io page in it: to update the pack, change the files there and upload again.</li>
+    </ol>
+  </section>
+
+  <section class="panel" id="pmHelp">
+    <h2>Help</h2>
+    <div class="faq">
+      <details>
+        <summary>Why make a pack?</summary>
+        <p>A blueprint file can be shared by hand, but only on a PC, and the other player has to find the right folder. A pack is a mod: players subscribe to it on mod.io like any other, and its blueprints show up in their BPX Library on their own.</p>
+      </details>
+      <details>
+        <summary>Is anything uploaded when I use this page?</summary>
+        <p>No. Your files are read, checked and zipped right here in your browser. Nothing is sent anywhere &mdash; you upload the pack yourself, from the game.</p>
+      </details>
+      <details>
+        <summary>Why was one of my files refused?</summary>
+        <p>The Pack Maker only takes BPX blueprint files, and only plain data: track, roads, stations, signals and their settings. Anything else in a file (like a piece of program code) is refused, so a pack can never carry something unexpected to the people who subscribe.</p>
+      </details>
+      <details>
+        <summary>My blueprint uses another mod&rsquo;s track or roads</summary>
+        <p>Then players need that mod too. Say so in &ldquo;More about it&rdquo;, so it&rsquo;s on the pack&rsquo;s mod.io page.</p>
+      </details>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange is a fan-made community project for Transport Fever 2 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange is free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  trackVisit();
+</script>
+<script src="pack-maker.js"></script>
+<script>
+// The Pack Maker page: files in, a zip out. The format and the checks live in pack-maker.js.
+(function () {
+  const PM = window.PackMaker;
+  const $ = (id) => document.getElementById(id);
+  const drop = $("pmDrop"), input = $("pmInput"), listEl = $("pmList"), refusedEl = $("pmRefused"), countEl = $("pmCount");
+  const nameEl = $("pmName"), authorEl = $("pmAuthor"), summaryEl = $("pmSummary"), descEl = $("pmDesc");
+  const canvas = $("pmCanvas"), picInput = $("pmPicInput"), picReset = $("pmPicReset");
+  const goBtn = $("pmGo"), whyEl = $("pmWhy"), msgEl = $("pmMsg");
+
+  const items = [];      // { key, name, description, body, file }
+  let ownPicture = null; // an Image the player chose
+
+  function showMsg(text, kind) { msgEl.className = text ? "msg " + kind : "msg"; msgEl.textContent = text || ""; }
+
+  // ---- files -------------------------------------------------------------------------------------------------
+  function uniqueKey(key) {
+    let k = key, n = 2;
+    while (items.some((it) => it.key === k)) k = key + "_" + n++;
+    return k;
+  }
+  async function addFiles(fileList) {
+    refusedEl.textContent = "";
+    showMsg("");
+    for (const f of Array.from(fileList || [])) {
+      const refuse = (why) => { const li = document.createElement("li"); li.textContent = f.name + " -- " + why; refusedEl.appendChild(li); };
+      if (!/\.lua$/i.test(f.name)) { refuse("not a blueprint file (they end in .lua)."); continue; }
+      if (f.size > PM.MAX_FILE) { refuse("too big for a blueprint (over 2 MB)."); continue; }
+      if (items.length >= PM.MAX_FILES) { refuse("a pack holds up to " + PM.MAX_FILES + " blueprints."); continue; }
+      const r = PM.convertBlueprint(await f.text());
+      if (!r.ok) { refuse(r.why); continue; }
+      const key = PM.fileKey(f.name);
+      if (items.some((it) => it.file === f.name && it.body === r.body)) { refuse("already in the pack."); continue; }
+      items.push({ key: uniqueKey(key), name: PM.niceName(key), description: "", body: r.body, file: f.name });
+    }
+    renderList();
+  }
+  function field(labelText, value, max, onInput, id) {
+    const wrap = document.createElement("div");
+    const lab = document.createElement("label"); lab.textContent = labelText; lab.htmlFor = id;
+    const inp = document.createElement("input"); inp.type = "text"; inp.id = id; inp.maxLength = max; inp.value = value; inp.autocomplete = "off";
+    inp.addEventListener("input", () => { onInput(inp.value); refresh(); });
+    wrap.append(lab, inp);
+    return wrap;
+  }
+  function renderList() {
+    listEl.textContent = "";
+    items.forEach((it, i) => {
+      const li = document.createElement("li"); li.className = "pm-item";
+      const rm = document.createElement("button"); rm.type = "button"; rm.textContent = "Remove";
+      rm.setAttribute("aria-label", "Remove " + it.name);
+      rm.addEventListener("click", () => { items.splice(i, 1); renderList(); });
+      const file = document.createElement("p"); file.className = "file"; file.textContent = it.file + "  \u2192  " + it.key + ".lua";
+      li.append(
+        field("Name in the Library", it.name, 40, (v) => { it.name = v; }, "pmN" + i),
+        field("What it is (optional)", it.description, 300, (v) => { it.description = v; }, "pmD" + i),
+        rm, file);
+      listEl.appendChild(li);
+    });
+    countEl.textContent = items.length ? items.length + " blueprint" + (items.length === 1 ? "" : "s") + " in the pack." : "No blueprints yet.";
+    refresh();
+  }
+  input.addEventListener("change", () => { addFiles(input.files).then(() => { input.value = ""; }); });
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+
+  // ---- the picture ---------------------------------------------------------------------------------------------
+  // the made one: blueprint paper, the pack's name, who made it, what's in it
+  function wrapLines(ctx, text, maxW, maxLines) {
+    const words = text.split(/\s+/).filter(Boolean), lines = [];
+    let cur = "";
+    for (const w of words) {
+      const t = cur ? cur + " " + w : w;
+      if (ctx.measureText(t).width <= maxW || !cur) cur = t; else { lines.push(cur); cur = w; }
+    }
+    if (cur) lines.push(cur);
+    if (lines.length > maxLines) { lines.length = maxLines; lines[maxLines - 1] = lines[maxLines - 1].replace(/\s*\S*$/, "") + "\u2026"; }
+    return lines;
+  }
+  function drawMade() {
+    const ctx = canvas.getContext("2d"), W = 1920, H = 1080;
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#123a6b"); g.addColorStop(1, "#0b2547");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // the grid of blueprint paper
+    for (let x = 0; x <= W; x += 40) { ctx.fillStyle = x % 200 === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)"; ctx.fillRect(x, 0, 2, H); }
+    for (let y = 0; y <= H; y += 40) { ctx.fillStyle = y % 200 === 0 ? "rgba(255,255,255,.13)" : "rgba(255,255,255,.05)"; ctx.fillRect(0, y, W, 2); }
+    ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 4; ctx.strokeRect(60, 60, W - 120, H - 120);
+    // the title block, as on a drawing
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffd36e"; ctx.font = '600 44px "Barlow Condensed", sans-serif';
+    ctx.fillText("BPX BLUEPRINT PACK", 140, 230);
+    ctx.fillStyle = "#ffffff"; ctx.font = '700 150px "Barlow Condensed", sans-serif';
+    const title = wrapLines(ctx, nameEl.value.trim() || "Your pack's name", W - 280, 2);
+    title.forEach((ln, i) => ctx.fillText(ln, 140, 380 + i * 150));
+    let y = 380 + (title.length - 1) * 150 + 90;
+    ctx.fillStyle = "#cfe0f5"; ctx.font = '500 52px Barlow, sans-serif';
+    ctx.fillText("by " + (authorEl.value.trim() || "you"), 140, y);
+    y += 100;
+    ctx.font = '500 40px Barlow, sans-serif'; ctx.fillStyle = "#e8f0fa";
+    const names = items.map((it) => it.name.trim() || "Blueprint");
+    const shown = names.slice(0, 4);
+    shown.forEach((n, i) => ctx.fillText("\u25b8  " + n, 150, y + i * 56));
+    if (names.length > shown.length) ctx.fillText("+ " + (names.length - shown.length) + " more", 150, y + shown.length * 56);
+    ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = '600 38px "Barlow Condensed", sans-serif';
+    ctx.textAlign = "right";
+    ctx.fillText(items.length + " BLUEPRINT" + (items.length === 1 ? "" : "S") + "  \u00b7  FOR PYT - BLUEPRINT EXCHANGE  \u00b7  TRANSPORT FEVER 3", W - 140, H - 120);
+    ctx.textAlign = "left";
+  }
+  function drawOwn() {
+    const ctx = canvas.getContext("2d"), W = 1920, H = 1080, im = ownPicture;
+    const s = Math.max(W / im.naturalWidth, H / im.naturalHeight);
+    const w = im.naturalWidth * s, h = im.naturalHeight * s;
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+  }
+  function drawPicture() { if (ownPicture) drawOwn(); else drawMade(); }
+  picInput.addEventListener("change", () => {
+    const f = picInput.files && picInput.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { ownPicture = im; picReset.hidden = false; drawPicture(); };
+    im.onerror = () => { showMsg("That picture couldn't be opened. Try a PNG or JPG.", "bad"); URL.revokeObjectURL(url); };
+    im.src = url;
+    picInput.value = "";
+  });
+  picReset.addEventListener("click", () => { ownPicture = null; picReset.hidden = true; drawPicture(); });
+
+  // ---- ready? ----------------------------------------------------------------------------------------------
+  function problem() {
+    if (!items.length) return "Add at least one blueprint.";
+    if (!nameEl.value.trim()) return "Give the pack a name.";
+    if (!authorEl.value.trim()) return "Add your name.";
+    if (items.some((it) => !it.name.trim())) return "Every blueprint needs a name.";
+    return "";
+  }
+  function refresh() {
+    const p = problem();
+    goBtn.disabled = !!p;
+    whyEl.textContent = p || ("Makes " + PM.folderFor(nameEl.value.trim(), authorEl.value.trim()) + ".zip");
+    if (!ownPicture) drawMade();
+  }
+  [nameEl, authorEl].forEach((el) => el.addEventListener("input", refresh));
+
+  goBtn.addEventListener("click", async () => {
+    if (problem()) return;
+    drawPicture();
+    const png = await new Promise((res) => canvas.toBlob(res, "image/png"));
+    const picture = png ? new Uint8Array(await png.arrayBuffer()) : null;
+    const pack = { name: nameEl.value.trim(), author: authorEl.value.trim(), summary: summaryEl.value.trim(), description: descEl.value.trim() };
+    const res = PM.packFiles(pack, items.map((it) => ({ key: it.key, name: it.name.trim(), description: it.description.trim(), body: it.body })), picture);
+    const blob = new Blob([PM.zip(res.files)], { type: "application/zip" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = res.folder + ".zip";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    showMsg("Downloaded " + res.folder + ".zip -- now unzip it into staging_area (step 1 below).", "ok");
+  });
+
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+    const loads = ['700 150px "Barlow Condensed"', '600 44px "Barlow Condensed"', '500 52px Barlow'].map((f) => document.fonts ? document.fonts.load(f) : null);
+    return Promise.all(loads);
+  }).catch(() => {}).then(refresh);
+  refresh();
+})();
+</script>
+</body>
+</html>
