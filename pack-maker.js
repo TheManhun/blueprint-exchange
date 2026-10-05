@@ -238,7 +238,225 @@
     return out;
   }
 
+  // ---- reading a blueprint (plain-data Lua, already checked) into JS ------------------------------------------
+  // tables become arrays when their keys are 1..n, objects otherwise. Throws on anything unexpected.
+  function parseLuaData(src) {
+    let i = 0;
+    const n = src.length;
+    const fail = (what) => { throw new Error("blueprint data: " + what + " at " + i); };
+    function skip() {
+      for (;;) {
+        while (i < n && /\s/.test(src[i])) i++;
+        if (src[i] === "-" && src[i + 1] === "-") {
+          const lb = /^--\[(=*)\[/.exec(src.slice(i, i + 20));
+          if (lb) { const close = "]" + lb[1] + "]", e = src.indexOf(close, i); i = e < 0 ? n : e + close.length; }
+          else { const e = src.indexOf("\n", i); i = e < 0 ? n : e + 1; }
+          continue;
+        }
+        return;
+      }
+    }
+    function str() {
+      const q = src[i++];
+      let out = "";
+      while (i < n && src[i] !== q) {
+        let c = src[i++];
+        if (c === "\\") {
+          c = src[i++];
+          const map = { n: "\n", t: "\t", r: "\r", a: "\x07", b: "\b", f: "\f", v: "\v", "\\": "\\", '"': '"', "'": "'", "\n": "\n" };
+          if (map[c] !== undefined) out += map[c];
+          else if (/\d/.test(c)) { const m = /^\d{1,3}/.exec(src.slice(i - 1, i + 2)); out += String.fromCharCode(+m[0]); i += m[0].length - 1; }
+          else if (c === "x") { out += String.fromCharCode(parseInt(src.substr(i, 2), 16)); i += 2; }
+          else out += c;
+        } else out += c;
+      }
+      i++;
+      return out;
+    }
+    function value() {
+      skip();
+      const c = src[i];
+      if (c === "{") return table();
+      if (c === '"' || c === "'") return str();
+      if (c === "[") {
+        const lb = /^\[(=*)\[/.exec(src.slice(i, i + 20));
+        if (!lb) fail("'['");
+        const close = "]" + lb[1] + "]", e = src.indexOf(close, i + lb[0].length);
+        const s = src.slice(i + lb[0].length, e).replace(/^\n/, "");
+        i = e + close.length;
+        return s;
+      }
+      const num = /^-?\s*(?:0[xX][0-9a-fA-F]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/.exec(src.slice(i, i + 64));
+      if (num) { i += num[0].length; return Number(num[0].replace(/\s+/g, "")); }
+      const w = /^[A-Za-z_]\w*/.exec(src.slice(i, i + 20));
+      if (w && (w[0] === "true" || w[0] === "false" || w[0] === "nil")) { i += w[0].length; return w[0] === "true" ? true : w[0] === "false" ? false : null; }
+      fail("unexpected '" + c + "'");
+    }
+    function table() {
+      i++; // {
+      const arr = [], obj = {};
+      let pos = 1, keyed = false;
+      for (;;) {
+        skip();
+        if (src[i] === "}") { i++; break; }
+        let key = null;
+        if (src[i] === "[" && !/^\[=*\[/.test(src.slice(i, i + 20))) {
+          i++; key = value(); skip(); if (src[i] !== "]") fail("']'"); i++; skip(); if (src[i] !== "=") fail("'='"); i++;
+        } else {
+          const w = /^[A-Za-z_]\w*/.exec(src.slice(i, i + 200));
+          if (w) { let j = i + w[0].length; while (/\s/.test(src[j])) j++; if (src[j] === "=" && src[j + 1] !== "=") { key = w[0]; i = j + 1; } }
+        }
+        const v = value();
+        if (key === null) { arr[pos - 1] = v; pos++; }
+        else if (typeof key === "number" && key === pos) { arr[pos - 1] = v; pos++; }
+        else { obj[key] = v; keyed = true; }
+        skip();
+        if (src[i] === "," || src[i] === ";") i++;
+      }
+      if (!keyed) return arr;
+      arr.forEach((v, k) => { obj[k + 1] = v; });
+      return obj;
+    }
+    skip();
+    if (!/^return\b/.test(src.slice(i))) fail("no 'return'");
+    i += 6;
+    return value();
+  }
+
+  // ---- drawing a blueprint, blueprint-paper style ---------------------------------------------------------------
+  // nodes = {x, y, z, ...}; edges = { n0, n1, t0, t1, track, bridge?, tunnel? } (Hermite curves, the tangents as the
+  // game stores them); constructions = { transf (4x4, x / y at 13 / 14), fileName }. A station's own platforms belong to
+  // the station, so it is drawn as a box over the gap its track ends leave.
+  function geometry(bp) {
+    const nodes = Array.isArray(bp && bp.nodes) ? bp.nodes : [];
+    const edges = Array.isArray(bp && bp.edges) ? bp.edges : [];
+    const P = (k) => { const nd = nodes[k - 1]; return nd ? { x: +nd[0] || 0, y: +nd[1] || 0 } : null; };
+    const lines = [], deg = {};
+    for (const e of edges) {
+      const p0 = P(e.n0), p1 = P(e.n1);
+      if (!p0 || !p1) continue;
+      deg[e.n0] = (deg[e.n0] || 0) + 1; deg[e.n1] = (deg[e.n1] || 0) + 1;
+      const t0 = e.t0 || [0, 0], t1 = e.t1 || [0, 0];
+      const pts = [];
+      for (let k = 0; k <= 16; k++) {
+        const u = k / 16, h00 = 2 * u ** 3 - 3 * u ** 2 + 1, h10 = u ** 3 - 2 * u ** 2 + u, h01 = -2 * u ** 3 + 3 * u ** 2, h11 = u ** 3 - u ** 2;
+        pts.push([h00 * p0.x + h10 * (+t0[0] || 0) + h01 * p1.x + h11 * (+t1[0] || 0), h00 * p0.y + h10 * (+t0[1] || 0) + h01 * p1.y + h11 * (+t1[1] || 0)]);
+      }
+      lines.push({ pts, track: e.track === true, bridge: !!e.bridge, tunnel: !!e.tunnel });
+    }
+    const ends = [];
+    for (const k in deg) if (deg[k] === 1) { const p = P(+k); if (p) ends.push(p); }
+    const boxes = [];
+    for (const c of (Array.isArray(bp && bp.constructions) ? bp.constructions : [])) {
+      const m = c && c.transf;
+      if (!Array.isArray(m) || m.length < 16) continue;
+      const cx = +m[12], cy = +m[13];
+      // the axis its tracks run along: of its own two axes, the one the open track ends line up on (SEEN: TF3's
+      // modular stations run along their y axis, the origin beside the platforms, at the building)
+      let best = null;
+      for (const raw of [[+m[4], +m[5]], [+m[0], +m[1]]]) {
+        const al = Math.hypot(raw[0], raw[1]) || 1, ax = raw[0] / al, ay = raw[1] / al;
+        const near = ends.map((p) => { const dx = p.x - cx, dy = p.y - cy; return { along: dx * ax + dy * ay, across: -dx * ay + dy * ax }; })
+          .filter((q) => Math.abs(q.across) <= 40 && Math.abs(q.along) <= 800);
+        if (!best || near.length > best.near.length) best = { ax, ay, near };
+      }
+      const { ax, ay, near } = best;
+      // along: the gap between the nearest track end on each side (its own platforms fill it); a terminus: one side only
+      const plus = near.filter((q) => q.along > 5).map((q) => q.along), minus = near.filter((q) => q.along < -5).map((q) => q.along);
+      let lo = minus.length ? Math.max(...minus) : 0, hi = plus.length ? Math.min(...plus) : 0;
+      if (hi - lo < 20) { lo = -40; hi = 40; }
+      // across: from the origin (the building) out past the furthest platform track
+      const inGap = near.filter((q) => q.along >= lo - 1 && q.along <= hi + 1).map((q) => q.across);
+      const sLo = Math.min(0, ...inGap) - 6, sHi = Math.max(0, ...inGap) + 6;
+      const station = /station|terminal|depot|harbou?r|airport/i.test(String(c.fileName || ""));
+      boxes.push({ cx, cy, ax, ay, lo, hi, sLo: Math.min(sLo, -8), sHi: Math.max(sHi, 8), station });
+    }
+    return { lines, boxes };
+  }
+  // the layout turned so its long side runs across (its main direction, from the spread of its points): long, thin
+  // railway layouts then fill a wide frame instead of a sliver in a square one
+  function laidFlat(bp) {
+    const g = geometry(bp);
+    const corners = (b) => [[b.lo, b.sLo], [b.hi, b.sLo], [b.hi, b.sHi], [b.lo, b.sHi]].map(([a, s]) => [b.cx + a * b.ax - s * b.ay, b.cy + a * b.ay + s * b.ax]);
+    const all = [];
+    for (const l of g.lines) for (const p of l.pts) all.push(p);
+    for (const b of g.boxes) for (const p of corners(b)) all.push(p);
+    if (!all.length) return null;
+    let mx = 0, my = 0;
+    for (const p of all) { mx += p[0]; my += p[1]; }
+    mx /= all.length; my /= all.length;
+    // the main direction of the track itself (each little stretch votes with its length, direction taken both ways):
+    // long straights win, so a crossover's diagonal or a station's position doesn't tilt the drawing
+    // the most common direction wins (2-degree bins by length), refined from the track within 1 degree of it -- an
+    // average would let a crossover's diagonal pull the whole drawing askew
+    const runs = [];
+    for (const l of g.lines) {
+      for (let k = 1; k < l.pts.length; k++) {
+        const dx = l.pts[k][0] - l.pts[k - 1][0], dy = l.pts[k][1] - l.pts[k - 1][1], len = Math.hypot(dx, dy);
+        if (len > 0) runs.push({ a: ((Math.atan2(dy, dx) % Math.PI) + Math.PI) % Math.PI, len });
+      }
+    }
+    for (const b of g.boxes) runs.push({ a: ((Math.atan2(b.ay, b.ax) % Math.PI) + Math.PI) % Math.PI, len: b.hi - b.lo });
+    const bins = new Array(90).fill(0);
+    for (const r of runs) bins[Math.floor(r.a / Math.PI * 90) % 90] += r.len;
+    const top = (bins.indexOf(Math.max(...bins)) + 0.5) * Math.PI / 90;
+    let vx = 0, vy = 0;
+    for (const r of runs) {
+      let d = Math.abs(r.a - top); d = Math.min(d, Math.PI - d);
+      if (d <= 1 * Math.PI / 180) { vx += r.len * Math.cos(2 * r.a); vy += r.len * Math.sin(2 * r.a); }
+    }
+    const ang = runs.length ? 0.5 * Math.atan2(vy, vx) : 0, c = Math.cos(-ang), s = Math.sin(-ang);
+    const R = (p) => [(p[0] - mx) * c - (p[1] - my) * s, (p[0] - mx) * s + (p[1] - my) * c];
+    const lines = g.lines.map((l) => Object.assign({}, l, { pts: l.pts.map(R) }));
+    const boxes = g.boxes.map((b) => ({ station: b.station, pts: corners(b).map(R) }));
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of all.map(R)) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }
+    return { lines, boxes, x0, y0, x1, y1, aspect: (x1 - x0) / Math.max(y1 - y0, 1) };
+  }
+  // draw it into the rectangle (x, y, w, h) of a 2d context; returns false when there is nothing to draw
+  function drawBlueprint(ctx, bp, x, y, w, h, opt) {
+    const o = Object.assign({ ink: "#ffffff", road: "#9fd3ff", fill: "rgba(255,255,255,.10)", scale: 1 }, opt || {});
+    const g = laidFlat(bp);
+    if (!g) return false;
+    const { x0, y0, x1, y1 } = g;
+    const pad = 0.08, span = Math.max(x1 - x0, y1 - y0, 1);
+    const s = Math.min(w * (1 - 2 * pad) / Math.max(x1 - x0, span * 0.05), h * (1 - 2 * pad) / Math.max(y1 - y0, span * 0.05));
+    const ox = x + w / 2 - (x0 + x1) / 2 * s, oy = y + h / 2 + (y0 + y1) / 2 * s; // the game's y runs up, the canvas's down
+    const X = (px) => ox + px * s, Y = (py) => oy - py * s;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    for (const b of g.boxes) {
+      const c = b.pts;
+      ctx.beginPath(); c.forEach((p, k) => (k ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])))); ctx.closePath();
+      ctx.fillStyle = o.fill; ctx.fill();
+      ctx.strokeStyle = o.ink; ctx.lineWidth = 2.5 * o.scale; ctx.setLineDash([]); ctx.stroke();
+      if (b.station) { // hatching, as a drawing marks a building
+        ctx.save(); ctx.clip();
+        ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1.2 * o.scale;
+        const xs = c.map((p) => X(p[0])), ys = c.map((p) => Y(p[1]));
+        const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2;
+        const r = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+        for (let d = -r; d <= r; d += 12 * o.scale) { ctx.beginPath(); ctx.moveTo(mx + d - r, my - r); ctx.lineTo(mx + d + r, my + r); ctx.stroke(); }
+        ctx.restore();
+      }
+    }
+    for (const pass of ["road", "track"]) {
+      for (const l of g.lines) {
+        if ((pass === "track") !== l.track) continue;
+        ctx.beginPath(); l.pts.forEach((p, k) => (k ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1]))));
+        ctx.setLineDash(l.tunnel ? [8 * o.scale, 7 * o.scale] : []);
+        if (l.bridge) { ctx.strokeStyle = o.ink; ctx.lineWidth = (l.track ? 7 : 9) * o.scale; ctx.stroke(); ctx.strokeStyle = "#0e2f58"; ctx.lineWidth = (l.track ? 4 : 6) * o.scale; ctx.stroke(); }
+        ctx.strokeStyle = l.track ? o.ink : o.road;
+        ctx.lineWidth = (l.track ? 2.2 : 4) * o.scale;
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    return true;
+  }
+
   const api = { slug, hash, folderFor, fileKey, niceName, plainDataProblem, convertBlueprint, luaString, indexLua, packFiles, zip, crc32,
-    MAX_FILE, MAX_FILES, BPX_URL };
+    parseLuaData, geometry, laidFlat, drawBlueprint, MAX_FILE, MAX_FILES, BPX_URL };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.PackMaker = api;
 })(typeof window !== "undefined" ? window : this);
