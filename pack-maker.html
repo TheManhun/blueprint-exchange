@@ -306,6 +306,11 @@
 
   goBtn.addEventListener("click", async () => {
     if (problem()) return;
+    // the made picture is drawn in the site's fonts: make sure they're in before it goes into the pack
+    if (document.fonts) {
+      const fonts = Promise.all(['700 150px "Barlow Condensed"', '600 44px "Barlow Condensed"', '500 52px Barlow'].map((f) => document.fonts.load(f)));
+      try { await Promise.race([fonts, new Promise((res) => setTimeout(res, 3000))]); } catch (e) {} // never wait for ever (fonts blocked)
+    }
     drawPicture();
     const png = await new Promise((res) => canvas.toBlob(res, "image/png"));
     const picture = png ? new Uint8Array(await png.arrayBuffer()) : null;
