@@ -161,14 +161,19 @@
     add("_content.json", JSON.stringify({ archives: null, files: content }, null, 4) + "\n");
     const n = items.length;
     const summary = (pack.summary || (n + " blueprint" + (n === 1 ? "" : "s") + " for PYT - Blueprint Exchange.")).slice(0, 250);
+    // what else it needs goes FIRST: a player who subscribes without it sees nothing happen (and rates it)
+    const needs = String(pack.needs || "").replace(/[\r\n]+/g, " ").trim().slice(0, 200);
     const desc = [
+      "Needs PYT - Blueprint Exchange" + (needs ? " and " + needs : "") + ".",
+      "",
       pack.description ? pack.description.trim() : summary,
       "",
-      "A blueprint pack for PYT - Blueprint Exchange: subscribe, start your game with BPX and this pack switched on, then open the BPX Library and pick Show: Packs.",
+      "A blueprint pack for PYT - Blueprint Exchange: subscribe, start your game with BPX" + (needs ? ", " + needs : "") +
+        " and this pack switched on, then open the BPX Library and pick Show: Packs.",
       "",
       "Blueprints in this pack: " + items.map((it) => it.name).join(", ") + ".",
       "",
-      "Needs PYT - Blueprint Exchange: " + BPX_URL,
+      "PYT - Blueprint Exchange: " + BPX_URL,
       "",
       "Made with the BPX Pack Maker on tfbpx.com.",
     ].join("\n");

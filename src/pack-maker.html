@@ -75,8 +75,11 @@
     </div>
     <label for="pmSummary">One line about it <span class="hint">(optional)</span></label>
     <input type="text" id="pmSummary" maxlength="200" placeholder="Like: Six double-track junctions with signals, ready to paste." autocomplete="off">
+    <label for="pmNeeds">Other mods it needs <span class="hint">(optional &mdash; if your blueprints use another mod&rsquo;s track, roads or buildings)</span></label>
+    <input type="text" id="pmNeeds" maxlength="200" placeholder="Like: Pay Your Tolls" autocomplete="off">
+    <p class="hint">It goes at the very top of the pack&rsquo;s mod.io page, next to PYT - Blueprint Exchange, so nobody subscribes without them.</p>
     <label for="pmDesc">More about it <span class="hint">(optional, for its mod.io page)</span></label>
-    <textarea id="pmDesc" maxlength="3000" placeholder="What's in it, which era it suits, any mods it needs..."></textarea>
+    <textarea id="pmDesc" maxlength="3000" placeholder="What's in it, which era it suits..."></textarea>
 
     <div class="pm-pic">
       <div>
@@ -296,7 +299,8 @@
     drawPicture();
     const png = await new Promise((res) => canvas.toBlob(res, "image/png"));
     const picture = png ? new Uint8Array(await png.arrayBuffer()) : null;
-    const pack = { name: nameEl.value.trim(), author: authorEl.value.trim(), summary: summaryEl.value.trim(), description: descEl.value.trim() };
+    const pack = { name: nameEl.value.trim(), author: authorEl.value.trim(), summary: summaryEl.value.trim(), description: descEl.value.trim(),
+      needs: $("pmNeeds").value.trim() };
     const res = PM.packFiles(pack, items.map((it) => ({ key: it.key, name: it.name.trim(), description: it.description.trim(), body: it.body })), picture);
     const blob = new Blob([PM.zip(res.files)], { type: "application/zip" });
     const a = document.createElement("a");
