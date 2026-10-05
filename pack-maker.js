@@ -139,8 +139,32 @@
     return lines.join("\n");
   }
 
+  // ---- the mods a blueprint uses ------------------------------------------------------------------------------
+  // TF3 names everything a mod adds '<modId>::/path' (the game's own: '::/path'), in construction files, station
+  // modules, track and road types, decorations -- so a blueprint says itself which mods it needs.
+  const BPX_ID = "epod_blueprint_exchange_tf3_1";
+  const DLC = { urbangames_deluxe_upgrade_pack: "the Deluxe Upgrade DLC", urbangames_preorder_pack: "the Pre-Order Pack DLC" };
+  function modsUsed(body) {
+    const found = new Set();
+    const re = /["'\[]([A-Za-z0-9_.-]+)::\//g;
+    let m;
+    while ((m = re.exec(String(body)))) if (m[1] !== BPX_ID) found.add(m[1]);
+    return Array.from(found).sort();
+  }
+  function isDlc(id) { return DLC[id] !== undefined || /^urbangames_/.test(id); }
+  // a first guess at a mod's name from its id: epod_pay_your_tolls_tf3_1 -> "Epod Pay Your Tolls Tf3" (the player fixes it)
+  function guessModName(id) {
+    if (DLC[id]) return DLC[id];
+    const s = String(id).replace(/_\d+$/, "").replace(/[_.-]+/g, " ").trim();
+    return s.replace(/(^|\s)([a-z])/g, (x, a, b) => a + b.toUpperCase()) || id;
+  }
+  function andList(words) {
+    return words.length <= 1 ? (words[0] || "") : words.slice(0, -1).join(", ") + " and " + words[words.length - 1];
+  }
+
   // ---- the mod's files ----------------------------------------------------------------------------------------
-  // pack = { name, author, summary, description }, items = [{ key, name, description, body }], picture = Uint8Array (PNG)
+  // pack = { name, author, summary, description, needs, mods: [{ id, name, url }] }, items = [{ key, name, description,
+  // body }], picture = Uint8Array (PNG)
   function packFiles(pack, items, picture) {
     const folder = folderFor(pack.name, pack.author);
     const content = [];
@@ -148,12 +172,14 @@
     const add = (path, data) => files.push({ path: folder + "/" + path, data: data });
     // BPX as the pack's dependency: TF3's mod window lists it with its own Activate button (format SEEN 2026-10-07 --
     // Mod.ModDependency in the game's API files: mod = ModRef { modId, revisionMin, revisionMax }, optional, loadBefore, modInfo)
+    // and every mod the blueprints use (not DLC -- how TF3 treats a mod depending on DLC is unknown; DLC is named in the
+    // description instead)
+    const dep = (id, name, url) => ({ mod: { modId: id, revisionMin: 1, revisionMax: 1000 }, optional: false, loadBefore: false,
+      modInfo: { displayName: name, url: url || "" } });
+    const mods = (pack.mods || []).filter((m) => m && m.id && m.id !== BPX_ID);
     add("mod.json", JSON.stringify({
-      dependencies: [{
-        mod: { modId: "epod_blueprint_exchange_tf3_1", revisionMin: 1, revisionMax: 1000 },
-        optional: false, loadBefore: false,
-        modInfo: { displayName: "PYT - Blueprint Exchange", url: BPX_URL },
-      }],
+      dependencies: [dep(BPX_ID, "PYT - Blueprint Exchange", BPX_URL)]
+        .concat(mods.filter((m) => !isDlc(m.id)).map((m) => dep(m.id, String(m.name || guessModName(m.id)), m.url))),
       incompatibilities: null, modId: folder + "_1", options: null, params: null,
       postRunScript: { fileName: "" }, preRunScript: { fileName: "" }, revision: 1, runScript: { fileName: "" },
       severityAdd: "None", severityRemove: "None",
@@ -169,13 +195,16 @@
     const n = items.length;
     const summary = (pack.summary || (n + " blueprint" + (n === 1 ? "" : "s") + " for PYT - Blueprint Exchange.")).slice(0, 250);
     // what else it needs goes FIRST: a player who subscribes without it sees nothing happen (and rates it)
-    const needs = String(pack.needs || "").replace(/[\r\n]+/g, " ").trim().slice(0, 200);
+    const extra = String(pack.needs || "").replace(/[\r\n]+/g, " ").trim().slice(0, 200);
+    const named = mods.map((m) => String(m.name || guessModName(m.id)).trim()).filter(Boolean);
+    if (extra) named.push(extra);
+    const needs = andList(named);
     const desc = [
-      "Needs PYT - Blueprint Exchange" + (needs ? " and " + needs : "") + ".",
+      "Needs " + andList(["PYT - Blueprint Exchange"].concat(named)) + ".",
       "",
       pack.description ? pack.description.trim() : summary,
       "",
-      "A blueprint pack for PYT - Blueprint Exchange: subscribe, start your game with BPX" + (needs ? ", " + needs : "") +
+      "A blueprint pack for PYT - Blueprint Exchange: subscribe, start your game with BPX" + (named.length ? ", " + named.join(", ") : "") +
         " and this pack switched on, then open the BPX Library and pick Show: Packs.",
       "",
       "Blueprints in this pack: " + items.map((it) => it.name).join(", ") + ".",
@@ -457,6 +486,6 @@
   }
 
   const api = { slug, hash, folderFor, fileKey, niceName, plainDataProblem, convertBlueprint, luaString, indexLua, packFiles, zip, crc32,
-    parseLuaData, geometry, laidFlat, drawBlueprint, MAX_FILE, MAX_FILES, BPX_URL };
+    parseLuaData, geometry, laidFlat, drawBlueprint, modsUsed, isDlc, guessModName, andList, BPX_ID, MAX_FILE, MAX_FILES, BPX_URL };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.PackMaker = api;
 })(typeof window !== "undefined" ? window : this);
