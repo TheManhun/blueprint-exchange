@@ -961,6 +961,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
   <section class="fn-sec" id="perf">
     <h2>Performance</h2>
     <div class="fn-list">
+      <article class="note" data-g="tf3 crash">
+        <h3>Pace a live preview by what it costs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A ghost that rebuilds a whole proposal (and its <code>makeProposalData</code> check) on a fixed throttle is fine for a small layout and a freeze for a big one: a 224-piece station with hundreds of modules took longer than the 0.35&nbsp;s gap, so the UI thread never caught up and TF3 logged "Thread did not respond to ping. Possible hang detected!". Time each build with <code>os.clock()</code> and wait a multiple of that before the next. Rebuild a costly one only when the mouse rests, and switch the ghost off (outline only) past a ceiling. Work out an outline's geometry once per blueprint and rotation, not on every mouse move.</p>
+      </article>
       <article class="note" data-g="tf3">
         <h3>Share materials across a set <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>One pack's textures dropped from 494 MB to 145 MB by giving each design set ONE shared material set (the same .mtl and .dds files) instead of a copy per model. Keep prop textures at 512 px or less, and flat colours at 64 px.</p>
