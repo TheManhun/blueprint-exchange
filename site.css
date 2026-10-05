@@ -151,6 +151,14 @@ figcaption { color: var(--ink-2); font-size: 14px; margin-top: 8px; }
 .stepcards p { margin: 0; color: var(--ink-2); font-size: 15px; }
 
 /* call-to-action strip */
+/* What players say (home page) */
+.voices { margin: 26px 0 0; }
+.voices h2 { font-size: 22px; margin: 0 0 10px; }
+.voice { margin: 0; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 16px 20px; }
+.voice blockquote { margin: 0; font-size: 17px; line-height: 1.55; }
+.voice blockquote p { margin: 0 0 10px; }
+.voice figcaption { color: var(--ink-2); font-size: 14px; }
+
 .cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 26px 0 0; }
 .cta h2 { font-size: 26px; margin: 0; }
 .cta p { margin: 4px 0 0; color: var(--ink-2); }
