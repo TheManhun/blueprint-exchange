@@ -98,7 +98,7 @@
       arr.forEach((v, k) => { obj[k + 1] = v; });
       return obj;
     }
-    let s = String(src).replace(/^﻿/, "");
+    let s = String(src).replace(/^﻿/, "").replace(/^(?:\s*--[^\n]*\n)+/, ""); // leading comment lines (ours carry one)
     const wrapped = /^\s*function\s+data\s*\(\s*\)\s*([\s\S]*)\bend\s*$/.exec(s);
     if (wrapped) { s = wrapped[1]; }
     src = s;
@@ -194,6 +194,24 @@
     }
     return slot;
   }
+  // The size digit of a building slot must be the TF3 BUILDING's size: TF3 reads it to find the building's place (SEEN
+  // 2026-10-07: a community station's two side_building_3 sat in TF2's size-2 slots; TF3's side_building_3 is size 3 --
+  // 'No main building data for slotId ... with offset 1', then a fatal 'Duplicate edges found' on paste). Sizes from
+  // TF3's own module files (rail_building_sizeN): the number in the name is not always the size (side_building_3_cargo
+  // is size 2).
+  const SIZE_DIGIT = { 1: 5, 2: 0, 3: 1 };
+  function buildingSize(tf3Name) {
+    const m = /\/(main|side)_building_(\d)_([a-z_]+)\.module$/.exec(String(tf3Name));
+    if (!m) return null;
+    if (m[1] === "side" && m[2] === "3" && m[3] === "cargo") return 2;
+    return { main1: 2, main2: 2, main3: 3, side1: 1, side2: 2, side3: 3 }[m[1] + m[2]] || null;
+  }
+  function buildingSlot(slot, tf3Name) {
+    const size = buildingSize(tf3Name);
+    if (size === null || slot < 3000000 || slot >= 4000000) return slot;
+    const o = ((slot % 10) + 10) % 10;
+    return slot - o + SIZE_DIGIT[size];
+  }
   const modOf = (fileName) => { const m = /^([A-Za-z0-9_.-]+)\//.exec(String(fileName)); return m ? m[1] : ""; };
 
   // ---- one blueprint -------------------------------------------------------------------------------------------
@@ -229,7 +247,9 @@
           note("dropped", "a station part TF3 doesn't have was left out (" + String(m.name).split("/").pop() + ")");
           continue;
         }
-        mods.push([s3, { name, variant: Math.trunc(Number(m.variant) || 0) }]);
+        const s4 = buildingSlot(s3, name);
+        if (s4 !== s3 && !opt.builtin) note("info", "A station building was moved to the slot size TF3 uses for it.");
+        mods.push([s4, { name, variant: Math.trunc(Number(m.variant) || 0) }]);
       }
       const params = { length: Math.trunc(Number(p.length) || 0) + 1, // TF3's lmap starts one earlier (lmap[length + 1])
         seed: Math.trunc(Number(p.seed) || 0), tracks: Math.trunc(Number(p.tracks) || 0), year: Math.trunc(Number(p.year === undefined ? 1900 : p.year)),
