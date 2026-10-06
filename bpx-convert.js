@@ -206,11 +206,28 @@
     if (m[1] === "side" && m[2] === "3" && m[3] === "cargo") return 2;
     return { main1: 2, main2: 2, main3: 3, side1: 1, side2: 2, side3: 3 }[m[1] + m[2]] || null;
   }
-  function buildingSlot(slot, tf3Name) {
-    const size = buildingSize(tf3Name);
-    if (size === null || slot < 3000000 || slot >= 4000000) return slot;
-    const o = ((slot % 10) + 10) % 10;
-    return slot - o + SIZE_DIGIT[size];
+  // ...but a slot sized up overlaps its neighbours (SEEN, the same station after the fix above: the size-3 buildings'
+  // footpaths landed on the next buildings' -- 'Duplicate edges found' again). So keep TF2's SIZE (its slot digit: main
+  // 0 / 1 = size 2 / 3, side 5 / 6 / 7 = size 1 / 2 / 3) -- the layout keeps its spacing -- and pick the TF3 building of
+  // that size in the same family (main / side, era / cargo): TF2's side_building_3 era a is size 2 there, TF3's is 3.
+  const TF2_SIZE = { 0: 2, 1: 3, 5: 1, 6: 2, 7: 3 };
+  function fitBuilding(tf2Slot, tf3Name) {
+    const m = /^(.*\/)(main|side)_building_(\d)_([a-z_]+)\.module$/.exec(String(tf3Name));
+    if (!m || tf2Slot < 3000000 || tf2Slot >= 4000000) return null;
+    const o2 = ((tf2Slot % 10) + 10) % 10;
+    const want = TF2_SIZE[o2];
+    if (!want) return null;
+    const [, dir, kind, , fam] = m;
+    let name = tf3Name;
+    if (buildingSize(name) !== want) {
+      const cargo = fam === "cargo";
+      const pick = kind === "main" ? { 2: "main_building_2", 3: "main_building_3" }[want]
+        : cargo ? { 1: "side_building_1", 2: "side_building_2", 3: "main_building_3" }[want]   // no size-3 cargo side building
+          : { 1: "side_building_1", 2: "side_building_2", 3: "side_building_3" }[want];
+      if (!pick) return null;
+      name = dir + pick + "_" + fam + ".module";
+    }
+    return { name, slot: tf2Slot - o2 + SIZE_DIGIT[want] };
   }
   const modOf = (fileName) => { const m = /^([A-Za-z0-9_.-]+)\//.exec(String(fileName)); return m ? m[1] : ""; };
 
@@ -247,9 +264,10 @@
           note("dropped", "a station part TF3 doesn't have was left out (" + String(m.name).split("/").pop() + ")");
           continue;
         }
-        const s4 = buildingSlot(s3, name);
-        if (s4 !== s3 && !opt.builtin) note("info", "A station building was moved to the slot size TF3 uses for it.");
-        mods.push([s4, { name, variant: Math.trunc(Number(m.variant) || 0) }]);
+        const fit = fitBuilding(slot, name);
+        if (fit && fit.name !== name && opt.builtin) refuse("building size " + name);
+        if (fit && fit.name !== name) note("approx", "a station building TF3 makes bigger was swapped for TF3's one of the same size, so the layout keeps its spacing");
+        mods.push([fit ? fit.slot : s3, { name: fit ? fit.name : name, variant: Math.trunc(Number(m.variant) || 0) }]);
       }
       const params = { length: Math.trunc(Number(p.length) || 0) + 1, // TF3's lmap starts one earlier (lmap[length + 1])
         seed: Math.trunc(Number(p.seed) || 0), tracks: Math.trunc(Number(p.tracks) || 0), year: Math.trunc(Number(p.year === undefined ? 1900 : p.year)),
