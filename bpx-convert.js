@@ -244,7 +244,7 @@
     if (tf2.game && tf2.game !== "tf2") refuse("this blueprint is already for " + String(tf2.game).toUpperCase());
 
     // constructions: rail stations convert; the rest is named and left out
-    const consOut = [], dropCon = {};
+    const consOut = [], dropCon = {}, newIndex = {}; // newIndex: a kept construction's number in TF2 -> in the output
     (tf2.constructions || []).forEach((c, ci) => {
       const fn = String(c.fileName || "");
       const skip = (why) => { if (opt.builtin) refuse(why); dropCon[ci + 1] = true; note("dropped", why); };
@@ -278,14 +278,22 @@
       consOut.push({ fileName: "::/stations/rail/modular_station/modular_station.con", params,
         transf: [r4(ca), r4(sa), 0, 0, r4(-sa), r4(ca), 0, 0, 0, 0, 1, 0, r4(rel[0]), r4(rel[1]), r4(rel[2]), 1],
         above: 0, name: c.name || "BPX Station", modules: mods.length, paramsFrom: "native" });
+      newIndex[ci + 1] = consOut.length;
     });
 
-    // nodes
+    // nodes -- a node anchored to a construction (anchor.piece = its number in the blueprint) keeps that link,
+    // renumbered for the constructions kept; anchored to one left out, it is an ordinary node (SEEN 2026-10-07: dropping
+    // EVERY anchor when Regional Hub's two road terminals were left out cut its track off its rail station too --
+    // 'Construction Not Possible' wherever it was pasted)
     const nodesIn = tf2.nodes || [];
     const nodesOut = nodesIn.map((nd) => {
       const rel = (nd.relative || [0, 0, 0]).concat([0, 0, 0]);
       const rec = [r4(rel[0]), r4(rel[1]), r4(rel[2]), r4(rel[2])]; // flat ground: height above it = its own height
-      if (nd.construction) rec.push(Math.trunc(Number((nd.anchor || {}).piece) || 1));
+      if (nd.construction) {
+        const old = Math.trunc(Number((nd.anchor || {}).piece) || 1);
+        if (opt.builtin) rec.push(old);
+        else if (newIndex[old]) rec.push(newIndex[old]);
+      }
       return rec;
     });
 
@@ -322,10 +330,6 @@
     }
     if (!opt.builtin) {
       if (Array.isArray(tf2.decorations) && tf2.decorations.length) note("dropped", "decorations and trees are left out (TF3's models have other names)");
-      if (Object.keys(dropCon).length) {
-        // a node anchored to a construction that was left out is an ordinary node now
-        nodesIn.forEach((nd, k) => { if (nd.construction && nodesOut[k].length > 4) nodesOut[k].length = 4; });
-      }
     }
     if (!edgesOut.length && !consOut.length) {
       const e = new Error("nothing in it converts to TF3"); e.refused = true; e.notes = notes; throw e;
