@@ -483,6 +483,7 @@ end</pre>
       <article class="note" data-g="tf2 tf3">
         <h3>A model-only construction becomes a decoration <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>A construction holding only a model, with no ground paint, roads or snap patch, is flattened into an ASSET_GROUP (a decoration), not a CONSTRUCTION. It can't be clicked, and its <code>.con</code> is never read again. Only position and rotation are kept, so scale is lost. Adding <code>groundFaces</code> or a snapPoint ground patch, or owning roads, keeps it a construction. This is a trap for toll booths, and the key to pasting decorations (see below).</p>
+        <p>It's also a trap for scripts that place such a <code>.con</code> and later look for it again, like PYT's speed boards. A <code>CONSTRUCTION</code> search never finds it, and any custom params are gone. Search <code>ASSET_GROUP</code> instead, match the model name from <code>MODEL_INSTANCE_LIST</code> <code>fatInstances</code> (<code>api.res.modelRep.getName</code>), and remove it with a full <code>api.type.Proposal</code> (<code>toRemove</code>), not <code>SimpleProposal.constructionsToRemove</code>. Every rebuild we did the other way stacked another copy.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>The held tool caches its preview <span class="tags"><span class="tag tf2">TF2</span></span></h3>
