@@ -262,6 +262,14 @@ end</pre>
         <h3>Transforms: userdata, not tables <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p><code>transf.rotZTransl</code> returns a plain 16-number table, and <code>ConstructionEntity.transf</code> rejects it ("expected userdata"). Build four <code>api.type.Vec4f</code> columns into <code>api.type.Mat4f.new</code>. Where a position must be <code>vec3.new(&hellip;)</code>, a plain <code>{x,y,z}</code> gives <strong>no error</strong> and silently drops the translation. An explicit <code>transf</code> is respected exactly (moved 0.000 m).</p>
       </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A big script can hit Lua's 200-local limit <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Lua allows at most 200 local variables at a file's top level. One more and the file doesn't compile: <code>too many local variables (limit is 200) in main function</code>. The game then logs <code>Expected table at path: game &lt;mod&gt;::/&lt;file&gt;.script</code> every frame, and nothing in that script runs. It doesn't crash, so it's easy to miss. Teal's top-level <code>record</code> and <code>type</code> declarations count as locals too, so the limit comes sooner than a count of <code>local</code> lines suggests. In a big script, keep new state in an existing table (PYT keeps its one-per-session "already asked" sets in a single <code>ASKED["name"]</code> table) instead of adding a new top-level local each time.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A comment can swallow a table's comma <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>An edit that puts <code>-- note</code> after <code>key = value</code> but before the line's comma comments the comma out. The resource is then skipped with <code>'}' expected (to close '{' at line N) near '&lt;next key&gt;'</code>, and the build entry or module just disappears from the game. Keep the comma before the comment: <code>key = value, -- note</code>.</p>
+      </article>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
