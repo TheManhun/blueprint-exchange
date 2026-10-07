@@ -182,9 +182,9 @@ end</pre>
           <li>Any <code>content/**/X.gs.lua</code> becomes a game script with no registration (log: <code>Creating entity for GameScript &hellip;</code>).</li>
         </ul>
       </article>
-      <article class="note" data-g="tf3 inferred">
-        <h3>TF3: a plain-Lua game script may never be called <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
-        <p>A plain <code>.script.lua</code> game script never ran (no log line at all). Rewritten as Teal (<code>.script.tl</code>), it worked. Every working game script we have is Teal. The fact is seen; the cause is a guess.</p>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a plain-Lua game script must return its table from data() <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A <code>.script.tl</code> (Teal) game script ends with <code>return ret</code>. A <code>.script.lua</code> one must wrap it: <code>function data() return ret end</code>, the same way construction scripts do. With a bare <code>return</code>, stdout.txt fills with <em>"Error while running game script &hellip; Expected table at path: game &lt;mod&gt;::/&lt;file&gt;.script"</em>, from every Sim Pool, on every step. Those errors can also upset other things the engine is doing. (We earlier guessed plain-Lua game scripts don't run at all; this was the cause.) A game script change is picked up by loading a save, without a full restart.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: subscribe to events on the start-up events <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -774,6 +774,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 tf3">
         <h3>Finding vehicles in an area <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>TF2: <code>getEntities({pos, radius}, {type = "VEHICLE"})</code> is a cheap circle query for line vehicles, and <code>getVehicles({carrier = &hellip;})</code> gives counts per carrier. TF3: the octree returns <strong>no moving</strong> transport vehicles, and <code>transportVehicleSystem.getVehicles</code> returned one. <code>api.engine.util.vehicle.getVehiclesByCarrier(Carrier.ROAD)</code> plus <code>getPosition</code> works. Neither game has a vehicle-passed event, so polling is the only way.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a vehicle's noise and pollution are the engine's sums; scale them with Modifiers <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A vehicle card's "Current Noise / Pollution" adds up each carriage's <code>EMISSION_EMITTER</code> <code>noisePower</code> / <code>pollutionPower</code>. For aircraft, the engine computes these from how hard the vehicle is working. On a modded helicopter, the <code>.mdl</code>'s <code>emissions.noise.score</code> (20 &rarr; 2), <code>maxThrust</code>, <code>weightEmpty</code> and <code>topSpeed</code> moved the figure very little (278&ndash;725 against a truck's ~50). Lowering thrust while the weight stayed the same raised it. The fix is per-vehicle <code>Modifiers</code>: <code>topSpeedScale</code>, <code>noiseScale</code>, <code>pollutionScale</code>, <code>comfortScale</code>. The engine multiplies them in. Set them from an engine-thread game script: <code>local m = api.type.TransportVehicle.Modifiers.new(tv.modifiers); m.noiseScale = 0.1; api.cmd.sendCommand(api.cmd.makeVehicleSetModifiersCmd(vehicle, m))</code>. Find your vehicles with <code>getVehiclesByCarrier</code>, read <code>TRANSPORT_VEHICLE</code>, and match <code>modelRep.getName(transportVehicleConfig.vehicles[1].part.modelId)</code>. The modifiers are saved on the vehicle, so each one needs a single command. Skip any vehicle whose scale already matches.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>Poll intervals must scale with game speed <span class="tags"><span class="tag tf2">TF2</span></span></h3>
