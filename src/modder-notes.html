@@ -270,6 +270,10 @@ end</pre>
         <h3>A comment can swallow a table's comma <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>An edit that puts <code>-- note</code> after <code>key = value</code> but before the line's comma comments the comma out. The resource is then skipped with <code>'}' expected (to close '{' at line N) near '&lt;next key&gt;'</code>, and the build entry or module just disappears from the game. Keep the comma before the comment: <code>key = value, -- note</code>.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a glow with no time range lights only at night <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>An <code>EMISSIVE</code> material's <code>emissive_scale</code> can carry <code>fromTime</code> / <code>toTime</code>. With <code>fromTime = 0, toTime = 24</code> it glows all day. The base game uses that only for airport and runway lights. The base street lights (<code>streets/mat/street_lights_emissive*.mtl</code>) give no time range at all, and the game then lights them only at night. So a lamp, lantern, window or lightbox should leave the time range out. Keep <code>0-24</code> for things that really shine in daylight: signals and warning lamps. PYT's lamps had copied the all-day form, and their lanterns glowed at noon.</p>
+      </article>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
