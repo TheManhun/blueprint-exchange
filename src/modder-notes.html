@@ -266,6 +266,14 @@ end</pre>
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
       </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: every subconstruction needs its own tag <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>When a construction is rebuilt in place (<code>createProposalReplaceConstruction</code>, or the player's Configure), the engine pairs the old and new subconstructions by their <code>tag</code>. Two subconstructions with the same tag crash the game: <code>create_proposal_data.cpp:365 PopulateOld2NewSubconstructions: Assertion 'it2.second' failed</code>. The first build works, so the bug only shows on the first rebuild. Give each piece a distinct tag (0, 1, 2…). PYT hit this when it added a second piece (a maintenance <code>depot</code> block) to its Toll Way.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: any construction can be a road maintenance post <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The base Road Maintenance Building (<code>depots/road_maint_station.script.lua</code>) is a subconstruction carrying <code>depot = { catchmentArea = { radius = 600, position = { 0, 0, 0 } }, transportModes = { "BUS", "TRUCK", "TRAM", "ELECTRIC_TRAM" }, maintenancePool = 16 }</code>, with no road link. Another construction can carry the same block on its own piece (with its own tag, see above). The game's pool bar is <code>entity_window_util.MaintenanceStationPoolProgressBar{ entityId = … }</code>.</p>
+      </article>
       <article class="note" data-g="tf2">
         <h3>Captured params: clear upgrade, clamp dropdowns <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p>A modular station's captured params can carry <code>upgrade = true</code>. Clear it to <code>nil</code> for a fresh build (Move It's choice). A <code>.con</code> combobox built from installed content (for example <code>listTrackTypes</code>) stores an <strong>index</strong> into the creator's list. On a machine with fewer mods, index 213 pointed past the end, and proposal creation threw the error object <code>false</code>. Clamp every param to this machine's declared range from <code>constructionRep.get</code>.</p>
