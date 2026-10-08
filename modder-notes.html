@@ -194,9 +194,9 @@ end</pre>
           <li>Any <code>content/**/X.gs.lua</code> becomes a game script with no registration (log: <code>Creating entity for GameScript &hellip;</code>).</li>
         </ul>
       </article>
-      <article class="note" data-g="tf3 inferred">
-        <h3>TF3: a plain-Lua game script may never be called <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
-        <p>A plain <code>.script.lua</code> game script never ran (no log line at all). Rewritten as Teal (<code>.script.tl</code>), it worked. Every working game script we have is Teal. The fact is seen; the cause is a guess.</p>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a plain-Lua game script must return its table from data() <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A <code>.script.tl</code> (Teal) game script ends with <code>return ret</code>. A <code>.script.lua</code> one must wrap it: <code>function data() return ret end</code>, the same way construction scripts do. With a bare <code>return</code>, stdout.txt fills with <em>"Error while running game script &hellip; Expected table at path: game &lt;mod&gt;::/&lt;file&gt;.script"</em>, from every Sim Pool, on every step. Those errors can also upset other things the engine is doing. (We earlier guessed plain-Lua game scripts don't run at all; this was the cause.) A game script change is picked up by loading a save, without a full restart.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: subscribe to events on the start-up events <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -274,9 +274,33 @@ end</pre>
         <h3>Transforms: userdata, not tables <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p><code>transf.rotZTransl</code> returns a plain 16-number table, and <code>ConstructionEntity.transf</code> rejects it ("expected userdata"). Build four <code>api.type.Vec4f</code> columns into <code>api.type.Mat4f.new</code>. Where a position must be <code>vec3.new(&hellip;)</code>, a plain <code>{x,y,z}</code> gives <strong>no error</strong> and silently drops the translation. An explicit <code>transf</code> is respected exactly (moved 0.000 m).</p>
       </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A big script can hit Lua's 200-local limit <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Lua allows at most 200 local variables at a file's top level. One more and the file doesn't compile: <code>too many local variables (limit is 200) in main function</code>. The game then logs <code>Expected table at path: game &lt;mod&gt;::/&lt;file&gt;.script</code> every frame, and nothing in that script runs. It doesn't crash, so it's easy to miss. Teal's top-level <code>record</code> and <code>type</code> declarations count as locals too, so the limit comes sooner than a count of <code>local</code> lines suggests. In a big script, keep new state in an existing table (PYT keeps its one-per-session "already asked" sets in a single <code>ASKED["name"]</code> table) instead of adding a new top-level local each time.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>A function type in a Teal table literal eats the next comma <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>In a table literal, <code>step1Busy = nil as function(): boolean,</code> doesn't parse. Teal reads the comma after <code>boolean</code> as the start of a second return type, and stops with <code>syntax error, expected one of: '}', ','</code>. TF3 then loads none of the script: you get <code>Expected table at path</code> every frame, as with the 200-local limit. Give the field a plain default instead (a boolean, or <code>nil as function(number)</code> with no return type), or put the type in parentheses. TF3 doesn't check a <code>.tl</code> until it loads the game, so it pays to parse-check locally first. <code>tl.lua</code> is a single file and runs in any Lua 5.4, including Python's <code>lupa</code>. Call <code>tl.lex</code>, then <code>tl.parse_program</code>, and it reports the same line and column as the game.</p>
+      </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A comment can swallow a table's comma <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>An edit that puts <code>-- note</code> after <code>key = value</code> but before the line's comma comments the comma out. The resource is then skipped with <code>'}' expected (to close '{' at line N) near '&lt;next key&gt;'</code>, and the build entry or module just disappears from the game. Keep the comma before the comment: <code>key = value, -- note</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a glow with no time range lights only at night <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>An <code>EMISSIVE</code> material's <code>emissive_scale</code> can carry <code>fromTime</code> / <code>toTime</code>. With <code>fromTime = 0, toTime = 24</code> it glows all day. The base game uses that only for airport and runway lights. The base street lights (<code>streets/mat/street_lights_emissive*.mtl</code>) give no time range at all, and the game then lights them only at night. So a lamp, lantern, window or lightbox should leave the time range out. Keep <code>0-24</code> for things that really shine in daylight: signals and warning lamps. PYT's lamps had copied the all-day form, and their lanterns glowed at noon.</p>
+      </article>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: every subconstruction needs its own tag <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>When a construction is rebuilt in place (<code>createProposalReplaceConstruction</code>, or the player's Configure), the engine pairs the old and new subconstructions by their <code>tag</code>. Two subconstructions with the same tag crash the game: <code>create_proposal_data.cpp:365 PopulateOld2NewSubconstructions: Assertion 'it2.second' failed</code>. The first build works, so the bug only shows on the first rebuild. Give each piece a distinct tag (0, 1, 2…). PYT hit this when it added a second piece (a maintenance <code>depot</code> block) to its Toll Way.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: any construction can be a road maintenance post <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The base Road Maintenance Building (<code>depots/road_maint_station.script.lua</code>) is a subconstruction carrying <code>depot = { catchmentArea = { radius = 600, position = { 0, 0, 0 } }, transportModes = { "BUS", "TRUCK", "TRAM", "ELECTRIC_TRAM" }, maintenancePool = 16 }</code>, with no road link. Another construction can carry the same block on its own piece (with its own tag, see above). The game's pool bar is <code>entity_window_util.MaintenanceStationPoolProgressBar{ entityId = … }</code>.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>Captured params: clear upgrade, clamp dropdowns <span class="tags"><span class="tag tf2">TF2</span></span></h3>
@@ -495,6 +519,7 @@ end</pre>
       <article class="note" data-g="tf2 tf3">
         <h3>A model-only construction becomes a decoration <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>A construction holding only a model, with no ground paint, roads or snap patch, is flattened into an ASSET_GROUP (a decoration), not a CONSTRUCTION. It can't be clicked, and its <code>.con</code> is never read again. Only position and rotation are kept, so scale is lost. Adding <code>groundFaces</code> or a snapPoint ground patch, or owning roads, keeps it a construction. This is a trap for toll booths, and the key to pasting decorations (see below).</p>
+        <p>It's also a trap for scripts that place such a <code>.con</code> and later look for it again, like PYT's speed boards. A <code>CONSTRUCTION</code> search never finds it, and any custom params are gone. Search <code>ASSET_GROUP</code> instead, match the model name from <code>MODEL_INSTANCE_LIST</code> <code>fatInstances</code> (<code>api.res.modelRep.getName</code>), and remove it with a full <code>api.type.Proposal</code> (<code>toRemove</code>), not <code>SimpleProposal.constructionsToRemove</code>. Every rebuild we did the other way stacked another copy.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>The held tool caches its preview <span class="tags"><span class="tag tf2">TF2</span></span></h3>
@@ -507,6 +532,10 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: a construction with its own roads (edgeLists that belong to it) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Learned from the TF3 mod Tollgate (by GreatRM), whose script explains it well. A road piece in <code>edgeLists</code> counts as the construction's own (one of its <code>frozenEdges</code>) <strong>only if it touches a fixed node</strong>, one that is in neither <code>snapNodes</code> nor <code>freeNodes</code>. A single piece whose two ends are both snap nodes gives 0 frozen edges; split it in the middle and both halves are frozen. If the pieces aren't the construction's, road and structure get bulldozed separately. Where a piece meets a narrower ordinary road, the game wipes that piece's lane markings to blend the widths, so build it as approach / main / approach and let the short approach pieces take that. Two lists (for example an approach road type and a toll-lane type) join at nodes on the same spot. A speed limit inside the construction is simply the lane speed in that road type. To let the player drop it onto an existing road like a depot, give it a <code>snapPoint</code> a few metres inside its front end with <code>snapToBaseEdgeTypes = { "STREET" }</code> and <code>allowSnapToBaseEdgeEnds = true</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a construction's own road types &mdash; keep them out of the menu and away from towns <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A construction's own road pieces need their own street templates. The easy way is to copy a base one, so the pieces match the player's road with no seam: the 1900 dirt roads are <code>country_old_small</code> / <code>country_old_medium</code> (street style <code>country_old.street</code>). A whole copy, though, keeps two fields meant for player roads. <code>menuCategory</code> puts every copy in the road build menu, and <code>simBuildable = true</code> lets towns build it as their own streets, including your slow toll pieces. Delete <code>menuCategory</code> and set <code>simBuildable = false</code>. With <code>availability = { yearFrom = 0, yearTo = 0 }</code> the copy also never expires, where the base 1900 roads end in 1940. Change an option on a placed one (a speed step, say) from its window as Tollgate does: <code>createProposalReplaceConstruction(entity, params)</code>, then <code>api.cmd.makeWorldBuildProposalCmd(proposal, nil, false, true)</code>. It rebuilds in place and is safe from the GUI thread. Construction options arrive in the script <strong>1-based</strong>, and <code>defaultIndex</code> counts from 1.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: give a construction a job &mdash; real staff with personCapacity <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -553,6 +582,10 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: a template whose preview fails crashes the build menu <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>For a <code>constructionTemplates</code> (DYNAMIC) entry, the build menu builds a preview result while you hover it (<code>api.engine.util.construction.getConstructionResult</code>). If your script fails, the game's own code crashes the UI: <code>bad argument #1 to 'pairs' (table expected, got nil)</code> in <code>table_util.tl(107): shallowCopy</code>, from <code>construction.tl(3674): getNameAndDescription</code>. Follow the base modular pieces (headquarter.script.tl): put everything (models, groundFaces, terrainAlignmentLists, colliders) in <code>result.subconstructions[1]</code>, with only <code>slots</code> at the top, and give the subconstruction a <code>metadata</code> table, because the menu reads <code>subconstruction.metadata</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a hand-written .mdl needs version = 2 <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A model file written by hand (not exported) with <code>version = 1</code> stopped the game at start-up, before the menu: <code>Assertion `legacyLocation || version &gt;= 2' failed</code>, naming the .mdl. Only models in the old (legacy) folders may be version 1. End every model you write with <code>version = 2,</code> as the game's own and the Model Editor's exports do. The model doesn't even have to be used: every .mdl in a mod is read when the game loads.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a module's addModel doesn't work <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -757,6 +790,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 tf3">
         <h3>Finding vehicles in an area <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>TF2: <code>getEntities({pos, radius}, {type = "VEHICLE"})</code> is a cheap circle query for line vehicles, and <code>getVehicles({carrier = &hellip;})</code> gives counts per carrier. TF3: the octree returns <strong>no moving</strong> transport vehicles, and <code>transportVehicleSystem.getVehicles</code> returned one. <code>api.engine.util.vehicle.getVehiclesByCarrier(Carrier.ROAD)</code> plus <code>getPosition</code> works. Neither game has a vehicle-passed event, so polling is the only way.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: a vehicle's noise and pollution are the engine's sums; scale them with Modifiers <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A vehicle card's "Current Noise / Pollution" adds up each carriage's <code>EMISSION_EMITTER</code> <code>noisePower</code> / <code>pollutionPower</code>. For aircraft, the engine computes these from how hard the vehicle is working. On a modded helicopter, the <code>.mdl</code>'s <code>emissions.noise.score</code> (20 &rarr; 2), <code>maxThrust</code>, <code>weightEmpty</code> and <code>topSpeed</code> moved the figure very little (278&ndash;725 against a truck's ~50). Lowering thrust while the weight stayed the same raised it. The fix is per-vehicle <code>Modifiers</code>: <code>topSpeedScale</code>, <code>noiseScale</code>, <code>pollutionScale</code>, <code>comfortScale</code>. The engine multiplies them in. Set them from an engine-thread game script: <code>local m = api.type.TransportVehicle.Modifiers.new(tv.modifiers); m.noiseScale = 0.1; api.cmd.sendCommand(api.cmd.makeVehicleSetModifiersCmd(vehicle, m))</code>. Find your vehicles with <code>getVehiclesByCarrier</code>, read <code>TRANSPORT_VEHICLE</code>, and match <code>modelRep.getName(transportVehicleConfig.vehicles[1].part.modelId)</code>. The modifiers are saved on the vehicle, so each one needs a single command. Skip any vehicle whose scale already matches.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>Poll intervals must scale with game speed <span class="tags"><span class="tag tf2">TF2</span></span></h3>
