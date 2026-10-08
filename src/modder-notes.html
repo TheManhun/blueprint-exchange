@@ -278,6 +278,18 @@ end</pre>
         <h3>TF3: a glow with no time range lights only at night <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>An <code>EMISSIVE</code> material's <code>emissive_scale</code> can carry <code>fromTime</code> / <code>toTime</code>. With <code>fromTime = 0, toTime = 24</code> it glows all day. The base game uses that only for airport and runway lights. The base street lights (<code>streets/mat/street_lights_emissive*.mtl</code>) give no time range at all, and the game then lights them only at night. So a lamp, lantern, window or lightbox should leave the time range out. Keep <code>0-24</code> for things that really shine in daylight: signals and warning lamps. PYT's lamps had copied the all-day form, and their lanterns glowed at noon.</p>
       </article>
+      <article class="note" data-g="tf3 inferred">
+        <h3>TF3: text the game writes onto a model (labelList types) <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">From the base files</span></span></h3>
+        <p>A model's <code>metadata.labelList.labels</code> reserves a spot where the game writes text. Each label has a <code>type</code>, plus <code>size</code>, <code>transf</code>, <code>color</code>, <code>alignment</code>, <code>fitting</code> and <code>childId</code> (the node it rides on). The base game's own models use these types:</p>
+        <ul>
+          <li><code>NAME</code>: the vehicle's own name, which the player can rename. Used by the LNER A4's nameplate.</li>
+          <li><code>COMPANY_NAME</code>: the player's company, used on an old tram wagon.</li>
+          <li><code>LINE_NAME</code> and <code>NEXT_STOP</code>: the bus destination boards.</li>
+          <li><code>STATION_NAME</code>: station name boards.</li>
+          <li><code>CUSTOM</code>: text a construction sets itself, such as Pay Your Tolls' town names over plaza doors.</li>
+        </ul>
+        <p>Units: the label's <code>transf</code> scales by 0.01, so <code>size</code> is in centimetres. The A4's plate is <code>size = { 145.8, 13.6 }</code>, about 1.46 &times; 0.14 m. So a vehicle can carry player-chosen text: give it a <code>NAME</code> label and the player sets the text by renaming the vehicle. Not yet seen: whether label text glows at night on its own.</p>
+      </article>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Without it: <code>ConstructionRep.cpp:659 Assertion params.GetPtr("seed") failed</code>. TF3's <code>makeProposalData</code> asserts the same. <code>seed = 0</code> is fine. Add it in one sanitise step that every build path goes through, because a fix on one path alone gets missed.</p>
