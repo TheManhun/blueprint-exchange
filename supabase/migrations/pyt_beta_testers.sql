@@ -65,3 +65,9 @@ grant execute on function public.pyt_beta_signup(jsonb) to anon, authenticated;
 --   select created_at, email, games, note, source from public.pyt_beta_testers order by created_at desc;
 -- Deleting someone on request:
 --   delete from public.pyt_beta_testers where email = lower('their@email');
+
+-- APPLIED 2026-10-08 (migration pyt_beta_remove; Epod: 'a delete my email button -- we don't have to manage it'):
+-- the page's 'Remove my email from the list'. Same answer whether it was listed or not; it can only remove.
+--   create or replace function public.pyt_beta_remove(p_email text) returns jsonb ... security definer:
+--   delete from public.pyt_beta_testers where email = lower(trim(coalesce(p_email, ''))); return {ok: true}
+--   grant execute on function public.pyt_beta_remove(text) to anon, authenticated;

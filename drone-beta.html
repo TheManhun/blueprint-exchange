@@ -15,6 +15,8 @@
   .beta-intro { max-width: 70ch; }
   #testers input[type=email] { width: 100%; font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); box-sizing: border-box; }
   #testers select { width: 100%; }
+  #testers #rEmail { margin: 4px 0 10px; }
+  .linkish { background: none; border: 0; padding: 0; color: var(--accent); font: 600 14px Barlow, sans-serif; cursor: pointer; text-decoration: underline; }
   .consent { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px; font-weight: 600; }
   .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
   @media (max-width: 640px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
@@ -118,9 +120,17 @@
     <label for="tNote">Anything we should know? <span class="tag">optional</span></label>
     <input type="text" id="tNote" maxlength="300" placeholder="e.g. I play big maps on a laptop">
     <label class="consent"><input type="checkbox" id="tConsent"> Epod may email me about PYT beta tests.</label>
-    <p class="hint">Only used to invite you to PYT beta tests &mdash; never shared, never shown on the site. Ask and we&rsquo;ll delete it.</p>
+    <p class="hint">Only used to invite you to PYT beta tests &mdash; never shared, never shown on the site. You can remove it yourself any time, below.</p>
     <button type="button" id="tBtn">Sign me up</button>
     <div class="msg" id="tMsg" role="status"></div>
+    <!-- Epod: 'a delete my email button -- we don't have to manage it' -->
+    <p class="hint"><button type="button" class="linkish" id="rOpen" aria-expanded="false" aria-controls="rBox">Remove my email from the list</button></p>
+    <div id="rBox" hidden>
+      <label for="rEmail">Your email</label>
+      <input type="email" id="rEmail" maxlength="254" autocomplete="email" placeholder="you@example.com">
+      <button type="button" id="rBtn">Remove it</button>
+      <div class="msg" id="rMsg" role="status"></div>
+    </div>
   </section>
 
   <footer class="site-footer">
@@ -268,6 +278,26 @@
       $("tEmail").value = ""; $("tNote").value = ""; $("tConsent").checked = false;
     } catch (e) {
       msg.className = "msg bad"; msg.textContent = "Couldn't reach the sign-up -- please try again in a moment.";
+    } finally { btn.disabled = false; }
+  });
+
+  // remove my email: the same answer whether it was on the list or not
+  $("rOpen").addEventListener("click", () => {
+    const box = $("rBox"); box.hidden = !box.hidden;
+    $("rOpen").setAttribute("aria-expanded", String(!box.hidden));
+    if (!box.hidden) $("rEmail").focus();
+  });
+  $("rBtn").addEventListener("click", async () => {
+    const msg = $("rMsg"), btn = $("rBtn"), email = $("rEmail").value.trim();
+    if (!email) { msg.className = "msg bad"; msg.textContent = "Please enter the email you signed up with."; return; }
+    btn.disabled = true; msg.className = "msg ok"; msg.textContent = "Removing...";
+    try {
+      const { data, error } = await sb.rpc("pyt_beta_remove", { p_email: email });
+      if (error || !data || !data.ok) throw error || new Error("no");
+      msg.className = "msg ok"; msg.textContent = "Done -- if that email was on the list, it's gone now.";
+      $("rEmail").value = "";
+    } catch (e) {
+      msg.className = "msg bad"; msg.textContent = "Couldn't reach the list -- please try again in a moment.";
     } finally { btn.disabled = false; }
   });
 
