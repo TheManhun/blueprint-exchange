@@ -13,6 +13,11 @@
 <style>
   /* the drone beta vote (Epod, 2026-10-08): every in-game 'Tune your drone empire' row as a question */
   .beta-intro { max-width: 70ch; }
+  #testers input[type=email] { width: 100%; font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); box-sizing: border-box; }
+  #testers select { width: 100%; }
+  .consent { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px; font-weight: 600; }
+  .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+  @media (max-width: 640px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
   .beta-head { display: flex; gap: 20px; align-items: center; }
   .beta-head img { flex: none; width: 160px; height: auto; max-width: 30vw; }
   @media (max-width: 560px) { .beta-head { flex-direction: column; align-items: flex-start; } }
@@ -88,6 +93,23 @@
       <p>Haven&rsquo;t got the drones yet? Search <strong>&ldquo;PYT&rdquo;</strong> in the TF3 mod browser. And if you enjoy them, a thumbs up on mod.io goes a long way. Your game, your way!</p>
     </section>
   </div>
+
+  <!-- the PYT beta tester sign-up (Epod: 'they could add an email to volunteer to be a PYT beta tester') -- stored in
+       supabase pyt_beta_testers (no read access from the site); supabase/migrations/pyt_beta_testers.sql -->
+  <section class="panel beta-intro" id="testers">
+    <h2>Become a PYT beta tester</h2>
+    <p>Want to try new PYT mods before anyone else, and help shape them? Leave your email and we&rsquo;ll invite you to the next beta test. <strong>Beta tests are PC only</strong> &mdash; we can&rsquo;t send test files to consoles.</p>
+    <div class="row2">
+      <div><label for="tEmail">Email</label><input type="email" id="tEmail" maxlength="254" autocomplete="email" placeholder="you@example.com"></div>
+      <div><label for="tGames">I play</label><select id="tGames"><option value="tf3">Transport Fever 3</option><option value="tf2">Transport Fever 2</option><option value="both">Both</option></select></div>
+    </div>
+    <label for="tNote">Anything we should know? <span class="tag">optional</span></label>
+    <input type="text" id="tNote" maxlength="300" placeholder="e.g. I play big maps on a laptop">
+    <label class="consent"><input type="checkbox" id="tConsent"> Epod may email me about PYT beta tests.</label>
+    <p class="hint">Only used to invite you to PYT beta tests &mdash; never shared, never shown on the site. Ask and we&rsquo;ll delete it.</p>
+    <button type="button" id="tBtn">Sign me up</button>
+    <div class="msg" id="tMsg" role="status"></div>
+  </section>
 
 <!--FOOTER-->
 </div>
@@ -211,6 +233,24 @@
     drawQuestions(saved());
     $("resultsView").hidden = true;
     $("voteView").hidden = false;
+  });
+
+  // the beta tester sign-up
+  $("tBtn").addEventListener("click", async () => {
+    const msg = $("tMsg"), btn = $("tBtn");
+    const email = $("tEmail").value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.className = "msg bad"; msg.textContent = "That email address doesn't look right."; return; }
+    if (!$("tConsent").checked) { msg.className = "msg bad"; msg.textContent = "Please tick the box so we may email you about beta tests."; return; }
+    btn.disabled = true; msg.className = "msg ok"; msg.textContent = "Signing you up...";
+    try {
+      const { data, error } = await sb.rpc("pyt_beta_signup", { p: { email, games: $("tGames").value, note: $("tNote").value.trim(), consent: true, source: "drone-beta" } });
+      if (error) throw error;
+      if (!data || !data.ok) { msg.className = "msg bad"; msg.textContent = (data && data.error) || "That didn't work -- please try again."; return; }
+      msg.className = "msg ok"; msg.textContent = "You're on the list -- thanks! We'll email you when the next PYT beta test opens.";
+      $("tEmail").value = ""; $("tNote").value = ""; $("tConsent").checked = false;
+    } catch (e) {
+      msg.className = "msg bad"; msg.textContent = "Couldn't reach the sign-up -- please try again in a moment.";
+    } finally { btn.disabled = false; }
   });
 
   // a returning voter sees the results first; a new one the questions (the results only after voting)
