@@ -64,8 +64,8 @@
 
   <div id="voteView">
     <section class="panel beta-intro">
-      <h2>Quick start: paste your settings</h2>
-      <p>In the game, click <strong>PYT</strong> in the top bar &gt; the <strong>Drones 2020</strong> tab, tune it until it feels right, then copy the <strong>Yours:</strong> line at the bottom and paste it here. Or just pick your answers below.</p>
+      <h2>Quick start: your settings from the game</h2>
+      <p>In the game, click <strong>PYT</strong> in the top bar &gt; the <strong>Drones 2020</strong> tab, tune it until it feels right, then press <strong>Vote with my settings</strong> &mdash; this page opens with your answers filled in. Or paste the <strong>Yours:</strong> line here, or just pick your answers below.</p>
       <textarea id="yours" aria-label="Your 'Yours:' line from the game" placeholder="Yours:  250 km/h  ·  noise x0.02  ·  pollution x0.05  ·  battery 5 km  ·  over range x0.33  ·  maintenance grows with staff  ·  loading grows with staff"></textarea>
       <button type="button" id="fillBtn">Fill in my votes</button>
       <div class="msg" id="fillMsg" role="status"></div>
@@ -226,8 +226,22 @@
   });
 
   // a returning voter sees the results first; a new one the questions (the results only after voting)
+  // the game's 'Vote with my settings' button opens this page with the settings in the address (?speed=313&noise=quiet...)
+  function fromAddress() {
+    const q = new URLSearchParams(location.search), got = {};
+    for (const qq of Q) { const v = q.get(qq.key); if (v && qq.opts.some(([o]) => o === v)) got[qq.key] = v; }
+    return Object.keys(got).length ? got : null;
+  }
   (async () => {
-    const mine = saved();
+    const mine = saved(), game = fromAddress();
+    if (game) {
+      // straight from the game: the questions with those answers (even for a returning voter -- a new vote replaces the old)
+      drawQuestions(Object.assign({}, mine || {}, game));
+      const msg = $("fillMsg");
+      msg.className = "msg ok";
+      msg.textContent = `Your in-game settings are filled in (${Object.keys(game).length} answers) -- check them below, answer the last question, then vote.`;
+      return;
+    }
     drawQuestions(mine);
     if (mine) {
       try {
