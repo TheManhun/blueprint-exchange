@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Drone 2020 Beta Vote</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="PYT - Drone 2020 BETA: the drones work -- now vote for the balance. Speed, battery, noise, staff: the community sets the 1.0 defaults.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  /* the drone beta vote (Epod, 2026-10-08): every in-game 'Tune your drone empire' row as a question */
+  .beta-intro { max-width: 70ch; }
+  .q { padding: 14px 0; border-top: 1px solid var(--line); }
+  .q:first-of-type { border-top: 0; padding-top: 0; }
+  .q h3 { margin: 0 0 2px; font: 700 19px/1.2 "Barlow Condensed", sans-serif; letter-spacing: .02em; }
+  .q .why { margin: 0 0 8px; color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips label { display: flex; align-items: center; gap: 8px; margin: 0; padding: 7px 12px; border: 1px solid var(--line);
+    border-radius: 8px; cursor: pointer; font-weight: 600; background: var(--ground); }
+  .chips label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .chips input { accent-color: var(--accent); }
+  .tag { font: 500 11px/1 "JetBrains Mono", monospace; color: var(--ink-2); border: 1px solid var(--line); border-radius: 4px; padding: 2px 5px; }
+  #yours { width: 100%; font: 13px/1.5 "JetBrains Mono", monospace; min-height: 3.2em; }
+  #comment { width: 100%; min-height: 4.5em; }
+  .res { padding: 12px 0; border-top: 1px solid var(--line); }
+  .res:first-of-type { border-top: 0; }
+  .res h3 { margin: 0 0 8px; font: 700 19px/1.2 "Barlow Condensed", sans-serif; }
+  .bar { display: grid; grid-template-columns: minmax(7.5em, 11em) minmax(0, 1fr) 6.5em; gap: 10px; align-items: center; margin: 4px 0; }
+  .bar .name { font-weight: 600; }
+  .bar .track { display: block; height: 14px; border-radius: 7px; background: var(--surface-2); overflow: hidden; }
+  .bar .fill { display: block; height: 100%; background: var(--ink-2); border-radius: 7px; }
+  .bar.lead .fill { background: var(--accent); }
+  .bar .n { font: 13px "JetBrains Mono", monospace; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+  .bar .tags { display: block; margin-top: 2px; }
+  .mine { font: 500 11px/1 "JetBrains Mono", monospace; color: var(--accent); margin-right: 8px; }
+  .pick { font: 500 11px/1 "JetBrains Mono", monospace; color: var(--ok); margin-right: 8px; }
+  .total { font: 600 15px Barlow, sans-serif; color: var(--ink-2); margin: 0 0 6px; }
+  @media (max-width: 560px) { .bar { grid-template-columns: minmax(0, 1fr) 5.5em; } .bar .track { grid-column: 1 / -1; grid-row: 2; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <h1>PYT - Drone 2020 BETA: tune it together</h1>
+    <p class="sub">The drones work. Now we want your take on the balance &mdash; vote for what feels fair, then see what everyone else picked. The 1.0 defaults will be what the community decides.</p>
+  </div>
+
+  <div id="voteView">
+    <section class="panel beta-intro">
+      <h2>Quick start: paste your settings</h2>
+      <p>In the game, click <strong>PYT</strong> in the top bar &gt; the <strong>Drones 2020</strong> tab, tune it until it feels right, then copy the <strong>Yours:</strong> line at the bottom and paste it here. Or just pick your answers below.</p>
+      <textarea id="yours" aria-label="Your 'Yours:' line from the game" placeholder="Yours:  250 km/h  ·  noise x0.02  ·  pollution x0.05  ·  battery 5 km  ·  over range x0.33  ·  maintenance grows with staff  ·  loading grows with staff"></textarea>
+      <button type="button" id="fillBtn">Fill in my votes</button>
+      <div class="msg" id="fillMsg" role="status"></div>
+    </section>
+
+    <section class="panel" id="questions" aria-label="Your votes"></section>
+
+    <section class="panel">
+      <h2>Anything else? <span class="tag">optional</span></h2>
+      <textarea id="comment" maxlength="500" aria-label="Your comment" placeholder="What felt right, what felt off, what would you change?"></textarea>
+      <p class="hint">One vote per player &mdash; vote again any time and your new answers replace the old ones.</p>
+      <button type="button" class="btn primary big" id="voteBtn">Vote and see the results</button>
+      <div class="msg" id="voteMsg" role="status"></div>
+    </section>
+  </div>
+
+  <div id="resultsView" hidden>
+    <section class="panel">
+      <h2>What the community picked</h2>
+      <p class="total" id="total"></p>
+      <div id="results"></div>
+      <p><button type="button" id="againBtn">Change my vote</button></p>
+    </section>
+    <section class="panel beta-intro">
+      <h2>Thanks for tuning with us</h2>
+      <p>Haven&rsquo;t got the drones yet? Search <strong>&ldquo;PYT&rdquo;</strong> in the TF3 mod browser. And if you enjoy them, a thumbs up on mod.io goes a long way. Your game, your way!</p>
+    </section>
+  </div>
+
+<!--FOOTER-->
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="site.js"></script>
+<script>
+  // every question = one row of the in-game 'Tune your drone empire' window (pyt_drone_page.lua ROWS); the keys are the
+  // database's (supabase/migrations/drone_beta_votes.sql), the first `def` is the PYT default
+  const Q = [
+    { key: "speed", title: "Speed", why: "How fast should a cargo drone fly?", def: "250", opts: [
+      ["125", "125 km/h"], ["188", "188 km/h"], ["250", "250 km/h"], ["313", "313 km/h"], ["375", "375 km/h"]] },
+    { key: "range_km", title: "Battery range", why: "How far should it fly on one battery?", def: "5", opts: [
+      ["2", "2 km"], ["5", "5 km"], ["10", "10 km"], ["20", "20 km"], ["unlimited", "Unlimited"]] },
+    { key: "over_range", title: "Over range", why: "A line whose hops are longer than the battery flies slower. How much slower is fair?", def: "third", opts: [
+      ["quarter", "1/4 speed"], ["third", "1/3 speed"], ["half", "1/2 speed"], ["none", "No penalty"]] },
+    { key: "noise", title: "Noise", why: "How loud should drones be? Does your town mind?", def: "whisper", opts: [
+      ["whisper", "Whisper"], ["quiet", "Quiet"], ["busy", "Busy"], ["fullrotor", "Full rotor"]] },
+    { key: "pollution", title: "Pollution", why: "They're electric -- how clean should they be?", def: "electric", opts: [
+      ["zero", "Zero"], ["electric", "Electric"], ["some", "Some"], ["full", "Full"]] },
+    { key: "maint_rule", title: "Maintenance range", why: "Should more ground crew cover a bigger maintenance circle, or any crew the whole circle?", def: "grows", opts: [
+      ["grows", "Grows with staff"], ["same", "Same for any crew"]] },
+    { key: "load_rule", title: "Loading speed", why: "Should more ground crew load faster?", def: "grows", opts: [
+      ["grows", "Grows with staff"], ["same", "Same for any crew"], ["none", "No staff boost"]] },
+    { key: "crew_top", title: "A full crew of 15", why: "5 staff load x1.5, 10 staff x2. What should a full crew of 15 give?", def: "x3", opts: [
+      ["x3", "Loading x3"], ["x4", "Loading x4"]] },
+  ];
+  const LS = "pytDroneBetaVote"; // this browser's last answers (a convenience -- the vote itself is on the server)
+  const $ = (id) => document.getElementById(id);
+  function saved() { try { return JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { return null; } }
+  function remember(v) { try { localStorage.setItem(LS, JSON.stringify(v)); } catch (e) {} }
+
+  // the questions, with the PYT defaults (or this browser's last vote) picked
+  function drawQuestions(pick) {
+    const box = $("questions");
+    box.innerHTML = "<h2>Your votes</h2>";
+    for (const q of Q) {
+      const div = document.createElement("div");
+      div.className = "q";
+      const chips = q.opts.map(([v, label]) => {
+        const id = q.key + "_" + v;
+        const on = (pick && pick[q.key] ? pick[q.key] : q.def) === v;
+        return `<label for="${id}"><input type="radio" name="${q.key}" id="${id}" value="${v}"${on ? " checked" : ""}> ${label}${v === q.def ? ' <span class="tag">PYT default</span>' : ""}</label>`;
+      }).join("");
+      div.innerHTML = `<h3>${q.title}</h3><p class="why">${q.why}</p><div class="chips" role="radiogroup" aria-label="${q.title}">${chips}</div>`;
+      box.appendChild(div);
+    }
+  }
+  function answers() {
+    const out = {};
+    for (const q of Q) { const c = document.querySelector(`input[name="${q.key}"]:checked`); out[q.key] = c ? c.value : null; }
+    return out;
+  }
+
+  // 'Yours:  250 km/h  ·  noise x0.02  ·  pollution x0.05  ·  battery 5 km  ·  over range x0.33  ·  maintenance grows with staff  ·  loading ...'
+  function nearest(x, pairs) { let best = pairs[0][1], d = Infinity; for (const [n, v] of pairs) { if (Math.abs(n - x) < d) { d = Math.abs(n - x); best = v; } } return best; }
+  function parseYours(s) {
+    const got = {}; let m;
+    if ((m = s.match(/(\d+)\s*km\/h/i))) got.speed = nearest(+m[1], [[125, "125"], [188, "188"], [250, "250"], [313, "313"], [375, "375"]]);
+    if ((m = s.match(/noise\s*x\s*([\d.]+)/i))) got.noise = nearest(+m[1], [[0.02, "whisper"], [0.1, "quiet"], [0.3, "busy"], [1, "fullrotor"]]);
+    if ((m = s.match(/pollution\s*x\s*([\d.]+)/i))) got.pollution = nearest(+m[1], [[0, "zero"], [0.05, "electric"], [0.3, "some"], [1, "full"]]);
+    if (/battery\s*unlimited/i.test(s)) got.range_km = "unlimited";
+    else if ((m = s.match(/battery\s*([\d.]+)\s*km/i))) got.range_km = nearest(+m[1], [[2, "2"], [5, "5"], [10, "10"], [20, "20"]]);
+    if ((m = s.match(/over range\s*x\s*([\d.]+)/i))) got.over_range = nearest(+m[1], [[0.25, "quarter"], [0.333, "third"], [0.5, "half"], [1, "none"]]);
+    if ((m = s.match(/maintenance\s+(grows with staff|same for any crew)/i))) got.maint_rule = /same/i.test(m[1]) ? "same" : "grows";
+    if ((m = s.match(/loading\s+(grows with staff|same for any crew|no staff boost)/i))) got.load_rule = /same/i.test(m[1]) ? "same" : (/no staff/i.test(m[1]) ? "none" : "grows");
+    return got;
+  }
+  $("fillBtn").addEventListener("click", () => {
+    const got = parseYours($("yours").value);
+    const n = Object.keys(got).length;
+    const msg = $("fillMsg");
+    if (n === 0) { msg.className = "msg bad"; msg.textContent = "That doesn't look like a 'Yours:' line -- copy the whole line from the Drones 2020 tab."; return; }
+    drawQuestions(Object.assign(answers(), got));
+    msg.className = "msg ok"; msg.textContent = `Filled in ${n} answer${n === 1 ? "" : "s"} from your line -- check them below, then vote.`;
+  });
+
+  // the results: a bar per choice, the community pick marked, your own answer marked
+  function drawResults(r, mine) {
+    const total = r && r.total ? r.total : 0;
+    $("total").textContent = total === 1 ? "1 player has voted so far." : `${total} players have voted so far.`;
+    const box = $("results");
+    box.innerHTML = "";
+    for (const q of Q) {
+      const counts = (r && r[q.key]) || {};
+      const top = Math.max(0, ...q.opts.map(([v]) => counts[v] || 0));
+      const div = document.createElement("div");
+      div.className = "res";
+      div.innerHTML = `<h3>${q.title}</h3>` + q.opts.map(([v, label]) => {
+        const n = counts[v] || 0, pct = total ? Math.round(100 * n / total) : 0;
+        const lead = n > 0 && n === top;
+        const tags = (lead ? '<span class="pick">community pick</span>' : "") + (mine && mine[q.key] === v ? '<span class="mine">your vote</span>' : "");
+        return `<div class="bar${lead ? " lead" : ""}"><span class="name">${label}${tags ? '<span class="tags">' + tags + "</span>" : ""}</span>` +
+          `<span class="track"><span class="fill" style="width:${pct}%"></span></span><span class="n">${pct}% (${n})</span></div>`;
+      }).join("");
+      box.appendChild(div);
+    }
+    $("voteView").hidden = true;
+    $("resultsView").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  $("voteBtn").addEventListener("click", async () => {
+    const msg = $("voteMsg"), btn = $("voteBtn");
+    const a = answers();
+    if (Q.some((q) => !a[q.key])) { msg.className = "msg bad"; msg.textContent = "Please pick one answer for every question."; return; }
+    a.comment = $("comment").value.trim();
+    btn.disabled = true; msg.className = "msg ok"; msg.textContent = "Sending your vote...";
+    try {
+      const { data, error } = await sb.rpc("drone_beta_vote", { p: a });
+      if (error) throw error;
+      if (!data || !data.ok) { msg.className = "msg bad"; msg.textContent = (data && data.error) || "That didn't work -- please try again."; return; }
+      remember(a);
+      msg.className = "msg"; msg.textContent = "";
+      drawResults(data.results, a);
+    } catch (e) {
+      msg.className = "msg bad"; msg.textContent = "Couldn't reach the vote box -- please try again in a moment.";
+    } finally { btn.disabled = false; }
+  });
+  $("againBtn").addEventListener("click", () => {
+    drawQuestions(saved());
+    $("resultsView").hidden = true;
+    $("voteView").hidden = false;
+  });
+
+  // a returning voter sees the results first; a new one the questions (the results only after voting)
+  (async () => {
+    const mine = saved();
+    drawQuestions(mine);
+    if (mine) {
+      try {
+        const { data, error } = await sb.rpc("drone_beta_results");
+        if (!error && data) drawResults(data, mine);
+      } catch (e) {}
+    }
+  })();
+</script>
+</body>
+</html>
