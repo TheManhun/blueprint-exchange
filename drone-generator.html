@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT Drone Generator</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Make your own Transport Fever 3 drone fly from PYT - Drone 2020 bases: fill in the form and copy the model's metadata block, pyt_drone tag included.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .gen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .gen { grid-template-columns: minmax(0, 1fr); } }
+  .gen fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px 14px; margin: 0 0 14px; background: var(--surface); }
+  .gen legend { font: 700 18px/1 "Barlow Condensed", sans-serif; padding: 0 6px; color: var(--accent); }
+  .fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 14px; }
+  .fgrid label, .gen .full label { display: block; font-weight: 600; font-size: 14px; margin: 0 0 4px; }
+  .gen input[type=number] { font: 15px Barlow, sans-serif; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--ground); color: var(--ink); }
+  .gen input[type=text], .gen input[type=number], .gen select { width: 100%; box-sizing: border-box; }
+  .gen .full { margin: 0 0 10px; }
+  .gen .unit { font-weight: 400; color: var(--ink-2); }
+  .gen .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px 14px; }
+  .gen .checks label { font-weight: 500; display: flex; gap: 8px; align-items: center; }
+  .gen .out { position: sticky; top: 12px; }
+  .gen pre { background: var(--code-ground); color: var(--code-ink); font: 12.5px/1.5 "JetBrains Mono", monospace; padding: 14px 16px; border-radius: 8px; overflow: auto; margin: 8px 0 10px; white-space: pre; tab-size: 2; -moz-tab-size: 2; max-height: 70vh; }
+  .gen .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .gen .tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .tagline { font-family: "JetBrains Mono", monospace; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources" aria-current="page"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <h1>PYT Drone Generator</h1>
+    <p class="sub">Make your own Transport Fever 3 drone fly from <a href="drone-beta.html">PYT - Drone 2020</a> bases. Fill in the form, copy the block, paste it over your model&rsquo;s <code>metadata</code>.</p>
+  </div>
+
+  <section class="panel">
+    <h2>How it works</h2>
+    <p class="lede">The API is one tag. A vehicle model whose <code>transportVehicle.filterTags</code> holds <span class="tagline">"pyt_drone"</span> is a PYT drone. Drone 2020 then:</p>
+    <ul>
+      <li>sells it at every Drone Base (the bases sell only tagged drones);</li>
+      <li>gives it the Battery card, the range and eco mode, and the player&rsquo;s speed and noise settings from the Drones tab;</li>
+      <li>names it on purchase (&ldquo;Drone 1&rdquo;, &ldquo;Drone 2&rdquo;&hellip;).</li>
+    </ul>
+    <p>Everything else about the drone is yours: model, look, cargo, capacity, price.</p>
+    <p class="hint">The flight numbers below are the ones the PYT drones fly on: a light helicopter&rsquo;s, worked out in testing. Keep them unless you want to experiment, since a drone that can&rsquo;t lift itself never takes off. The output is the <code>metadata = { ... }</code> part of a <code>.mdl</code> only. Your model&rsquo;s <code>lods</code>, <code>boundingInfo</code> and <code>collider</code> stay as your exporter made them.</p>
+  </section>
+
+  <div class="gen">
+    <div class="form">
+      <fieldset>
+        <legend>The drone</legend>
+        <div class="full"><label for="dName">Name in the vehicle shop</label><input type="text" id="dName" value="My Cargo Drone" autocomplete="off"></div>
+        <div class="full"><label for="dDesc">Description</label><input type="text" id="dDesc" value="A quadcopter for quick, light deliveries." autocomplete="off"></div>
+        <div class="fgrid">
+          <div><label for="dFrom">Available from <span class="unit">(year)</span></label><input type="number" id="dFrom" value="2020" min="1850" max="2100" step="1"></div>
+          <div><label for="dTo">Until <span class="unit">(0 = forever)</span></label><input type="number" id="dTo" value="0" min="0" max="2200" step="1"></div>
+          <div><label for="dLife">Lifespan <span class="unit">(years)</span></label><input type="number" id="dLife" value="100" min="1" max="200" step="1"></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Cargo</legend>
+        <div class="fgrid">
+          <div><label for="dCargo">Cargo class</label>
+            <select id="dCargo">
+              <option value="GOODS">Goods (parcel pod)</option>
+              <option value="BULK">Bulk (hopper)</option>
+              <option value="LIQUID">Liquid (tank)</option>
+              <option value="FLATBED">Flatbed (platform)</option>
+              <option value="TYPES">Specific cargo types&hellip;</option>
+            </select></div>
+          <div><label for="dCap">Capacity <span class="unit">(units)</span></label><input type="number" id="dCap" value="16" min="1" max="500" step="1"></div>
+          <div><label for="dLoad">Load speed</label><input type="number" id="dLoad" value="3" min="0.1" max="50" step="0.1"></div>
+        </div>
+        <div class="full" id="dTypesRow" hidden style="margin-top:10px"><label for="dTypes">Cargo type ids <span class="unit">(comma separated, e.g. FOOD, TOOLS)</span></label><input type="text" id="dTypes" value="FOOD, TOOLS" autocomplete="off" spellcheck="false"></div>
+        <p class="hint">PYT drone stations are cargo only, so a drone with seats for passengers won&rsquo;t find a stop there.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Money &amp; emissions</legend>
+        <div class="fgrid">
+          <div><label for="dPrice">Price <span class="unit">(-1 = game decides)</span></label><input type="number" id="dPrice" value="-1" step="1000"></div>
+          <div><label for="dRun">Running cost / yr <span class="unit">(-1 = game)</span></label><input type="number" id="dRun" value="-1" step="1000"></div>
+          <div><label for="dNoise">Noise score</label><input type="number" id="dNoise" value="20" min="0" max="200" step="1"></div>
+          <div><label for="dPoll">Pollution score</label><input type="number" id="dPoll" value="0" min="0" max="200" step="1"></div>
+        </div>
+        <p class="hint">Drone 2020&rsquo;s noise and pollution settings scale these in game.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Flight</legend>
+        <div class="fgrid">
+          <div><label for="dSpeed">Top speed <span class="unit">(km/h)</span></label><input type="number" id="dSpeed" value="250" min="20" max="600" step="5"></div>
+          <div><label for="dWeight">Empty weight <span class="unit">(kg)</span></label><input type="number" id="dWeight" value="998" min="1" step="1"></div>
+          <div><label for="dThrust">Max thrust <span class="unit">(N)</span></label><input type="number" id="dThrust" value="25000" min="1" step="100"></div>
+          <div><label for="dWing">Wing area <span class="unit">(m&sup2;)</span></label><input type="number" id="dWing" value="0.811" min="0.01" step="0.001"></div>
+        </div>
+        <p class="hint">The defaults are the PYT drones&rsquo; own. Drone 2020&rsquo;s speed setting and eco mode adjust the top speed in game.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Size &amp; model</legend>
+        <div class="fgrid">
+          <div><label for="dHx">Half length <span class="unit">(m, X)</span></label><input type="number" id="dHx" value="1.2218" min="0.1" step="0.01"></div>
+          <div><label for="dHy">Half width <span class="unit">(m, Y)</span></label><input type="number" id="dHy" value="1.2218" min="0.1" step="0.01"></div>
+          <div><label for="dH">Height <span class="unit">(m)</span></label><input type="number" id="dH" value="1.4715" min="0.1" step="0.01"></div>
+        </div>
+        <div class="fgrid" style="margin-top:10px">
+          <div><label for="dSeat">Crew seat group <span class="unit">(a node in your model)</span></label><input type="text" id="dSeat" value="RootNode" autocomplete="off" spellcheck="false"></div>
+          <div><label for="dSound">Sound</label>
+            <select id="dSound">
+              <option value="pyt">PYT drone hum (needs Drone 2020)</option>
+              <option value="own">My own .snd file</option>
+            </select></div>
+        </div>
+        <div class="full" id="dSndRow" hidden style="margin-top:10px"><label for="dSnd">Sound set path</label><input type="text" id="dSnd" value="my_mod_1::/my_drone/my_drone.snd" autocomplete="off" spellcheck="false"></div>
+        <p class="hint">The size is the model&rsquo;s box: the drone sits from 0 up to its height, centred on X and Y. The crew seat hides a tiny pilot inside the body, as the game&rsquo;s helicopters need one. Any group name your model has works.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Lights</legend>
+        <div class="checks">
+          <label><input type="checkbox" id="lLand" checked> Landing light</label>
+          <label><input type="checkbox" id="lPos" checked> Position lights (red / green)</label>
+          <label><input type="checkbox" id="lStrobe" checked> White strobe</label>
+          <label><input type="checkbox" id="lBeacon" checked> Red beacon</label>
+        </div>
+        <p class="hint">Each light glows a mesh of the same name in your model (<code>landinglights</code>, <code>positionlights</code>, <code>strobelights</code>, <code>beaconlights</code>). They&rsquo;re placed from the size above, as on the PYT drones. Untick any your model doesn&rsquo;t have, or move them in the output.</p>
+      </fieldset>
+    </div>
+
+    <div class="out">
+      <section class="panel" style="margin:0">
+        <div class="tabs" role="tablist" aria-label="Output">
+          <button type="button" role="tab" id="tabMdl" aria-selected="true" aria-controls="outCode">metadata (.mdl)</button>
+          <button type="button" role="tab" id="tabDep" aria-selected="false" aria-controls="outCode">mod.json dependency</button>
+        </div>
+        <pre id="outCode" tabindex="0" aria-label="Generated code"></pre>
+        <div class="row" style="margin-top:0">
+          <button type="button" class="primary" id="copyBtn">Copy</button>
+          <span class="hint" id="copyState" role="status"></span>
+        </div>
+        <p class="hint" id="outNote"></p>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top:24px">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Export your drone from Blender (or your tool) as a TF3 vehicle <code>.mdl</code>, with <code>version = 2</code> at the end.</li>
+      <li>Replace its <code>metadata = { ... }</code> with the block above.</li>
+      <li>Add Drone 2020 as a dependency in your <code>mod.json</code> (the second tab) and on your mod.io page.</li>
+      <li>Restart TF3 fully, build a Drone Base, and look for your drone in its shop.</li>
+      <li>Something odd? <a href="modder-notes.html">The Modder Notes</a> list the crash messages we&rsquo;ve met and their fixes. The game&rsquo;s log, <code>stdout.txt</code>, names the line that failed.</li>
+    </ol>
+  </section>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var mode = "mdl";
+
+  function num(id, def) { var v = parseFloat($(id).value); return isFinite(v) ? v : def; }
+  // Lua numbers: up to 4 decimals, no trailing zeros
+  function n(v) { var s = (Math.round(v * 10000) / 10000).toString(); return s === "-0" ? "0" : s; }
+  // a Lua string literal for the _() text
+  function lstr(s) { return '"' + String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, " ") + '"'; }
+  function tf(x, y, z) { return "{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, " + n(x) + ", " + n(y) + ", " + n(z) + ", 1, }"; }
+
+  function light(o) {
+    var L = [
+      "\t\t\t\t\t{ ",
+      o.spot ? "\t\t\t\t\t\tangleMax = 45,\n\t\t\t\t\t\tangleMin = 10," : null,
+      "\t\t\t\t\t\tcolor = { " + o.color + ", },",
+      "\t\t\t\t\t\tinvertMask = true,",
+      "\t\t\t\t\t\tlightId = \"" + (o.spot ? "20" : "") + "\",",
+      "\t\t\t\t\t\tmask = 32,",
+      "\t\t\t\t\t\tmeshId = \"" + o.mesh + "\",",
+      "\t\t\t\t\t\tmode = \"LIGHT\",",
+      "\t\t\t\t\t\tradius = " + o.radius + ",",
+      "\t\t\t\t\t\tstrength = " + o.strength + ",",
+      "\t\t\t\t\t\ttransf = " + o.transf + ",",
+      "\t\t\t\t\t\ttype = \"" + (o.spot ? "SPOT" : "POINT") + "\",",
+      "\t\t\t\t\t\tvisibleFrom = -1,",
+      "\t\t\t\t\t\tvisibleTo = -1,",
+      "\t\t\t\t\t},"
+    ];
+    return L.filter(function (l) { return l !== null; }).join("\n");
+  }
+
+  function fakeBogie() {
+    return "\t\t\t\t\t\t{\n\t\t\t\t\t\t\t{ \n\t\t\t\t\t\t\t\tgroup = \"RootNode\",\n\t\t\t\t\t\t\t\toffset = 0,\n\t\t\t\t\t\t\t\tposition = 0,\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t},";
+  }
+
+  function mdl() {
+    var hx = num("dHx", 1.2218), hy = num("dHy", 1.2218), h = num("dH", 1.4715);
+    var cargo = $("dCargo").value, classes = "", types = "";
+    if (cargo === "TYPES") {
+      types = $("dTypes").value.split(",").map(function (s) { return s.trim().toUpperCase().replace(/[^A-Z0-9_]/g, ""); })
+        .filter(Boolean).map(function (s) { return '"' + s + '", '; }).join("");
+    } else classes = '"' + cargo + '", ';
+    var sound = $("dSound").value === "pyt" ? "epod_pyt_drone_2020_1::/pyt_drone_sound/pyt_drone.snd" : $("dSnd").value.trim();
+    var lights = [];
+    // placed as on the PYT goods drone, scaled to this drone's box
+    if ($("lLand").checked) lights.push(light({ spot: true, color: "0.816, 0.758, 0.701", mesh: "landinglights", radius: 12, strength: 2,
+      transf: "{ 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, " + n(0.164 * hx) + ", 0, " + n(0.742 * h) + ", 1, }" }));
+    if ($("lPos").checked) {
+      lights.push(light({ color: "0.886, 0.014, 0.014", mesh: "positionlights", radius: 2, strength: 3, transf: tf(0.55 * hx, 0.632 * hy, 0.802 * h) }));
+      lights.push(light({ color: "0, 0.475, 0", mesh: "positionlights", radius: 2, strength: 3, transf: tf(0.55 * hx, -0.632 * hy, 0.802 * h) }));
+    }
+    if ($("lStrobe").checked) lights.push(light({ color: "1, 1, 1", mesh: "strobelights", radius: 2, strength: 5, transf: tf(-0.368 * hx, 0, 0.863 * h) }));
+    if ($("lBeacon").checked) lights.push(light({ color: "0.886, 0.014, 0.014", mesh: "beaconlights", radius: 2, strength: 3, transf: tf(-0.041 * hx, 0, 0.976 * h) }));
+    var seat = $("dSeat").value.trim() || "RootNode";
+    var out = [
+      "\t\tmetadata = { ",
+      "\t\t\tairVehicle = { ",
+      "\t\t\t\taxles = {",
+      "\t\t\t\t\t{ ",
+      "\t\t\t\t\t\tposition = { -1, 0, },",
+      "\t\t\t\t\t\tradius = 0,",
+      "\t\t\t\t\t},",
+      "\t\t\t\t},",
+      "\t\t\t\tconfig = { ",
+      "\t\t\t\t\taxleRadii = { },",
+      "\t\t\t\t\taxles = { },",
+      "\t\t\t\t\tfakeBogies = {",
+      fakeBogie(), fakeBogie(), fakeBogie(),
+      "\t\t\t\t\t},",
+      "\t\t\t\t\tsteeringParts = { },",
+      "\t\t\t\t\twheelRadii = { },",
+      "\t\t\t\t\twheels = { },",
+      "\t\t\t\t},",
+      "\t\t\t\thasFlaps = true,",
+      "\t\t\t\tisHelicopter = true,",
+      "\t\t\t\tmaxThrust = " + n(num("dThrust", 25000)) + ",",
+      "\t\t\t\ttimeToFullThrust = 3,",
+      "\t\t\t\ttopSpeed = " + n(num("dSpeed", 250) / 3.6) + ", -- m/s (" + n(num("dSpeed", 250)) + " km/h)",
+      "\t\t\t\tweightEmpty = " + n(num("dWeight", 998)) + ",",
+      "\t\t\t\twheels = {",
+      "\t\t\t\t\t{ ",
+      "\t\t\t\t\t\tposition = { 1, 0, },",
+      "\t\t\t\t\t\tradius = 0,",
+      "\t\t\t\t\t},",
+      "\t\t\t\t},",
+      "\t\t\t\twingArea = " + n(num("dWing", 0.811)) + ",",
+      "\t\t\t},",
+      "\t\t\tavailability = { ",
+      "\t\t\t\tyearFrom = " + Math.round(num("dFrom", 2020)) + ",",
+      "\t\t\t\tyearTo = " + Math.round(num("dTo", 0)) + ",",
+      "\t\t\t},",
+      "\t\t\tcost = { ",
+      "\t\t\t\tprice = " + Math.round(num("dPrice", -1)) + ",",
+      "\t\t\t},",
+      "\t\t\tdescription = { ",
+      "\t\t\t\tdescription = _(" + lstr($("dDesc").value) + "),",
+      "\t\t\t\tname = _(" + lstr($("dName").value) + "),",
+      "\t\t\t},",
+      "\t\t\temissions = { ",
+      "\t\t\t\tnoise = { ",
+      "\t\t\t\t\tscore = " + n(num("dNoise", 20)) + ",",
+      "\t\t\t\t},",
+      "\t\t\t\tpollution = { ",
+      "\t\t\t\t\tscore = " + n(num("dPoll", 0)) + ",",
+      "\t\t\t\t},",
+      "\t\t\t},",
+      "\t\t\textent = { ",
+      "\t\t\t\tbbMax = { " + n(hx) + ", " + n(hy) + ", " + n(h) + ", },",
+      "\t\t\t\tbbMin = { " + n(-hx) + ", " + n(-hy) + ", 0.005, },",
+      "\t\t\t},",
+      "\t\t\tlightSourceList = { ",
+      "\t\t\t\tlights = {"
+    ].concat(lights).concat([
+      "\t\t\t\t},",
+      "\t\t\t},",
+      "\t\t\tmaintenance = { ",
+      "\t\t\t\tlifespan = " + Math.round(num("dLife", 100) * 365.25) + ", -- days",
+      "\t\t\t\trunningCosts = " + Math.round(num("dRun", -1)) + ",",
+      "\t\t\t},",
+      "\t\t\tseatProvider = { ",
+      "\t\t\t\tcrewModels = { },",
+      "\t\t\t\tdrivingLicense = \"HELICOPTER\",",
+      "\t\t\t\tseats = {",
+      "\t\t\t\t\t{ ",
+      "\t\t\t\t\t\tanimation = \"driving_upright\",",
+      "\t\t\t\t\t\tcrew = true,",
+      "\t\t\t\t\t\tgroup = " + lstr(seat) + ",",
+      "\t\t\t\t\t\ttransf = { 0.001, 0, 0, 0, 0, 0.001, 0, 0, 0, 0, 0.001, 0, 0, 0, " + n(Math.min(0.5, h / 2)) + ", 1, }, -- the pilot, shrunk inside the body",
+      "\t\t\t\t\t},",
+      "\t\t\t\t},",
+      "\t\t\t},",
+      "\t\t\tsoundConfig = { ",
+      "\t\t\t\tsoundSet = { ",
+      "\t\t\t\t\tname = " + lstr(sound) + ",",
+      "\t\t\t\t},",
+      "\t\t\t},",
+      "\t\t\ttransformatorConfig = { ",
+      "\t\t\t\tskipFromLod = 2,",
+      "\t\t\t\ttransformator = { ",
+      "\t\t\t\t\tname = \"::/vehicle/shared/default_air.trf\",",
+      "\t\t\t\t},",
+      "\t\t\t},",
+      "\t\t\ttransportVehicle = { ",
+      "\t\t\t\tcarrier = \"AIR\",",
+      "\t\t\t\tcomfortFactor = 0,",
+      "\t\t\t\tcompartments = {",
+      "\t\t\t\t\t{ ",
+      "\t\t\t\t\t\tloadConfigs = {",
+      "\t\t\t\t\t\t\t{ ",
+      "\t\t\t\t\t\t\t\tcargoEntry = { ",
+      "\t\t\t\t\t\t\t\t\tcapacity = " + Math.max(1, Math.round(num("dCap", 16))) + ",",
+      "\t\t\t\t\t\t\t\t\tcargoTypeSet = { ",
+      "\t\t\t\t\t\t\t\t\t\tcargoClassesExcluded = { },",
+      "\t\t\t\t\t\t\t\t\t\tcargoClassesIncluded = { " + classes + "},",
+      "\t\t\t\t\t\t\t\t\t\tcargoTypesExcluded = { },",
+      "\t\t\t\t\t\t\t\t\t\tcargoTypesIncluded = { " + types + "},",
+      "\t\t\t\t\t\t\t\t\t},",
+      "\t\t\t\t\t\t\t\t\tloadIndicator = \"\",",
+      "\t\t\t\t\t\t\t\t\tseats = { },",
+      "\t\t\t\t\t\t\t\t},",
+      "\t\t\t\t\t\t\t\ttoHide = { },",
+      "\t\t\t\t\t\t\t},",
+      "\t\t\t\t\t\t},",
+      "\t\t\t\t\t},",
+      "\t\t\t\t},",
+      "\t\t\t\tengineTransportModes = { \"HELICOPTER\", },",
+      "\t\t\t\tfilterTags = { \"pyt_drone\", }, -- the PYT drone tag: Drone Bases sell it, Drone 2020 runs it",
+      "\t\t\t\tloadSpeed = " + n(num("dLoad", 3)) + ",",
+      "\t\t\t\ttransportModes = { \"HELICOPTER\", },",
+      "\t\t\t},",
+      "\t\t},"
+    ]);
+    return out.join("\n");
+  }
+
+  function dep() {
+    return [
+      "\"dependencies\": [",
+      "    {",
+      "        \"mod\": {",
+      "            \"modId\": \"epod_pyt_drone_2020_1\",",
+      "            \"revisionMin\": 1,",
+      "            \"revisionMax\": 1000",
+      "        },",
+      "        \"optional\": false,",
+      "        \"loadBefore\": true,",
+      "        \"modInfo\": {",
+      "            \"displayName\": \"PYT - Drone 2020\",",
+      "            \"url\": \"\"",
+      "        }",
+      "    }",
+      "],"
+    ].join("\n");
+  }
+
+  function render() {
+    $("dTypesRow").hidden = $("dCargo").value !== "TYPES";
+    $("dSndRow").hidden = $("dSound").value !== "own";
+    $("outCode").textContent = mode === "mdl" ? mdl() : dep();
+    $("outNote").innerHTML = mode === "mdl"
+      ? "Paste over the whole <code>metadata = { ... },</code> in your <code>.mdl</code>. <code>version = 2</code> stays after it."
+      : "Replace <code>\"dependencies\": null,</code> in your <code>mod.json</code>. Set the same dependency on your mod.io page and say it in your description&rsquo;s first line: neither makes players subscribe. Without Drone 2020 there are no Drone Bases to sell your drone.";
+    $("copyState").textContent = "";
+  }
+
+  document.querySelectorAll(".gen input, .gen select").forEach(function (el) {
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+  [["tabMdl", "mdl"], ["tabDep", "dep"]].forEach(function (t) {
+    $(t[0]).addEventListener("click", function () {
+      mode = t[1];
+      $("tabMdl").setAttribute("aria-selected", String(mode === "mdl"));
+      $("tabDep").setAttribute("aria-selected", String(mode === "dep"));
+      render();
+    });
+  });
+  $("copyBtn").addEventListener("click", function () {
+    var text = $("outCode").textContent;
+    var done = function () { $("copyState").textContent = "Copied."; };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, function () { $("copyState").textContent = "Couldn't copy: select the code and press Ctrl+C."; });
+    } else {
+      var r = document.createRange(); r.selectNodeContents($("outCode"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      $("copyState").textContent = document.execCommand("copy") ? "Copied." : "Selected: press Ctrl+C.";
+    }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

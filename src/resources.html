@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Resources</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Everything on tfbpx.com in one place: blueprints, guides, tools, the PYT mods, and the generators and engine notes for Transport Fever modders.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .res-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+  .res-jump a { font: 600 15px/1 "Barlow", sans-serif; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; }
+  .res-jump a:hover, .res-jump a:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .res-group { margin: 0 0 30px; scroll-margin-top: 12px; }
+  .res-group > h2 { margin: 0 0 4px; }
+  .res-group > p.lede { margin: 0 0 14px; color: var(--ink-2); }
+  .guide-cards a .res-meta { display: block; margin-top: 8px; font: 500 12px/1.3 "Barlow", sans-serif; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
+  .guide-cards a .res-meta b { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:resources-->
+
+  <div class="page-head">
+    <h1>Resources</h1>
+    <p class="sub">Everything on tfbpx.com in one place: blueprints and guides for players, the PYT mods, and the generators and engine notes we use to build them, shared for every Transport Fever modder.</p>
+  </div>
+
+  <nav class="res-jump" aria-label="Jump to a section">
+    <a href="#players">For players</a>
+    <a href="#pyt">The PYT mods</a>
+    <a href="#modders">For modders</a>
+    <a href="#community">Community &amp; help</a>
+  </nav>
+
+  <section class="res-group" id="players">
+    <h2>For players</h2>
+    <p class="lede">Find a layout, put it in your game, share your own.</p>
+    <div class="guide-cards">
+      <a href="./"><strong>Community Blueprints</strong><span>The library: stations, junctions, yards and towns other players built, ready to drop into your map.</span><span class="res-meta">TF2 &amp; TF3</span></a>
+      <a href="upload.html"><strong>Upload My Blueprint</strong><span>Share a layout you captured in game. It goes up with its picture and the mods it needs.</span><span class="res-meta">TF2 &amp; TF3</span></a>
+      <a href="guides.html"><strong>Guides</strong><span>A tour in pictures, downloading and importing, capturing your own, dependencies, troubleshooting.</span><span class="res-meta">TF2 &amp; TF3</span></a>
+      <a href="tools.html"><strong>Tools</strong><span>The Blueprint Manager and the one-click Blueprint Importer for Transport Fever 2.</span><span class="res-meta">TF2 &amp; TF3</span></a>
+      <a href="drone-beta.html"><strong>Drone 2020 Beta Vote</strong><span>Help set the defaults for PYT - Drone 2020: speed, range, noise, crews. See how everyone voted.</span><span class="res-meta"><b>Open now</b> &middot; TF3</span></a>
+    </div>
+  </section>
+
+  <section class="res-group" id="pyt">
+    <h2>The PYT mods</h2>
+    <p class="lede">PYT &mdash; Play Your Transport. Our mods, each with its own job, all opening from one PYT window in game.</p>
+    <div class="guide-cards">
+      <a href="https://mod.io/g/transportfever3/m/pay-your-tolls" target="_blank" rel="noopener"><strong>Pay Your Tolls</strong><span>Toll gantries, plazas, bridges and tunnels that charge the traffic that passes and pay you for it.</span><span class="res-meta">TF3 &middot; mod.io</span></a>
+      <a href="https://mod.io/g/transportfever3/m/pyt-blueprint-exchange" target="_blank" rel="noopener"><strong>Blueprint Exchange</strong><span>Paste Your Templates: capture, copy, move and share whole layouts. The mod behind this site.</span><span class="res-meta">TF3 &middot; mod.io</span></a>
+      <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3807336092" target="_blank" rel="noopener"><strong>Blueprint Exchange for TF2</strong><span>The original, for Transport Fever 2, on the Steam Workshop.</span><span class="res-meta">TF2 &middot; Steam Workshop</span></a>
+      <a href="drone-beta.html"><strong>PYT - Drone 2020 BETA</strong><span>Delivery drones, Drone Bases, Towers and Distribution Centres. In beta, and the vote decides its defaults.</span><span class="res-meta">TF3 &middot; Beta</span></a>
+    </div>
+  </section>
+
+  <section class="res-group" id="modders">
+    <h2>For modders</h2>
+    <p class="lede">What we learned building the PYT mods, and the tools that let your own mods plug into them. Free to use; no credit needed, though we&rsquo;d love to see what you make.</p>
+    <div class="guide-cards">
+      <a href="modder-notes.html"><strong>Modder Notes</strong><span>Transport Fever 2 and 3 engine lessons: the crash messages, what they mean, the fixes that worked. Searchable.</span><span class="res-meta">TF2 &amp; TF3 &middot; Engine notes</span></a>
+      <a href="https://themanhun.github.io/pyt-gate-generator/" target="_blank" rel="noopener"><strong>PYT Gate Generator</strong><span>Turn your own gantry or toll booth into a Pay Your Tolls gate: it writes the .con file for you.</span><span class="res-meta">TF3 &middot; Generator</span></a>
+      <a href="drone-generator.html"><strong>PYT Drone Generator</strong><span>Make your own drone fly from PYT Drone Bases: it writes the model&rsquo;s vehicle settings with the pyt_drone tag.</span><span class="res-meta"><b>New</b> &middot; TF3 &middot; Generator</span></a>
+      <a href="plug-my-mod.html"><strong>Plug My Mod</strong><span>Made a mod? Put it in front of Blueprint Exchange players.</span><span class="res-meta">TF2 &amp; TF3</span></a>
+    </div>
+  </section>
+
+  <section class="res-group" id="community">
+    <h2>Community &amp; help</h2>
+    <p class="lede">Questions, bugs, ideas.</p>
+    <div class="guide-cards">
+      <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener"><strong>Community Forum</strong><span>Ask, show off a build, suggest what we should make next.</span><span class="res-meta">Discourse</span></a>
+      <a href="report.html"><strong>Report a Problem</strong><span>Something broke? Tell us what happened and we&rsquo;ll look at it.</span><span class="res-meta">Support</span></a>
+      <a href="about.html"><strong>About</strong><span>Who makes this, why, and the people whose work it stands on.</span><span class="res-meta">tfbpx.com</span></a>
+    </div>
+  </section>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>
