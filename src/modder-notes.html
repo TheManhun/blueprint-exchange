@@ -572,6 +572,10 @@ end</pre>
         <p>For a <code>constructionTemplates</code> (DYNAMIC) entry, the build menu builds a preview result while you hover it (<code>api.engine.util.construction.getConstructionResult</code>). If your script fails, the game's own code crashes the UI: <code>bad argument #1 to 'pairs' (table expected, got nil)</code> in <code>table_util.tl(107): shallowCopy</code>, from <code>construction.tl(3674): getNameAndDescription</code>. Follow the base modular pieces (headquarter.script.tl): put everything (models, groundFaces, terrainAlignmentLists, colliders) in <code>result.subconstructions[1]</code>, with only <code>slots</code> at the top, and give the subconstruction a <code>metadata</code> table, because the menu reads <code>subconstruction.metadata</code>.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: a hand-written .mdl needs version = 2 <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A model file written by hand (not exported) with <code>version = 1</code> stopped the game at start-up, before the menu: <code>Assertion `legacyLocation || version &gt;= 2' failed</code>, naming the .mdl. Only models in the old (legacy) folders may be version 1. End every model you write with <code>version = 2,</code> as the game's own and the Model Editor's exports do. The model doesn't even have to be used: every .mdl in a mod is read when the game loads.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: a module's addModel doesn't work <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A <code>.module.lua</code>'s updateScript gets <code>(captureParams, result, transform, tag, slotId, addModel, params)</code>, but the base game names that <code>addModel</code> argument <code>_addModelFnInvalid</code> and never calls it. A module inserts its models into <code>result.subconstructions[1].models</code> itself, with its <code>tag</code>, usually at the slot's transform from <code>result.slots</code>.</p>
       </article>
