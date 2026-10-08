@@ -13,6 +13,9 @@
 <style>
   /* the drone beta vote (Epod, 2026-10-08): every in-game 'Tune your drone empire' row as a question */
   .beta-intro { max-width: 70ch; }
+  .beta-head { display: flex; gap: 20px; align-items: center; }
+  .beta-head img { flex: none; width: 160px; height: auto; max-width: 30vw; }
+  @media (max-width: 560px) { .beta-head { flex-direction: column; align-items: flex-start; } }
   .q { padding: 14px 0; border-top: 1px solid var(--line); }
   .q:first-of-type { border-top: 0; padding-top: 0; }
   .q h3 { margin: 0 0 2px; font: 700 19px/1.2 "Barlow Condensed", sans-serif; letter-spacing: .02em; }
@@ -57,9 +60,12 @@
     </nav>
   </header>
 
-  <div class="page-head">
+  <div class="page-head beta-head">
+    <img src="drone-2020-logo.png" width="160" height="160" alt="PYT Drones 2020 logo: a bulk cargo drone over a globe">
+    <div>
     <h1>PYT - Drone 2020 BETA: tune it together</h1>
     <p class="sub">The drones work. Now we want your take on the balance &mdash; vote for what feels fair, then see what everyone else picked. The 1.0 defaults will be what the community decides.</p>
+    </div>
   </div>
 
   <div id="voteView">
