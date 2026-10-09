@@ -436,6 +436,10 @@ end</pre>
         <p>Anything built for one-way traffic (a one-way toll plaza, a motorway junction) has nothing to connect to before 1940.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>A street piece's lane COUNT must match its street type <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Building a piece whose <code>laneConfigs</code> has a different number of lanes from its street template crashes TF3: <code>Assertion Valid(result.laneConfigs) failed</code> (StreetShapeFactory.cpp, CreateStreetContext), from <code>makeWorldBuildProposalCmd</code>, and a <code>makeProposalData</code> dry run throws the same on worker threads. Seen copying a landmark's (an arena's) own roads: 6 lanes on a 4-lane type. Rebuild captured lanes only when the count matches (speeds, widths and offsets may differ); otherwise use the template's lanes.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3 BaseEdge and lane facts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <ul>
           <li><code>BaseEdge.distance</code> is the edge-decoration (noise barrier) offset, <strong>not</strong> a length. Normal pieces store <code>typeIndex</code> −1.</li>
