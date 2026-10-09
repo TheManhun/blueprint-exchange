@@ -1043,6 +1043,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>Spread work over frames, and build a meter <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>Staggering per-object due times, slicing scans and saves, and re-serialising only what changed took the worst frame on a 60-town map from 394 ms to 77 ms. Build an in-mod meter (share of real time, worst frame, and which section caused it), and skip the first 20 s after a load. For stress tests, <code>experimentalMapSizes = true</code> in settings.lua gives a 24×24 km map with 60 towns.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>Give a per-vehicle pass a budget <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A game script that renamed and re-tuned every new vehicle in one pass (<code>makeEntitySetNameCmd</code> + <code>makeVehicleSetModifiersCmd</code>, plus a <code>print</code> each) froze the game for about 20 seconds when a player bought 3,367 drones at once: about 6,700 commands and 6,700 log lines in a single tick, logged as "Thread did not respond to ping. Possible hang detected!". Cap the commands per pass (50 worked), stop there, and run the pass again a couple of seconds later while work is waiting. Log one summary line per pass, not one per vehicle. A player buying in bulk is normal, not an edge case.</p>
+      </article>
     </div>
   </section>
 
