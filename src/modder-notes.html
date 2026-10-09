@@ -436,8 +436,8 @@ end</pre>
         <p>Anything built for one-way traffic (a one-way toll plaza, a motorway junction) has nothing to connect to before 1940.</p>
       </article>
       <article class="note" data-g="tf3">
-        <h3>A street piece's lane COUNT must match its street type <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
-        <p>Building a piece whose <code>laneConfigs</code> has a different number of lanes from its street template crashes TF3: <code>Assertion Valid(result.laneConfigs) failed</code> (StreetShapeFactory.cpp, CreateStreetContext), from <code>makeWorldBuildProposalCmd</code>, and a <code>makeProposalData</code> dry run throws the same on worker threads. Seen copying a landmark's (an arena's) own roads: 6 lanes on a 4-lane type. Rebuild captured lanes only when the count matches (speeds, widths and offsets may differ); otherwise use the template's lanes.</p>
+        <h3>Valid(result.laneConfigs) can kill a paste <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Pasting a copy taken round a landmark (an arena) crashed TF3: <code>Assertion Valid(result.laneConfigs) failed</code> (StreetShapeFactory.cpp, CreateStreetContext) in <code>makeWorldBuildProposalCmd</code>; a <code>makeProposalData</code> dry run had already thrown it on worker threads, non-fatally. It is <strong>not</strong> simply a lane-count mismatch: ordinary town roads carry 6 lanes on a 4-lane template, and rebuilding exactly those lanes is what makes them paste ("Unknown exception" when we forced the template's 4). Cause still open; keep landmarks and their own roads out of copies.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3 BaseEdge and lane facts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
