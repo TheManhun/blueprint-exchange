@@ -243,6 +243,8 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3 userdata: app.saveUserdata and friends <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>app.saveUserdata / loadUserdata / getAllUserdata / removeUserdata</code> work on the GUI side only. Files land in <code>&hellip;\3493540\local\&lt;dir&gt;\</code> as <code>function data() return {&hellip;} end</code>. <strong>Sparse integer keys are dropped</strong>, so store lists of pairs. Check <code>getAllUserdata</code> before loading to avoid log errors. Engine-side state lives in the game script's <code>state</code>, inside the savegame.</p>
+        <p><strong>Never wrap a save in a silent <code>pcall</code>.</strong> On build 40420 one mod's <code>app.saveUserdata("pay_your_tolls", &hellip;)</code> threw "The directory you trying to access is not available or invalid", while another mod's <code>"bpxdata"</code> folder kept saving. The <code>pcall</code> hid it for days, and the player's "Don't show again" never stuck. Log the error. The cause (a folder-name rule?) is still unconfirmed; short folder names without underscores have kept working. Update: <code>"bpxdata"</code> was refused too once the game restarted. Since 40420 every folder a mod made is refused (save, load, list, remove); the game's own <code>"mod_presets"</code> (and <code>"heightmaps"</code>) still work, so save there with a file-name prefix of your own.</p>
+        <p><strong>Open a folder in the player's file explorer:</strong> <code>app.openUserDataSubFolder("mod_presets")</code> and <code>app.openUserDataFolder()</code> (the game's <code>local</code> folder) work from a GUI button (seen on Windows, 40420). Like saving, the sub-folder version opens nothing for a mod-made folder, so send players to <code>local</code> for those. Mac/Linux untested.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3 translations: strings.json <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -446,6 +448,10 @@ end</pre>
           <li>All one-way roads, the <strong>highways</strong> (<code>highway_new_small/medium/large</code>) and the <code>town_new_one_way_*</code> streets, appear in <strong>1940</strong>. Before that there is no one-way road at all.</li>
         </ul>
         <p>Anything built for one-way traffic (a one-way toll plaza, a motorway junction) has nothing to connect to before 1940.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Valid(result.laneConfigs) can kill a paste <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Pasting a copy taken round a landmark (an arena) crashed TF3: <code>Assertion Valid(result.laneConfigs) failed</code> (StreetShapeFactory.cpp, CreateStreetContext) in <code>makeWorldBuildProposalCmd</code>; a <code>makeProposalData</code> dry run had already thrown it on worker threads, non-fatally. It is <strong>not</strong> simply a lane-count mismatch: ordinary town roads carry 6 lanes on a 4-lane template, and rebuilding exactly those lanes is what makes them paste ("Unknown exception" when we forced the template's 4). Cause still open; keep landmarks and their own roads out of copies.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3 BaseEdge and lane facts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1055,6 +1061,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 tf3">
         <h3>Spread work over frames, and build a meter <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>Staggering per-object due times, slicing scans and saves, and re-serialising only what changed took the worst frame on a 60-town map from 394 ms to 77 ms. Build an in-mod meter (share of real time, worst frame, and which section caused it), and skip the first 20 s after a load. For stress tests, <code>experimentalMapSizes = true</code> in settings.lua gives a 24×24 km map with 60 towns.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>Give a per-vehicle pass a budget <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A game script that renamed and re-tuned every new vehicle in one pass (<code>makeEntitySetNameCmd</code> + <code>makeVehicleSetModifiersCmd</code>, plus a <code>print</code> each) froze the game for about 20 seconds when a player bought 3,367 drones at once: about 6,700 commands and 6,700 log lines in a single tick, logged as "Thread did not respond to ping. Possible hang detected!". Cap the commands per pass (50 worked), stop there, and run the pass again a couple of seconds later while work is waiting. Log one summary line per pass, not one per vehicle. A player buying in bulk is normal, not an edge case.</p>
       </article>
     </div>
   </section>
