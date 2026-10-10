@@ -1159,6 +1159,10 @@ end</code></pre>
         <p>Give your mod its own log with a clear line for every step that matters, and a diagnostic line when something comes back empty. More than once the fix was obvious from one log line, for example asset-group ids coming back as 1, 2, 3.</p>
       </article>
       <article class="note" data-g="tf3">
+        <h3>Hearing the player's builds: subscribe, and remember it yourself <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A game script's <code>guiHandleEvent</code> only receives <code>builder.proposalApply</code> after the game side has called <code>state:subscribeToEvent("builder.proposalApply")</code>. Do it in <code>update</code> as well as on the start-up events, because a mod added to an existing save doesn't see those. Don't guard it with <code>state:hasEventSubscriptions()</code>: that can already be true, so the call is skipped and the instant reaction never comes. Keep your own "subscribed" flag in the script's state instead. The entities just built are in <code>param[3]</code>.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>Place roadside signs from the road's measured edges, not by turning <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A one-armed sign took many rounds of "turn it 180 degrees" before it sat right. Three things fixed it. First, read the model itself: a <code>.msh.blob</code> holds float32 positions at <code>offset × 4</code>, and our sign's origin turned out to be under the board, with the pole 2.55 m to one side. Second, if your script turns the whole construction to face its traffic, the road can be on either side of the sign's local frame, so any fixed turn is right on one road and wrong on the next. Third, one rule from the road's real width (the base edge's lane widths, pavements included) puts every sign a set distance outside its own edge, which balances both sides.</p>
       </article>
