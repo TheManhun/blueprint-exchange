@@ -321,6 +321,7 @@ end</pre>
       <article class="note" data-g="tf3 crash">
         <h3>TF3: asking for a removed entity throws <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p><code>api.engine.getComponent(e, …)</code> on an entity that no longer exists does not return <code>nil</code>: it throws <code>Invalid entity</code>. Inside a <code>sendCommand</code> callback that is fatal (<code>Engine.cpp:1136 GetRevisionExisting: Assertion 'engine.EntityExists(entity)' failed</code>). BPX removed an industry, then checked it was gone with a bare <code>getComponent</code>, and the game crashed even though the removal had worked. Wrap every lookup of something you may just have removed in <code>pcall</code>, and treat a throw as "gone".</p>
+        <p>The same applies to the entity list a build command hands back. After an in-place rebuild (a proposal that removes a construction and re-adds it with <code>old2new</code>, the base game's way of moving an industry), that list also holds entities the command removed. BPX looked up every entity in it, hit one of those, and crashed. Treat a command's result entities as "may be gone" too.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: any construction can be a road maintenance post <span class="tags"><span class="tag tf3">TF3</span></span></h3>
