@@ -442,6 +442,7 @@ end</pre>
       <article class="note" data-g="tf3 crash">
         <h3>TF3: lane-splitting nodes need node configs <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>A node joining a multi-lane road to several roads without a <code>BaseNodeConfig</code> crashed: Engine.h:323 <code>it != components.end()</code>, Component Type 35. Add one <code>nodeConfigsToAdd</code> entry (<code>api.type.BaseNodeLaneConnectionAndEntity</code>, entity = the node's temporary id) per new node. An <strong>empty</strong> config gives a red no-entry sign, so copy the real <code>laneConnections</code>. Removing pieces while far-end nodes still list them was fatal too: <code>lc.segment0 / lc.segment1 not found</code> (StreetShapeFactory).</p>
+        <p>The dry run (<code>makeProposalData</code>) does not catch a missing config: it reports "no critical error" and the real build is fatal (<code>ComponentManager.h: it != m_compType2index.end()</code>, Component Type BaseNodeConfig). If you don't want to write lane tables yourself, build in steps: first a road where every new node joins only two pieces, then add the third piece onto the now <em>existing</em> node, then rebuild each piece at that node with <code>api.engine.util.proposal.replaceSegment</code> so the engine writes the table.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: road ends sit off the node <span class="tags"><span class="tag tf3">TF3</span></span></h3>
