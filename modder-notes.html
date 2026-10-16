@@ -623,7 +623,7 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3 .con basics that bite <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <ul>
-          <li>Param values arrive as <strong>1-based</strong> indexes.</li>
+          <li>A <code>.con</code>'s menu params reach <code>updateFn</code> as <strong>0-based</strong> indexes of their <code>values</code> (seen: the Distribution Hub's Size, where 1 = the 2nd choice, Depot, and the Mega Warehouse's size, where the default index 1 built "500"). A DYNAMIC template's <code>createTemplateFn</code> gets them <strong>1-based</strong> (see the templates note below). Log the raw value once before relying on either.</li>
           <li>Model paths are <strong>case-sensitive</strong>; a wrong case gives the pink cube. Renaming a model breaks old saves ("N models are missing").</li>
           <li>Top-level <code>result.cost</code> is multiplied by <code>costs.infrastructureCostScale</code> (era inflation: ×1 in 1900, ×6 later).</li>
           <li>A maintenanceCost of 0 or missing becomes cost/6 a year; set 1 to make it negligible.</li>
