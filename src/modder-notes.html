@@ -832,6 +832,10 @@ end</pre>
         <p><code>getEntitiesWithComponent</code>/<code>forEachEntityWithComponent</code> refuse ASSET_GROUP ("Cannot loop over this component type"). <code>api.engine.util.octree.findEntitiesInCircle(Vec2f, r, ComponentType.ASSET_GROUP)</code> works. Note it is in <code>api.engine.util.octree</code>, not <code>api.engine.util</code>.</p>
         <p>LINE is refused the same way. List lines with <code>api.engine.system.lineSystem.getLinesForPlayer(api.engine.util.getPlayer())</code>, then read each with <code>getComponent(l, ComponentType.LINE)</code>. 2026-10-19, PYT Mega Warehouse (harbour mode).</p>
       </article>
+      <article class="note" data-g="tf2 tf3">
+        <h3>A ground face with no area kills the game <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>A <code>groundFaces</code> entry the engine can't triangulate is a <strong>fatal</strong> error, not a Lua error: <code>ground_tex_util::Fill: Assertion '!result.triangles.empty()' failed</code>. Seen with a 0.2 m strip whose corners ran backwards (y 170 &rarr; 169.8) -- a rounding gap between two measured plots. Build every face through one helper that sorts the corners anticlockwise (x0 &lt; x1, y0 &lt; y1) and skips anything under about 1 m either way. <code>pcall</code> does not save you: the build itself succeeds, the crash comes when the game paints it. 2026-10-20, PYT Mega Warehouse (upgrade plan paint).</p>
+      </article>
       <article class="note" data-g="tf3">
         <h3>TF3: spoiled stock -- counting it and binning only it <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>cargo_util.calculateStockConfigs(entity, max, calculateQuality, ...)</code> fills <code>numSpoiled</code> and <code>quality</code> (average time left, %) <strong>only when <code>calculateQuality</code> is true</strong>; with false they read 0 / nil and you'll think nothing has gone off. Per stock the source is <code>api.engine.util.cargo.getCargoQualityDataForStock(entity, stockId)</code> (<code>countBad</code>, <code>countTotal</code>, <code>averageQuality</code>).</p>
