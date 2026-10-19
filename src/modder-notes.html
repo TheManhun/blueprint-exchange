@@ -1179,6 +1179,11 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
   <section class="fn-sec" id="release">
     <h2>Workshop, mod.io &amp; release</h2>
     <div class="fn-list">
+      <article class="note" data-g="tf3">
+        <h3>Watch your comments -- and start the fix as soon as one arrives <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Most players who hit a bug comment once, then either wait a day or leave a thumbs-down. So we don't wait for someone to look. A small script reads every mod's page through the public mod.io API (<code>GET /games/{game}/mods/{mod}/comments</code>, read-only, the read key) every 10 minutes from a Windows scheduled task. Each new comment becomes a Windows pop-up, a line in a log file and an "inbox" page in the browser. The AI assistant keeps a live watch on that log, so a bug report reaches it within minutes.</p>
+        <p>What happens next: the game's own log (<code>stdout.txt</code>) is read first, the bug is reproduced, fixed and shipped. A short "thanks, we're on it" goes back about five minutes after the report, with a question if something is unclear. When the fix is live, a second reply says so, and the player is thanked by name in the release note. Seen: a Distance Signs report ("the sign keeps saying 'reading the roads'") was fixed and live about an hour later. One lesson: if the fix will be out within the hour, skip the "we're on it" and answer once with "fixed". Our early reply looked odd next to an update that had already arrived. And when you release a <em>new</em> mod, add it to the watch list, or its first comments go unseen. 2026-10-18 / 2026-10-20, the PYT family.</p>
+      </article>
       <article class="note" data-g="tf2">
         <h3>The folder suffix is the mod id: never rename it <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p>The <code>_1</code> folder suffix is the mod id stored in every save, and the major version. The game shows <code>&lt;folder number&gt;.&lt;minorVersion&gt;</code>. Put a "version 2" in the title only. Set <code>severityRemove = "WARNING"</code> if removing the mod loses placed objects.</p>
