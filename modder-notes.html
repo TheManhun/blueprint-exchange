@@ -1096,6 +1096,16 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>Windows must be wrapper recipes <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Register with <code>react.RegisterWrapperRecipe(name, builtin.Window, fn)</code> and open through <code>game_react_globals.getDefaultWindowApi().addSingletonWindow</code>. A plain <code>RegisterRecipe</code> crashed TF3: <code>Assertion id &gt;= 0 &amp;&amp; id &lt; (int)m_data-&gt;nodes.size() failed</code> while transforming WindowContainer. <code>initialX</code>/<code>initialY</code> (0-1) set the window's <strong>top-left</strong> corner.</p>
       </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>Rebuilding a player's track by script: hand-drawn track can break the BUILD limits, and a take-up can't be dry-run <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Data loss</span></span></h3>
+        <p>Seen 2026-10-22, BPX TF3 Clean in place. It took a hand-drawn junction up and rebuilt it. The game refused the neat version AND the original ("Too Much Incline"), and the player's track was gone.</p>
+        <ul>
+          <li><strong>Two sets of limits.</strong> Every TF3 track template (<code>infrastructure/track/*/</code>, in <code>base/content/infrastructure/track.zip</code>) has hard limits (<code>minCurveRadius = 40</code>, <code>maxSlope = 0.13</code>, <code>maxSlopeShape = 0.16</code>) and stricter BUILD limits (<code>minCurveRadiusBuild = 55</code>, <code>maxSlopeBuild = 0.085</code>). That's the same for simple, standard and high-speed track. The player's hand-drawn junction had 42 m curves and slopes up to 4.4%: legal on the map, but a script rebuild is judged harder. Don't assume what's on the map can be rebuilt.</li>
+          <li><strong>A take-up can't be dry-run.</strong> <code>makeProposalData</code> on a SimpleProposal with <code>streetProposal.edgesToRemove</code> plus new edges threw "Unknown exception", and the engine logged <code>StreetShapeFactory.cpp:979 ... Assertion '!cc.empty()' failed</code> (a stutter). A dry run of the new pieces while the old ones still stand says "Construction Not Possible" with 0 collisions. So there's no safe way to ask the game "would you accept this swap?" before doing it.</li>
+          <li><strong>Pieces tested one by one pass, yet the whole fails.</strong> Each piece dry-run on its own, away from the layout, drew no incline or curvature objection. The refusal comes from how pieces meet, at points and at the joins to the untouched track. An off-site copy can't reproduce those joins.</li>
+          <li><strong>So:</strong> never remove before a rebuild is certain, and make guards fail closed (an error or no answer means stop). The likely safe route is to change pieces the way the game's own track tool does, on the same nodes. TF2's Upgrade learned that by recording the game's builder (TF2 notes, Decision 321).</li>
+        </ul>
+      </article>
       <article class="note" data-g="tf3">
         <h3>A window that remembers: the pin, its place, the title bar's own slot, and a copy in the save <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>All seen in game on the PYT Minimap, 2026-10-22.</p>
