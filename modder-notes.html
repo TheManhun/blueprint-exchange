@@ -1469,6 +1469,10 @@ end</code></pre>
         <h3>TF3: 200 locals per file &mdash; the mod fails to START <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>TF3&#39;s Lua refuses a script whose main chunk declares more than 200 local variables (&quot;too many local variables (limit is 200) in main function&quot;), and the whole mod then fails at startup. Every <code>local x</code>, <code>local function f</code> and each name in <code>local a, b, c</code> counts, so a long single-file GUI script gets there without noticing (ours did at ~2,600 lines). Fix: keep state in one table (<code>local S = {}; S.cache = ...</code>) and split big files. Test with a real Lua 5.4 (<code>lupa.lua54</code>); newer Lua builds allow more and will not warn you. 2026-10-16, PYT Fleet Control (D39)</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: an open window can&#39;t be moved &mdash; and never change its <code>id</code> <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>We tried to keep a window&#39;s right edge in place when it grows (so a window parked in the top-right corner doesn&#39;t run off the screen). What we found: (1) redrawing the <code>builtin.Window</code> with a new <code>initialX</code> does NOT move a window that is already open &mdash; <code>initialX</code>/<code>initialY</code> only count at the first open; (2) closing and reopening it brings it back where it LAST was &mdash; the game keeps a window&#39;s spot by its <code>id</code> for the rest of the session; (3) reopening under a different <code>id</code> is <b>fatal</b>: <code>removeAllWindows</code> + <code>addSingletonWindow</code> in the same frame reuses the live component, and the game asserts <code>(comp-&gt;GetId())==(params-&gt;id)</code> (&quot;pytMiniMapWindow != pytMiniMapWindow_1&quot;). Keep a window&#39;s <code>id</code> a constant. There is no supported way to move an open window that we know of. 2026-10-22, PYT - Minimap (MM136)</p>
+      </article>
     </div>
   </section>
 
