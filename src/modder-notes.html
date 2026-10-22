@@ -1083,6 +1083,18 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>Windows must be wrapper recipes <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Register with <code>react.RegisterWrapperRecipe(name, builtin.Window, fn)</code> and open through <code>game_react_globals.getDefaultWindowApi().addSingletonWindow</code>. A plain <code>RegisterRecipe</code> crashed TF3: <code>Assertion id &gt;= 0 &amp;&amp; id &lt; (int)m_data-&gt;nodes.size() failed</code> while transforming WindowContainer. <code>initialX</code>/<code>initialY</code> (0-1) set the window's <strong>top-left</strong> corner.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>How the game's own track tool builds a junction (recorded from builder.proposalApply) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Recorded 2026-10-22 with a dev-only listener (the game script subscribes to <code>builder.proposalApply</code>; <code>guiHandleEvent</code> gets the name and its param). The param is a list of three things:</p>
+        <ul>
+          <li><code>param[1]</code> is the <strong>Proposal</strong> (userdata). Its <code>.proposal</code> is a <strong>StreetProposal</strong> with plain Lua tables <code>addedNodes</code>, <code>addedSegments</code>, <code>removedSegments</code> and <code>removedNodes</code> (each entry has <code>entity</code> and <code>comp</code>; segments also have <code>type</code>, 1 = track). <code>.toAdd</code> / <code>.toRemove</code> are the constructions.</li>
+          <li><code>param[2]</code> is the <strong>ProposalData</strong>: <code>errorState</code> (critical, messages), <code>costs</code>, <code>tpNetLinkProposal</code>. <code>param[3]</code> is the result entities.</li>
+          <li><strong>One request does the whole edit.</strong> Dragging a branch off a track removes the old pieces and nodes AND adds the new ones in the same proposal (e.g. 3 pieces and 2 nodes out, 1 node and 3 pieces in, plus 3 node configs). Removed entities are listed as <code>-(id + 1)</code>: piece 156536 shows as -156537.</li>
+          <li><strong>Points</strong> are one node where three pieces meet. The tool re-cuts the straight track at the branch, drops the in-between nodes, adds the junction node and its node configs (the lane links).</li>
+          <li><strong>Tangents match exactly across every node</strong>, including their height part, so slopes flow through the points with no kink. A tangent's length is about its piece's chord length.</li>
+          <li>The script API's <code>SimpleProposal.edgesToRemove</code> threw on the same kind of swap, but <code>api.engine.util.proposal.makeSegmentsRemoveProposal(pieces)</code> returns a FULL Proposal that <code>makeWorldBuildProposalCmd</code> accepts. The game's own shape: build the removal with that helper, add the new nodes / segments to its StreetProposal, dry-run, send once (all or nothing). (To be proven: BPX TF3, next.)</li>
+        </ul>
+      </article>
       <article class="note" data-g="tf3 crash">
         <h3>Rebuilding a player's track by script: hand-drawn track can break the BUILD limits, and a take-up can't be dry-run <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Data loss</span></span></h3>
         <p>Seen 2026-10-22, BPX TF3 Clean in place. It took a hand-drawn junction up and rebuilt it. The game refused the neat version AND the original ("Too Much Incline"), and the player's track was gone.</p>
