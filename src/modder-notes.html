@@ -1134,7 +1134,7 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
           <li>StyleSheet has no text alignment.</li>
           <li>Buttons are wider than set unless <code>padding</code> and <code>borderWidth</code> are <code>Vec4f(0,0,0,0)</code>.</li>
           <li>ScrollArea content must be <code>builtin.Component { layout = &hellip; }</code> ("ScrollArea does not accept a Layout as content"), and it needs a size. Scrolling was unreliable, so pages are safer.</li>
-          <li>TableLayout drew nothing; a BoxLayout of rows works.</li>
+          <li>TableLayout lines columns up when written as the game does: <code>builtin.TableLayout { rows = { builtin.Row { cells = { &hellip; } } } }</code> placed straight in a BoxLayout (an earlier attempt drew nothing). Every cell must be a widget, never a layout: a cell that is a <code>BoxLayout</code> reloads the whole UI with "TableLayout cell must not be a Layout". Wrap such a cell as <code>builtin.Component { layout = &hellip; }</code>. Seen 2026-10-24.</li>
         </ul>
       </article>
       <article class="note" data-g="tf3">
