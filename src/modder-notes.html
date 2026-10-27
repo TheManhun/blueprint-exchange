@@ -985,6 +985,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         </ul>
       </article>
       <article class="note" data-g="tf3">
+        <h3>TF3: another mod can replace <code>api.cmd</code> functions under you <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A subscribed mod's <code>postRunFn</code> assigned its own function over <code>api.cmd.makeVehicleSetLineCmd</code>, and that replacement was what <em>our</em> game script called. Its rule: a second "send to stop 0" of the same line within 5 s of the first becomes stop 1, then 2 (it means to spread a new line's vehicles). Our trucks sent home to stop 0 arrived with <code>stopIndex 1</code> and drove a lap. The log showed it only as a timeline: command at :01, "stop 1" at :05. When a command does something other than what you asked, suspect a wrapper before suspecting the engine: <code>print(api.cmd.makeVehicleSetLineCmd)</code> shows a Lua function instead of a C function. Make-functions only build the command object; the send is <code>api.cmd.sendCommand</code>. So a decoy call such as <code>makeVehicleSetLineCmd(v, -1, 1)</code> (result discarded) resets such a wrapper's burst state at no cost, and then your real call goes through untouched. Keep the guard generic and never read the other mod's files.</p>
+      </article>
+      <article class="note" data-g="tf3">
         <h3>TF3: whole-map octree queries spike <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>One whole-map circle (83,559 groups) took about 51 ms, with 50-93 ms spikes. Cutting the map into 2048 m patches, one per look, brought it to 4.6 ms per look (worst 34 ms, 1.1% of the time). "Invalid entity" for something removed mid-scan is normal.</p>
       </article>
