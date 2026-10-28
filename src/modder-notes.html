@@ -1275,6 +1275,11 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>Move non-mod files out before uploading <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>The uploader sends the whole folder: one mod went from 33 MB to 15 MB once art_source, documents, tools and .git were moved out. Move them <em>outside</em> staging_area (inside it, the game scans them as a mod), publish, then move them back with a move-only script. Keep <code>workshop_fileid.txt</code>, which is how the uploader updates the same item.</p>
       </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: the Validation Report refuses working files &mdash; and a hotfix ships from the release branch, not master <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Anything left in the mod folder that isn&#39;t game content fails TF3&#39;s Validation Report for PC <em>and</em> Console, one ERROR line per file: &ldquo;File extension is not allowed: .blend&rdquo; (also <code>.blend1</code>, <code>.fbx</code>, <code>.pyc</code>, <code>.tsv</code>&hellip;), so the upload can&#39;t go. Clear the folder down to what the game loads (<code>_content.json</code>, <code>_metadata</code>, <code>content</code>, <code>mod.json</code>, <code>strings.json</code>) before validating &mdash; seen 2026-10-29 when we skipped that step.</p>
+        <p>When a live version needs an urgent fix but master already holds unreleased work (and the staging folder holds someone&#39;s uncommitted art), don&#39;t switch branches inside it. With TF3 <strong>closed</strong>: fix on the release branch in a separate <code>git worktree</code>; <code>git archive</code> just the game files from it; move the whole master folder out of staging_area; unpack the archive under the same folder name; validate and upload; then, TF3 closed again, put master back. The upload carries the folder&#39;s <code>_metadata</code>, so mod.io updates the same mod. Afterwards tag the release, and push the page text from master&#39;s copy with the new note added. PYT - Pay Your Tolls 3.0.1, 2026-10-29.</p>
+      </article>
       <article class="note" data-g="tf2">
         <h3>Steam page details <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <ul>
