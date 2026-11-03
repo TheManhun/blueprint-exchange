@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT PC Early Access</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="PYT mods still waiting in mod.io's approval queue, for PC players to install by hand now: scanned, checksummed, the exact files mod.io will publish.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  /* PC early access (Epod 2026-11-04: 'offer the mods on tfbpx.com to PC people until mod.io approves them -- only the
+     ones in limbo'). The zips live on the site repo's GitHub release 'early-access'; each is scanned before it goes up. */
+  .ea-intro { max-width: 72ch; }
+  .ea-mod { padding: 16px 0; border-top: 1px solid var(--line); }
+  .ea-mod:first-of-type { border-top: 0; padding-top: 0; }
+  .ea-mod h3 { margin: 0 0 4px; font: 700 22px/1.2 "Barlow Condensed", sans-serif; letter-spacing: .02em; }
+  .ea-mod .ver { font: 600 13px/1 "JetBrains Mono", monospace; color: var(--accent); margin-left: 8px; }
+  .ea-mod p { margin: 4px 0 8px; max-width: 72ch; }
+  .ea-facts { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 6px 0 10px; font-size: 14px; color: var(--ink-2); }
+  .ea-facts .ok { color: var(--ok); font-weight: 600; }
+  .hash { display: block; font: 12px/1.4 "JetBrains Mono", monospace; color: var(--ink-2); overflow-wrap: anywhere; margin-top: 6px; }
+  .steps li { margin: 6px 0; }
+  code.path { font: 13px "JetBrains Mono", monospace; overflow-wrap: anywhere; }
+  .ea-drop { display: block; margin: 10px 0; padding: 22px 16px; border: 2px dashed var(--line); border-radius: 10px; text-align: center;
+    cursor: pointer; font-weight: 600; background: var(--ground); }
+  .ea-drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .ea-bar { display: block; height: 8px; margin: 12px auto 0; max-width: 420px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .ea-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s; }
+  .ea-result { margin-top: 6px; font-size: 15px; }
+  .ea-result .good { color: var(--ok); font-weight: 700; }
+  .ea-result .bad { color: var(--bad); font-weight: 700; }
+  .ea-result ul { margin: 6px 0 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+  <div class="page-head">
+    <h1>PYT PC Early Access</h1>
+    <p class="sub">Four PYT updates are waiting in mod.io&rsquo;s approval queue &mdash; some for over a week. PC players don&rsquo;t have to wait: install them by hand here. As soon as mod.io approves one, switch back to the normal subscription.</p>
+  </div>
+
+  <section class="panel ea-intro">
+    <h2>Why trust these files</h2>
+    <ul>
+      <li><strong>The same files mod.io will publish.</strong> Pay Your Tolls, Drone and A+ are the exact uploads waiting in mod.io&rsquo;s queue, downloaded back and checked against mod.io&rsquo;s own checksums. Blueprint Exchange 1.3.2 is the waiting 1.3.1 plus one crash fix.</li>
+      <li><strong>Scanned before they went up:</strong> Microsoft Defender, no threats found. Each has a VirusTotal report too, checked by about 70 antivirus engines.</li>
+      <li><strong>Check your download:</strong> each file&rsquo;s SHA-256 is listed below. In Windows PowerShell: <code class="path">Get-FileHash .\file.zip</code> &mdash; the two must match.</li>
+      <li><strong>PC only.</strong> Consoles can&rsquo;t install mods by hand; they get these the moment mod.io approves them.</li>
+    </ul>
+  </section>
+
+  <section class="panel" aria-label="The downloads">
+    <h2>The downloads</h2>
+
+    <div class="ea-mod">
+      <h3>PYT - A Plus (Advanced Auto Naming)<span class="ver">1.0.2</span></h3>
+      <p><strong>The whole mod &mdash; it isn&rsquo;t live on mod.io at all yet.</strong> The game&rsquo;s Auto-Rename button, plus a whole lot more: design your own line names by clicking pieces, let new lines name themselves in your style, number every vehicle after its line. Nothing changes until you say so.</p>
+      <div class="ea-facts"><span>0.3 MB</span><span>waiting since 30 Oct 2026</span><span class="ok">Defender: clean</span><span>VirusTotal: <a id="vt-aplus" href="#" target="_blank" rel="noopener">report</a></span></div>
+      <a class="btn primary" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_A_Plus_1.0.2_PC.zip">Download A+ 1.0.2</a>
+      <span class="hash">SHA-256 EB8052454A7F860881880EDA78F7A8085C890F7D2A74ECC1178883061D2BCF11</span>
+    </div>
+
+    <div class="ea-mod">
+      <h3>PYT - Blueprint Exchange<span class="ver">1.3.2</span></h3>
+      <p><strong>Everything from 1.3, which never cleared the queue</strong> &mdash; players on mod.io still have 1.2.2: an honest paste preview (amber = it fits, red only when something is really in the way), Undo takes back just the paste, signalled track included, Move keeps an industry&rsquo;s stock, one-step Delete, the keys work straight after Copy. <strong>Plus a crash fix:</strong> with Mod Bar installed, opening Blueprint Exchange from the PYT bar froze the game and closed it.</p>
+      <div class="ea-facts"><span>9.1 MB</span><span>1.3 waiting since 24 Oct 2026</span><span class="ok">Defender: clean</span><span>VirusTotal: <a id="vt-bpx" href="#" target="_blank" rel="noopener">report</a></span></div>
+      <a class="btn primary" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Blueprint_Exchange_1.3.2_PC.zip">Download Blueprint Exchange 1.3.2</a>
+      <span class="hash">SHA-256 16DD131D80D86E44C209B5FB9CD5080782884807714737EE6368946A0D857EFB</span>
+    </div>
+
+    <div class="ea-mod">
+      <h3>PYT - Pay Your Tolls<span class="ver">3.0.1</span></h3>
+      <p>On PC this plays the same as the live 3.0. The update fixes a crash on PlayStation when the PYT button is clicked &mdash; here so you can be on the version everyone will have.</p>
+      <div class="ea-facts"><span>17.9 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span>VirusTotal: <a id="vt-pyt" href="#" target="_blank" rel="noopener">report</a></span></div>
+      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.0.1_PC.zip">Download Pay Your Tolls 3.0.1</a>
+      <span class="hash">SHA-256 5F76FA8F8FA8117CE33B705D4CCF23486C8FB2C106C3FDBBDBD8D1E74A5BF8B1</span>
+    </div>
+
+    <div class="ea-mod">
+      <h3>PYT - Drone 2020<span class="ver">1.1.3</span></h3>
+      <p>On PC this plays the same as the live 1.1.2. The update carries the same PlayStation fix.</p>
+      <div class="ea-facts"><span>9.9 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span>VirusTotal: <a id="vt-drone" href="#" target="_blank" rel="noopener">report</a></span></div>
+      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Drone_1.1.3_PC.zip">Download Drone 1.1.3</a>
+      <span class="hash">SHA-256 0597D0C2DD9DFAA7DF20C30C56E503EA0DB4A149249CA586BA42E3C87BD3CBB4</span>
+    </div>
+  </section>
+
+  <!-- Epod 2026-11-04 ('when they download, a virus scan for their own peace of mind -- some system that's real but gives
+       them live feedback'): the browser fingerprints the player's own download (Web Crypto SHA-256, nothing uploaded)
+       against the files we scanned, then hands them that file's live VirusTotal report. Real checks only, no theatre. -->
+  <section class="panel ea-intro" id="check">
+    <h2>Check my download</h2>
+    <p>Drop the zip you downloaded here (or pick it). Your browser works out its fingerprint <strong>on your own PC</strong> &mdash; nothing is uploaded &mdash; and tells you whether it&rsquo;s byte for byte the file we scanned. Then see that file&rsquo;s live virus scan by about 70 antivirus engines on VirusTotal.</p>
+    <label class="ea-drop" id="drop" for="pick">
+      <input type="file" id="pick" accept=".zip" hidden>
+      <span id="dropText">Drop a PYT zip here, or click to choose it</span>
+      <span class="ea-bar" aria-hidden="true"><span id="bar"></span></span>
+    </label>
+    <div class="ea-result" id="result" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="panel ea-intro">
+    <h2>How to install (PC)</h2>
+    <ol class="steps">
+      <li><strong>Close Transport Fever 3.</strong></li>
+      <li><strong>Unsubscribe from that mod on mod.io</strong> (in the game&rsquo;s mod browser or on mod.io) &mdash; otherwise the game finds two copies. Your blueprints, settings and saves are kept: they don&rsquo;t live in the mod&rsquo;s folder.</li>
+      <li><strong>Unzip it into your TF3 mods folder.</strong> Each zip holds one folder (e.g. <code class="path">epod_blueprint_exchange_tf3_1</code>) &mdash; it goes straight into:<br>
+        <code class="path">C:\Program Files (x86)\Steam\userdata\&lt;your Steam number&gt;\3493540\local\mods\</code><br>
+        (Steam installed elsewhere? It&rsquo;s the <code class="path">userdata</code> folder of your Steam install; the number is the only folder inside it.)</li>
+      <li><strong>Start the game.</strong> The mod is in the mod list under its usual name; switch it on for your save as always.</li>
+    </ol>
+    <h3>When mod.io approves it</h3>
+    <p>Delete that folder from <code class="path">local\mods</code> and subscribe on mod.io again &mdash; from then on updates arrive by themselves. Your saves carry on as before.</p>
+    <p class="hint">Something not working? Leave a comment on the mod&rsquo;s mod.io page &mdash; we read them all.</p>
+  </section>
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+<script>
+// the files we scanned: SHA-256 -> what it is (keep in step with the hashes shown above)
+const FILES = {
+  "EB8052454A7F860881880EDA78F7A8085C890F7D2A74ECC1178883061D2BCF11": { name: "PYT - A Plus 1.0.2", vt: "vt-aplus" },
+  "16DD131D80D86E44C209B5FB9CD5080782884807714737EE6368946A0D857EFB": { name: "PYT - Blueprint Exchange 1.3.2", vt: "vt-bpx" },
+  "5F76FA8F8FA8117CE33B705D4CCF23486C8FB2C106C3FDBBDBD8D1E74A5BF8B1": { name: "PYT - Pay Your Tolls 3.0.1", vt: "vt-pyt" },
+  "0597D0C2DD9DFAA7DF20C30C56E503EA0DB4A149249CA586BA42E3C87BD3CBB4": { name: "PYT - Drone 2020 1.1.3", vt: "vt-drone" },
+};
+const vtUrl = h => "https://www.virustotal.com/gui/file/" + h.toLowerCase();
+// every VirusTotal link on the page goes to its file's live report, by fingerprint
+for (const [h, f] of Object.entries(FILES)) { const a = document.getElementById(f.vt); if (a) a.href = vtUrl(h); }
+
+const drop = document.getElementById("drop"), pick = document.getElementById("pick");
+const bar = document.getElementById("bar"), out = document.getElementById("result"), txt = document.getElementById("dropText");
+function show(html) { out.innerHTML = html; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+async function check(file) {
+  if (!file) return;
+  if (!window.crypto || !crypto.subtle) { show('<span class="bad">This browser can\'t work out fingerprints.</span> Use the PowerShell check above instead.'); return; }
+  txt.textContent = "Reading " + file.name + " ...";
+  bar.style.width = "0%"; show("");
+  // read with live progress (the hashing itself takes a moment after)
+  const buf = await new Promise((ok, fail) => {
+    const r = new FileReader();
+    r.onprogress = e => { if (e.lengthComputable) bar.style.width = Math.round(80 * e.loaded / e.total) + "%"; };
+    r.onload = () => ok(r.result); r.onerror = () => fail(r.error);
+    r.readAsArrayBuffer(file);
+  }).catch(() => null);
+  if (!buf) { txt.textContent = "Drop a PYT zip here, or click to choose it"; show('<span class="bad">Couldn\'t read that file.</span>'); return; }
+  txt.textContent = "Working out its fingerprint ...";
+  const d = await crypto.subtle.digest("SHA-256", buf);
+  const h = Array.from(new Uint8Array(d)).map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+  bar.style.width = "100%";
+  txt.textContent = "Drop another zip, or click to choose one";
+  const f = FILES[h];
+  if (f) {
+    show('<span class="good">&#10004; Identical to the ' + esc(f.name) + ' file we scanned.</span><ul>' +
+      '<li>Microsoft Defender: no threats found when it went up.</li>' +
+      '<li><a href="' + vtUrl(h) + '" target="_blank" rel="noopener">See its live scan by ~70 antivirus engines on VirusTotal</a></li>' +
+      '<li>Fingerprint (SHA-256): <span class="hash">' + h + '</span></li></ul>');
+  } else {
+    show('<span class="bad">&#10008; This is not one of our files.</span> It doesn\'t match anything we published &mdash; please don\'t install it. Download it again from this page.' +
+      '<ul><li>Its fingerprint: <span class="hash">' + h + '</span></li></ul>');
+  }
+}
+pick.addEventListener("change", () => check(pick.files[0]));
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => check(e.dataTransfer.files[0]));
+</script>
+</body>
+</html>
