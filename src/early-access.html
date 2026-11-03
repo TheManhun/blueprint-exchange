@@ -76,7 +76,7 @@
     <div class="ea-mod">
       <h3>PYT - Pay Your Tolls<span class="ver">3.0.1</span></h3>
       <p>On PC this plays the same as the live 3.0. The update fixes a crash on PlayStation when the PYT button is clicked &mdash; here so you can be on the version everyone will have.</p>
-      <div class="ea-facts"><span>17.9 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl">VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/5f76fa8f8fa8117ce33b705d4ccf23486c8fb2c106c3fdbbdbd8d1e74a5bf8b1" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.0.1_PC.zip" hidden></span></div>
+      <div class="ea-facts"><span>17.9 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl" hidden>VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/5f76fa8f8fa8117ce33b705d4ccf23486c8fb2c106c3fdbbdbd8d1e74a5bf8b1" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.0.1_PC.zip" hidden></span></div>
       <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.0.1_PC.zip">Download Pay Your Tolls 3.0.1</a>
       <span class="hash">SHA-256 5F76FA8F8FA8117CE33B705D4CCF23486C8FB2C106C3FDBBDBD8D1E74A5BF8B1</span>
     </div>
@@ -127,7 +127,7 @@ const FILES = {
   "5F76FA8F8FA8117CE33B705D4CCF23486C8FB2C106C3FDBBDBD8D1E74A5BF8B1": { name: "PYT - Pay Your Tolls 3.0.1", vt: "vt-pyt" },
   "0597D0C2DD9DFAA7DF20C30C56E503EA0DB4A149249CA586BA42E3C87BD3CBB4": { name: "PYT - Drone 2020 1.1.3", vt: "vt-drone" },
 };
-const VT_OK = new Set(['vt-pyt']); // files VirusTotal has (Epod uploads them; only those get a report link)
+const VT_OK = new Set([]); // files VirusTotal has (Epod uploads them; only those get a report link)
 const vtUrl = h => "https://www.virustotal.com/gui/file/" + h.toLowerCase();
 // every VirusTotal link on the page goes to its file's live report, by fingerprint
 for (const [h, f] of Object.entries(FILES)) { const a = document.getElementById(f.vt); if (a) a.href = vtUrl(h); }
