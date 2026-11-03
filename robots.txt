@@ -1,0 +1,16 @@
+# tfbpx.com -- open to search engines and AI assistants (Epod 2026-11-04): the modder notes are meant to be found
+User-agent: *
+Allow: /
+Disallow: /edit.html
+Disallow: /review.html
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://tfbpx.com/sitemap.xml

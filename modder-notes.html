@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Transport Fever Modder Field Notes</title>
+<title>Transport Fever 2 &amp; 3 Modder Field Notes</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="description" content="Deep Transport Fever 2 and 3 modding knowledge: engine rules, fatal assertions and the exact API calls that work, learned building Blueprint Exchange and the PYT mods.">
+<meta name="description" content="Hard-earned Transport Fever 2 and 3 modding knowledge: engine rules, fatal assertions and the exact API calls that work, from building Blueprint Exchange and the PYT mods.">
+<link rel="canonical" href="https://tfbpx.com/modder-notes.html">
+<meta property="og:title" content="Transport Fever 2 &amp; 3 Modder Field Notes">
+<meta property="og:description" content="The things the docs don't tell you about modding Transport Fever 2 and 3, learned the hard way.">
+<meta property="og:url" content="https://tfbpx.com/modder-notes.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="tfbpx.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
@@ -63,6 +68,7 @@
     <p class="eyebrow">Field notes &middot; work in progress &middot; not yet linked from the site</p>
     <h1>Transport Fever Modder Field Notes</h1>
     <p class="sub">The things the docs don't tell you about modding Transport Fever&nbsp;2 and&nbsp;3, learned the hard way.</p>
+    <p class="hint" id="fnViews" hidden></p>
   </div>
 
   <div class="fn-intro">
@@ -1576,6 +1582,19 @@ end</code></pre>
   search.addEventListener("input", apply);
   apply();
 })();
+</script>
+<script>
+// the visitor counter (Epod 2026-11-04): one per visitor per day, counted by Supabase's pyt_page_view; hidden if it can't answer
+fetch("https://aijqcrrcreectihaeqoc.supabase.co/rest/v1/rpc/pyt_page_view", {
+  method: "POST",
+  headers: { "apikey": "sb_publishable_R3nt2zIP1QF6iJiGfJ220A_zX3JTQ0_", "Authorization": "Bearer sb_publishable_R3nt2zIP1QF6iJiGfJ220A_zX3JTQ0_", "Content-Type": "application/json" },
+  body: JSON.stringify({ p_page: "modder-notes" }),
+}).then(r => r.ok ? r.json() : null).then(n => {
+  if (typeof n !== "number" || n < 1) return;
+  const el = document.getElementById("fnViews");
+  el.textContent = (n === 1 ? "1 modder has" : n.toLocaleString() + " modders have") + " read these notes.";
+  el.hidden = false;
+}).catch(() => {});
 </script>
 </body>
 </html>
