@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Factory Buffer -- Transport Fever 3</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Farms, factories and harbours: drop it beside one and it reads what it handles -- a locked store for every cargo, the line and the trucks to run it. 1,000 / 2,000 / 5,000 each.">
+<link rel="canonical" href="https://tfbpx.com/pyt-factory-buffer.html">
+<meta property="og:title" content="PYT - Factory Buffer -- Transport Fever 3">
+<meta property="og:description" content="Farms, factories and harbours: drop it beside one and it reads what it handles -- a locked store for every cargo, the line and the trucks to run it. 1,000 / 2,000 / 5,000 each.">
+<meta property="og:url" content="https://tfbpx.com/pyt-factory-buffer.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/2766/6464870/0.10.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">PYT mod &middot; Transport Fever 3 &middot; free on mod.io</p>
+    <h1>PYT - Factory Buffer</h1>
+    <p class="sub">Farms, factories and harbours: drop it beside one and it reads what it handles -- a locked store for every cargo, the line and the trucks to run it. 1,000 / 2,000 / 5,000 each.</p>
+  </div>
+  <div class="pm-hero"><div>
+<ul class="pm-meta"><li>Version 1.1.5</li><li>Tested on TF3 build 40425</li><li>Road</li><li>Industry</li></ul>
+<div class="pm-actions"><a class="btn" href="https://mod.io/g/transportfever3/m/pyt-factory-buffer">Get it on mod.io</a><a class="btn secondary" href="pyt-factory-buffer-history.html">Update history</a><a class="btn secondary" href="pyt-mods.html">All PYT mods</a></div>
+</div>
+<div><img src="https://image.modcdn.io/mods/2766/6464870/0.10.png" alt="PYT - Factory Buffer"></div>
+  </div>
+  <section class="pm-sec"><h2>What it does</h2>
+<p><strong>A locked store for every cargo the factory uses and makes, a line to the factory and the trucks to run it &mdash; set up for you the moment you place it. 1,000, 2,000 or 5,000 per cargo.</strong></p>
+<p><em>PYT - Factory Buffer. Protect Your Throughput. A PYT (Play Your Transport) mod by Epod &mdash; the little brother of <a href="https://mod.io/g/transportfever3/m/pyt-mega-warehouse">PYT - Mega Warehouse</a>.</em></p>
+<p>You know the moment. The livestock farm fills up with wool nobody collects, and the meat stops with it. Or the farm has spread so far your trains can't reach it any more. Factory Buffer is the small yard you drop beside the factory: it reads what the factory uses and makes, builds one locked store for each, and keeps the goods moving.</p>
+</section>
+  <section class="pm-sec"><h2>What you get</h2>
+<ul>
+<li><strong>It reads the factory</strong> &mdash; every cargo it uses and makes gets its own locked store, the booster included (tools, machines, fertilizer). A farm's wool can never block its meat again</li>
+<li><strong>It sets up the transport</strong> &mdash; a line between the factory and the buffer, with two general trucks from its own garage. Or just the line, or just the stores: you choose when you place it</li>
+<li><strong>Store size</strong> &mdash; 1,000, 2,000 or 5,000 per cargo, and the buildings grow with it</li>
+<li><strong>Drive-through truck bays</strong> &mdash; any truck line loads at any bay; the garage is a depot, so buy trucks right there</li>
+<li><strong>A railhead</strong> &mdash; trains, ships and trucks at any station in reach load from it and unload into it, like any warehouse</li>
+<li><strong>Harbours too</strong> &mdash; beside a port it stores what the ships bring in, and the tools and machines the oil platforms and fishing grounds want</li>
+<li><strong>The Storage split</strong> &mdash; slide space between cargos of one kind, lock the ones you want kept. Space moves; stock never gets thrown away</li>
+<li><strong>Porters until 1925</strong> &mdash; a man with a sack barrow works the sheds; on New Year 1925 the forklifts arrive, a third faster at the bays. Your stock stays put</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>How to start</h2>
+<ol>
+<li>Warehouses menu &gt; the <strong>PYT</strong> tab &gt; <strong>Factory Buffer</strong></li>
+<li>Pick the <strong>Store size</strong> and whether it should make the <strong>Buffer line</strong> and buy the trucks</li>
+<li>Drop it onto the road beside a factory or farm (within about 400 m). A few seconds later its stores stand behind the office, and the first trucks leave the garage</li>
+</ol>
+<p><strong>Mod developer's tip:</strong> keep the train out of reach of the factory, so it always keeps the produce fresh! With the station reaching the buffer but not the factory, everything flows farm &rarr; trucks &rarr; buffer &rarr; train, in order.</p>
+</section>
+  <section class="pm-sec"><h2>Works with pyt - minimap</h2>
+<p><a href="https://mod.io/g/transportfever3/m/pyt-mini-map"><img src="https://image.modcdn.io/mods/03c3/6467242/0.png" alt="PYT - Minimap" width="400"></a></p>
+<p><strong>Every Factory Buffer on your map at a glance &mdash; jump from buffer to buffer in one click, with the farms and factories they serve in view.</strong></p>
+<p>&#128073; <a href="https://mod.io/g/transportfever3/m/pyt-mini-map"><strong>Get PYT - Minimap</strong></a> &mdash; free, and it works with this mod straight away.</p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <em>Deutsch? Eine Kurzfassung auf Deutsch findet ihr weiter unten.</em></p>
+</section>
+  <section class="pm-sec"><h2>Big brother, little brother</h2>
+<p>Already running <a href="https://mod.io/g/transportfever3/m/pyt-mega-warehouse">PYT - Mega Warehouse</a>? That's the big one: a locked store for every cargo in the game, 500 to 5,000 each, with built-in truck stops since 1.3. Factory Buffer is for one factory at a time. They work side by side, and a buffer feeds a Mega Warehouse by train as happily as it feeds a factory.</p>
+</section>
+  <section class="pm-sec" style="max-width:none"><h2>Screenshots</h2>
+<div class="pm-gallery"><a href="https://image.modcdn.io/mods/2766/6464870/1.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/2766/6464870/1.2.png" alt=""></a><a href="https://image.modcdn.io/mods/2766/6464870/2.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/2766/6464870/2.2.png" alt=""></a><a href="https://image.modcdn.io/mods/2766/6464870/3.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/2766/6464870/3.2.png" alt=""></a></div>
+</section>
+  <section class="pm-sec"><details><summary><h2 style="display:inline">Auf Deutsch</h2></summary>
+<p><em>Getestet mit Transport Fever 3, Build 40423.</em></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.1.1: Die letzte Fracht eines Puffers auszuschalten lie&#223; das Spiel abst&#252;rzen &mdash; behoben, betroffene Spielst&#228;nde werden repariert.</strong></p>
+<ul lang="de">
+<li>Behoben: Alle aus (oder das Symbol) bei der letzten Fracht eines Puffers lie&#223; das Spiel abst&#252;rzen, sobald die Maus dar&#252;ber fuhr. Die Karte sagt jetzt, dass ein Puffer mindestens eine Fracht braucht &mdash; wer ihn nicht mehr will, rei&#223;t ihn ab</li>
+<li>Ein Spielstand von danach repariert sich selbst: der Puffer wird einmal mit seiner ersten Fracht wieder eingeschaltet neu gebaut</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.1: Ein gro&#223;es Update &mdash; mehr LKW-Buchten, die am Ort wachsen, ein 1960er-Look, ein Aus-Schalter je Fracht und jede Bucht mit 2-fachem Tempo.</strong></p>
+<ul lang="de">
+<li>LKW-Buchten 4, 8 oder 12 &mdash; beim Bauen w&#228;hlen (Auto folgt der Lagergr&#246;&#223;e) oder einen gebauten Puffer im Upgrade-Werkzeug vergr&#246;&#223;ern: Planen markiert den n&#246;tigen Boden mit grauem Kies, du r&#228;umst ihn, Wachsen baut &mdash; der Bestand bleibt</li>
+<li>Ein abgelehntes Upgrade nennt jetzt, was im Weg ist</li>
+<li>Der Blechschuppen von 1960: ab 1960 bekommen B&#252;ro und jedes Lager ihren 1960er-Look, einmal am Ort neu gebaut, der Bestand bleibt</li>
+<li>Aus je Fracht: auf das Symbol einer Fracht klicken, um sie nicht mehr zu lagern &mdash; ihr Platz geht an die anderen ihrer Art. Noch Bestand? 'Aus, sobald verschickt' oder 'Vernichten'. Alle aus / Alle an je Art</li>
+<li>LKW-Buchten laden und entladen jede Frachtart mit 2-fachem Tempo, wie die spezialisierten LKW-Stationen des Spiels &mdash; auch die LKW von PYT - Mixed Cargo</li>
+<li>Gabelstapler in den Lagern und B&#252;rofenster mit Jalousien und Vorh&#228;ngen, nachts beleuchtet</li>
+<li>PYT &mdash; Settings: der PYT-Knopf kann verblassen, bis die Maus dar&#252;ber ist, und eine Sprachwahl f&#252;r die PYT-Fenster</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.0.2: Auf der PS5 st&#252;rzte die Oberfl&#228;che ab &mdash; behoben.</strong></p>
+<ul lang="de">
+<li><strong>Kurz gesagt:</strong> Auf der PS5 das PYT-Neuigkeitenfenster bringt die Oberfl&#228;che nicht mehr zum Absturz. Auf dem PC &#228;ndert sich nichts</li>
+<li><strong>Danke:</strong> an Maxmadimus, dessen Meldung bei Pay Your Tolls den Fehler fand</li>
+</ul>
+<p><em>Germany is PYT's biggest supporter; here is the short version in German.</em></p>
+<p><strong>Danke, Deutschland!</strong> Die meisten PYT-Spieler kommen aus Deutschland &ndash; ihr seid unsere größten Unterstützer. Unser Deutsch ist nicht perfekt: Wenn euch ein holpriger Satz auffällt, schreibt es gern in die Kommentare.</p>
+<p><strong>Worum es geht:</strong> Setzt den <strong>Fabrikpuffer</strong> neben eine Fabrik oder einen Hof. Er liest, was die Fabrik verbraucht und herstellt, und baut für jede Ware ein eigenes festes Lager &ndash; die Wolle eines Hofs blockiert nie wieder sein Fleisch. Dazu richtet er die Linie zur Fabrik ein und kauft die Lkw (oder nur die Linie, oder nur die Lager &ndash; eure Wahl beim Bauen). Lagergröße 1.000, 2.000 oder 5.000 je Ware. Vier Lkw-Buchten, eine Garage als Depot. Züge und Schiffe an einer Station in Reichweite laden daraus und darin ab &ndash; ein Umschlagplatz für jede Industrie, die eure Züge nicht erreichen. Am Hafen lagert er, was die Schiffe bringen. Bis 1925 arbeiten Träger mit Sackkarren, ab 1925 Gabelstapler. Die Menüs sind auf Deutsch.</p>
+<p><strong>Tipp:</strong> Haltet den Zug außer Reichweite der Fabrik &ndash; dann läuft alles der Reihe nach durch den Puffer und bleibt frisch.</p>
+</details></section>
+  <section class="pm-sec"><h2>Latest update</h2>
+<p><strong>1.1.5 &mdash; YOUR BAYS, YOUR RULES</strong></p>
+<p>The buffer was so keen to help that it kept handing out bays nobody had asked for. We've had a word, and given it an off switch.</p>
+<p>In plain terms: alternative bays you switch off now stay off, a new switch on each buffer decides whether bays are handed out by themselves, the Upgrade box can slide a buffer, a crash after planning an upgrade is gone, and the station window names the bays properly.</p>
+<ul>
+<li><strong>Fixed:</strong> alternative bays came back after you switched them off &mdash; the buffer put them back when you opened its window, after an edit and after a load. Now a stop gets every bay only when you add it or make a new line, and the new bays after an Upgrade. Your &ldquo;don't use&rdquo; stays as you set it</li>
+<li><strong>New:</strong> <strong>Auto-assign alternative bays</strong> in the buffer's window, one switch per buffer, kept in your save &mdash; on: every line stopping there may use every truck bay, new lines and the new bays after an Upgrade too; off: every line keeps its own bay and nothing changes what you set in the line window. The same switch as Mega Warehouse 2.3.3</li>
+<li><strong>New:</strong> <strong>Move</strong> in the Upgrade box &mdash; slide the buffer Back, Forward, Left or Right, 10 or 50 m a press. It moves at once, stock and line kept; if its gates leave the road, draw a road to them. Grow then grows it where it stands</li>
+<li><strong>Fixed:</strong> a buffer with an upgrade planned (the grey ground) could crash the game on its next rebuild &mdash; the Plan step is gone. Grow checks the room itself: the first press shows the price, and if something stands in the way it says what. A plan left in a buffer from an older version is cleared by itself</li>
+<li><strong>Fixed:</strong> the station window called every bay &ldquo;Flatbed&rdquo; &mdash; they're &ldquo;All Cargo Types&rdquo;, as they always loaded</li>
+<li><strong>Thanks:</strong> to Stephen Spry, whose report on Mega Warehouse found it &mdash; the buffer shares the same bay system</li>
+</ul>
+<p><a href="pyt-factory-buffer-history.html">Full update history &rarr;</a></p></section>
+  <section class="pm-sec"><h2>More PYT mods</h2>
+<ul class="pm-related"><li><a href="pyt-pay-your-tolls.html">Pay Your Tolls</a></li><li><a href="pyt-blueprint-exchange.html">Blueprint Exchange</a></li><li><a href="pyt-drone.html">Drone</a></li><li><a href="pyt-harbour-city.html">Harbour City</a></li><li><a href="pyt-1940-home-front.html">1940 Home Front</a></li><li><a href="pyt-town-signs.html">Town Signs</a></li><li><a href="pyt-distance-signs.html">Distance Signs</a></li><li><a href="pyt-mega-warehouse.html">Mega Warehouse</a></li><li><a href="pyt-speed-signs.html">Speed Signs</a></li><li><a href="pyt-minimap.html">Minimap</a></li><li><a href="pyt-a-plus.html">A+ (Advanced Auto Naming)</a></li><li><a href="pyt-tram-doctor.html">Tram Doctor</a></li><li><a href="pyt-early-mixed-cargo-trucks.html">Early Mixed Cargo Trucks</a></li><li><a href="pyt-late-mixed-cargo-trucks.html">Late Mixed Cargo Trucks</a></li><li><a href="pyt-load-planner.html">Load Planner</a></li><li><a href="pyt-mixed-cargo-vanilla-conversion-kit.html">Mixed Cargo Vanilla Conversion Kit</a></li></ul></section>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="pyt-mods.html">PYT mods &amp; update notes</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+</body>
+</html>

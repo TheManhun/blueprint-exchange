@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Load Planner -- update history</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Every release of PYT - Load Planner, what changed and why.">
+<link rel="canonical" href="https://tfbpx.com/pyt-load-planner-history.html">
+<meta property="og:title" content="PYT - Load Planner -- update history">
+<meta property="og:description" content="Every release of PYT - Load Planner, what changed and why.">
+<meta property="og:url" content="https://tfbpx.com/pyt-load-planner-history.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/7d3a/6499491/0.4.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <p class="eyebrow">Update history</p>
+    <h1>PYT - Load Planner</h1>
+    <p class="sub">Every release, newest first. <a href="pyt-load-planner.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-load-planner">mod.io</a></p>
+  </div>
+  <div class="pm-hist">
+<details open><summary><span class="v">1.1.1</span>TRAMS GET THEIR OWN TAB</summary><div class="body"><p>Our trams were filed under Trucks. They lodged a complaint, and we have found them a tab of their own.</p>
+<p>In plain terms: Load Manager has a Trams tab, the window is wider, and a line of the game's own cargo trams now gets a plan card too.</p>
+<ul>
+<li><strong>New:</strong> a Trams tab in Load Manager, between Trucks and Trains &mdash; every freight tram line, the Kit's mixed trams and the game's own. Trucks shows road vehicles only</li>
+<li><strong>Fixed:</strong> a line of the game's own cargo trams had no plan card at all &mdash; it is planned like a truck line now, in Load Manager and in the line's own window</li>
+<li><strong>Wider:</strong> the window is 700 px (was 600), so all seven tabs show with their names and longer line names fit</li>
+<li>'Trams' in all 14 languages</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1.1: Load Manager hat einen Reiter Stra&szlig;enbahnen, das Fenster ist breiter, und auch eine Linie mit den G&uuml;terstra&szlig;enbahnen des Spiels bekommt jetzt ihre Plan-Karte.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> ein Reiter Stra&szlig;enbahnen im Load Manager, zwischen LKW und Z&uuml;ge &mdash; jede G&uuml;terstra&szlig;enbahn-Linie, die gemischten Bahnen des Kits wie die des Spiels. LKW zeigt nur noch Stra&szlig;enfahrzeuge</li>
+<li><strong>Behoben:</strong> eine Linie mit den G&uuml;terstra&szlig;enbahnen des Spiels hatte gar keine Plan-Karte &mdash; sie wird jetzt wie eine LKW-Linie geplant, im Load Manager und im Fenster der Linie</li>
+<li><strong>Breiter:</strong> das Fenster ist 700 px breit (vorher 600), alle sieben Reiter mit Namen, l&auml;ngere Liniennamen passen</li>
+<li>'Stra&szlig;enbahnen' in allen 14 Sprachen</li>
+</ul></div></div></details>
+<details><summary><span class="v">1.1</span>IT LIVES IN YOUR LINES</summary><div class="body"><p>Our planner had its own window, its own list and its own button. Players kept asking where the line they wanted was. So we moved in with the game: the planner now lives inside the game's own windows.</p>
+<p>In plain terms: open any freight line or vehicle &mdash; the <strong>PYT - Load Manager</strong> card is right there. Click a stop, slide, done.</p>
+<ul>
+<li><strong>A card in every freight line's window:</strong> each stop as a bar of cargo icons on their colours &mdash; what it carries at a glance. Click a stop to set it right there.</li>
+<li><strong>Pick cargo by icon:</strong> a row per kind (liquid, bulk, flatbed, goods) &mdash; bright = loads here, dark = off. Only what the vehicle can carry and the stop can supply (or the line brings in).</li>
+<li><strong>Empty is a cargo:</strong> leave room on purpose. A stop's share is what the vehicle <em>leaves</em> with &mdash; 100% meat at the farm, 50% at the first shop, the rest goes on to the next. Split one load over several stops.</li>
+<li><strong>It saves itself</strong> &mdash; no Apply button. Smart fill and Bin expired switch per stop, right in the card.</li>
+<li><strong>Every freight vehicle:</strong> mixed trucks, the game's own trucks (one cargo at a time &mdash; Empty still lets them drop part of a load), trains, ships, planes and helicopters. Trains and ships in whole wagons and holds, specialised wagons each in their own section, general ones in theirs.</li>
+<li><strong>Load Manager in every freight vehicle's window,</strong> and the PYT button opens one page with tabs &mdash; Trucks, Trains, Ships, Planes, Helicopters &mdash; every line with its cargo icons. Set loads right there too.</li>
+<li><strong>Trucks take up to 4 cargo types</strong> (one per compartment) &mdash; the card says so instead of letting a fifth wait at the stop forever.</li>
+<li><strong>Smart fill leaves a one-cargo stop alone</strong> &mdash; there was nothing to give its room to, it just sent vehicles away part empty.</li>
+<li><strong>Mismatched trains:</strong> the card spots a line whose trains are built differently and offers to put each build on its own line.</li>
+<li>The (i) on the page explains it all &mdash; and hides a small sketch from the PYT team.</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1: Der Planer wohnt jetzt in den Fenstern des Spiels &mdash; jede Frachtlinie und jedes Fahrzeug hat die Karte PYT - Load Manager. Haltestelle anklicken, schieben, fertig. Leer ist eine eigene Fracht: eine Ladung auf mehrere Halte verteilen.</em></p></div></div></details>
+  </div>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>

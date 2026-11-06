@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Load Planner -- Transport Fever 3</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Plan what each stop loads with sliders -- trucks, trains wagon by wagon, ships and planes hold by hold. Smart fill, Bin expired, and Truck rules for PYT mixed cargo trucks: any cargo in any slot, or one slot per cargo kind.">
+<link rel="canonical" href="https://tfbpx.com/pyt-load-planner.html">
+<meta property="og:title" content="PYT - Load Planner -- Transport Fever 3">
+<meta property="og:description" content="Plan what each stop loads with sliders -- trucks, trains wagon by wagon, ships and planes hold by hold. Smart fill, Bin expired, and Truck rules for PYT mixed cargo trucks: any cargo in any slot, or one slot per cargo kind.">
+<meta property="og:url" content="https://tfbpx.com/pyt-load-planner.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/7d3a/6499491/0.4.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <p class="eyebrow">PYT mod &middot; Transport Fever 3 &middot; free on mod.io</p>
+    <h1>PYT - Load Planner</h1>
+    <p class="sub">Plan what each stop loads with sliders -- trucks, trains wagon by wagon, ships and planes hold by hold. Smart fill, Bin expired, and Truck rules for PYT mixed cargo trucks: any cargo in any slot, or one slot per cargo kind.</p>
+  </div>
+  <div class="pm-hero"><div>
+<ul class="pm-meta"><li>Version 1.1.1</li><li>Tested on TF3 build 40425</li></ul>
+<div class="pm-actions"><a class="btn" href="https://mod.io/g/transportfever3/m/pyt-load-planner">Get it on mod.io</a><a class="btn secondary" href="pyt-load-planner-history.html">Update history</a><a class="btn secondary" href="pyt-mods.html">All PYT mods</a></div>
+</div>
+<div><img src="https://image.modcdn.io/mods/7d3a/6499491/0.4.png" alt="PYT - Load Planner"></div>
+  </div>
+  <section class="pm-sec"><h2>What it does</h2>
+<p><strong>No more clicking + on every cargo, every box at 100%, and trying to remember how much room is left. Open any freight line: its stops show what they load, and a click lets you share the vehicle out with sliders &mdash; it saves itself.</strong></p>
+
+<p>&#9654; <strong>Get the whole set in one click:</strong> <a href="https://mod.io/g/transportfever3/c/pyt-mixed-cargo-collection"><strong>PYT - Mixed Cargo Collection</strong></a> &mdash; the Early and Late trucks, the Vanilla Conversion Kit (59 base-game vehicles) and Load Planner.</p>
+
+<p><em>Version 1.1.1</em></p>
+</section>
+  <section class="pm-sec"><h2>How it works</h2>
+<ul>
+<li><strong>Open a freight line</strong> (or a vehicle, or the PYT page): every stop shows what it loads.</li>
+<li><strong>Click a stop:</strong> click cargo icons to switch them on, then a slider per cargo &mdash; moving one moves the others, the vehicle always adds up. The <strong>padlock</strong> keeps one where it is; <strong>Balance</strong> splits evenly.</li>
+<li><strong>Empty</strong> has its own slider: the room the vehicle leaves the stop with.</li>
+<li><strong>It saves itself,</strong> using the game's own stop settings &mdash; a second after your last change.</li>
+<li><strong>Trains, ships and aircraft</strong> step in whole wagons and holds: a section per kind of wagon, and the general wagons with their own sliders.</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>Smart fill &amp; bin expired</h2>
+<ul>
+<li><strong>Smart fill</strong> (per stop): your plan is the aim, but as each vehicle pulls in, a cargo short in stock gives its room to cargoes that have plenty &mdash; what the drop-off wants first. Nothing in stock? Your plan stays exactly as you set it.</li>
+<li><strong>Bin expired</strong> (per stop): clears cargo that has run out of delivery time from the warehouses and outputs the stop reaches, so vehicles load fresh.</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>Works with</h2>
+<ul>
+<li><strong>Any freight vehicle,</strong> base game or modded &mdash; trucks, trains, ships, planes, helicopters.</li>
+<li>Mixed cargo trucks: <a href="https://mod.io/g/transportfever3/m/pyt-early-mixed-cargo-trucks"><strong>PYT - Early Mixed Cargo Trucks</strong></a>, <a href="https://mod.io/g/transportfever3/m/pyt-late-mixed-cargo-trucks"><strong>PYT - Late Mixed Cargo Trucks</strong></a>, or the <a href="https://mod.io/g/transportfever3/m/pyt-mixed-cargo-vanilla-truck-conversion-kit"><strong>PYT - Mixed Cargo Vanilla Conversion Kit</strong></a>.</li>
+<li>Using <strong>Compartments for Vanilla vehicle</strong> (by Maik_Chaos)? Load Manager plans its mixed planes, ships and helicopters too &mdash; every compartment a slider, right in the line window.</li>
+<li><strong>14 languages</strong>, following the PYT Language setting (or the game's).</li>
+</ul>
+</section>
+  <section class="pm-sec" style="max-width:none"><h2>Screenshots</h2>
+<div class="pm-gallery"><a href="https://image.modcdn.io/mods/7d3a/6499491/1.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/7d3a/6499491/1.2.png" alt=""></a><a href="https://image.modcdn.io/mods/7d3a/6499491/2.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/7d3a/6499491/2.2.png" alt=""></a><a href="https://image.modcdn.io/mods/7d3a/6499491/3.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/7d3a/6499491/3.2.png" alt=""></a><a href="https://image.modcdn.io/mods/7d3a/6499491/4.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/7d3a/6499491/4.2.png" alt=""></a><a href="https://image.modcdn.io/mods/7d3a/6499491/5.2.png"><img loading="lazy" src="https://image.modcdn.io/mods/7d3a/6499491/5.2.png" alt=""></a></div>
+</section>
+  <section class="pm-sec"><details><summary><h2 style="display:inline">Auf Deutsch</h2></summary>
+<ul lang="de">
+<li>Die Karte <strong>PYT - Load Manager</strong> steht im Fenster jeder Frachtlinie und jedes Fahrzeugs: Haltestelle anklicken, Fracht per Symbol w&auml;hlen, mit Schiebereglern aufteilen &mdash; es speichert sich selbst. F&uuml;r Lkw, Z&uuml;ge (Waggon f&uuml;r Waggon), Schiffe, Flugzeuge und Hubschrauber.</li>
+<li><strong>Leer</strong> ist eine eigene Fracht: der Platz, mit dem das Fahrzeug abf&auml;hrt &mdash; so verteilt man eine Ladung auf mehrere Halte.</li>
+<li>Smart-Bef&uuml;llung passt jede Ladung an den Vorrat an; abgelaufene Fracht kann automatisch entsorgt werden.</li>
+<li>Das ganze Fenster auf Deutsch (und in 13 weiteren Sprachen).</li>
+</ul>
+</details></section>
+  <section class="pm-sec"><h2>Latest update</h2>
+<p><strong>1.1.1 &mdash; TRAMS GET THEIR OWN TAB</strong></p>
+<p>Our trams were filed under Trucks. They lodged a complaint, and we have found them a tab of their own.</p>
+<p>In plain terms: Load Manager has a Trams tab, the window is wider, and a line of the game's own cargo trams now gets a plan card too.</p>
+<ul>
+<li><strong>New:</strong> a Trams tab in Load Manager, between Trucks and Trains &mdash; every freight tram line, the Kit's mixed trams and the game's own. Trucks shows road vehicles only</li>
+<li><strong>Fixed:</strong> a line of the game's own cargo trams had no plan card at all &mdash; it is planned like a truck line now, in Load Manager and in the line's own window</li>
+<li><strong>Wider:</strong> the window is 700 px (was 600), so all seven tabs show with their names and longer line names fit</li>
+<li>'Trams' in all 14 languages</li>
+</ul>
+<p><a href="pyt-load-planner-history.html">Full update history &rarr;</a></p></section>
+  <section class="pm-sec"><h2>More PYT mods</h2>
+<ul class="pm-related"><li><a href="pyt-pay-your-tolls.html">Pay Your Tolls</a></li><li><a href="pyt-blueprint-exchange.html">Blueprint Exchange</a></li><li><a href="pyt-drone.html">Drone</a></li><li><a href="pyt-harbour-city.html">Harbour City</a></li><li><a href="pyt-1940-home-front.html">1940 Home Front</a></li><li><a href="pyt-town-signs.html">Town Signs</a></li><li><a href="pyt-distance-signs.html">Distance Signs</a></li><li><a href="pyt-mega-warehouse.html">Mega Warehouse</a></li><li><a href="pyt-speed-signs.html">Speed Signs</a></li><li><a href="pyt-factory-buffer.html">Factory Buffer</a></li><li><a href="pyt-minimap.html">Minimap</a></li><li><a href="pyt-a-plus.html">A+ (Advanced Auto Naming)</a></li><li><a href="pyt-tram-doctor.html">Tram Doctor</a></li><li><a href="pyt-early-mixed-cargo-trucks.html">Early Mixed Cargo Trucks</a></li><li><a href="pyt-late-mixed-cargo-trucks.html">Late Mixed Cargo Trucks</a></li><li><a href="pyt-mixed-cargo-vanilla-conversion-kit.html">Mixed Cargo Vanilla Conversion Kit</a></li></ul></section>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>

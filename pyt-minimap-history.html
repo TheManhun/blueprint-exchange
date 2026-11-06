@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Minimap -- update history</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Every release of PYT - Minimap, what changed and why.">
+<link rel="canonical" href="https://tfbpx.com/pyt-minimap-history.html">
+<meta property="og:title" content="PYT - Minimap -- update history">
+<meta property="og:description" content="Every release of PYT - Minimap, what changed and why.">
+<meta property="og:url" content="https://tfbpx.com/pyt-minimap-history.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/03c3/6467242/0.11.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">Update history</p>
+    <h1>PYT - Minimap</h1>
+    <p class="sub">Every release, newest first. <a href="pyt-minimap.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-mini-map">mod.io</a></p>
+  </div>
+  <div class="pm-hist">
+<details open><summary><span class="v">1.5</span>MADE TO MEASURE</summary><div class="body"><p>Ten66 asked why their long, thin map came in a square box with dark curtains drawn either side. We took the curtains down.</p>
+<p>In plain terms: on a 1:2 or 1:3 map the minimap now takes the map's own shape -- no dark borders, and the map shown bigger -- and the window follows it.</p>
+<ul>
+<li><strong>New:</strong> a map that isn't square fills the minimap &mdash; its short side at full size, its long side running on. No more dark borders, and a 1:2 or 1:3 map is shown up to two or three times as big</li>
+<li><strong>New:</strong> the window follows the map's shape &mdash; on a narrow map the buttons wrap into extra rows, the layer icons get a little smaller and the title shortens to MM. S, M and L keep their sizes, and the window always stays on the screen</li>
+<li><strong>Better:</strong> the window no longer hops when you pick a size or fold it &mdash; it only moves when it would run off the screen</li>
+<li>A square map looks just as before</li>
+<li><strong>Thanks:</strong> to Ten66 for the idea</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.5: Auf einer 1:2- oder 1:3-Karte nimmt die Minikarte jetzt die Form der Karte an &ndash; keine dunklen R&auml;nder, die Karte gr&ouml;&szlig;er &ndash; und das Fenster passt sich an.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> eine nicht quadratische Karte f&uuml;llt die Minikarte &ndash; die kurze Seite in voller Gr&ouml;&szlig;e, die lange l&auml;uft weiter. Keine dunklen R&auml;nder mehr, und eine 1:2- oder 1:3-Karte wird bis zu zwei- oder dreimal so gro&szlig; gezeigt</li>
+<li><strong>Neu:</strong> das Fenster folgt der Form der Karte &ndash; auf einer schmalen Karte rutschen die Kn&ouml;pfe in zus&auml;tzliche Reihen, die Ebenen-Symbole werden etwas kleiner und der Titel wird zu MM. S, M und L behalten ihre Gr&ouml;&szlig;en, und das Fenster bleibt immer auf dem Bildschirm</li>
+<li><strong>Besser:</strong> das Fenster springt nicht mehr, wenn du eine Gr&ouml;&szlig;e w&auml;hlst oder es einklappst &ndash; es bewegt sich nur, wenn es sonst aus dem Bildschirm laufen w&uuml;rde</li>
+<li>Eine quadratische Karte sieht aus wie bisher</li>
+<li><strong>Danke:</strong> an Ten66 f&uuml;r die Idee</li>
+</ul></div></div></details>
+<details><summary><span class="v">1.4.2</span>QUIET PLEASE</summary><div class="body"><p>Our NEW button bounced like a puppy at the door, shoving every button beside it. It has been rehomed. And clicking the PYT row could pull the rug out from under the game &mdash; the rug is now nailed down.</p>
+<p>In plain terms: clicking the PYT row no longer crashes the game, the NEWS button is gone, and PYT &mdash; Settings no longer stutters on big maps.</p>
+<ul>
+<li><strong>Fixed:</strong> clicking the PYT icon or a tile in its row could crash the game &mdash; the button was taken away while the game was still handling the click (seen together with the Mod Bar mod)</li>
+<li><strong>Gone:</strong> the NEWS button in the PYT row. It bounced and pushed other buttons around, and you told us you didn't want it &mdash; we listen</li>
+<li><strong>Tidier:</strong> the PYT row shows one settings cog (some setups showed two), and the 'fade until the mouse is over it' setting is always in PYT &mdash; Settings</li>
+<li><strong>Smoother:</strong> with PYT &mdash; Settings open on a big map, its performance meter no longer stalls the game every 10 seconds (it could make the sound flutter) &mdash; it reads once when you open it, then every 2 minutes</li>
+<li><strong>Thanks:</strong> to QuickNiq for the crash log and honest feedback, and to the Mod Bar players who spoke up</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.4.2: Ein Klick in die PYT-Leiste lässt das Spiel nicht mehr abstürzen, der NEWS-Knopf ist weg, und PYT &mdash; Settings ruckelt auf großen Karten nicht mehr.</em></p></div></div></details>
+<details><summary><span class="v">1.4.1</span>NO MORE HICCUPS</summary><div class="body"><p>Every ten seconds, the PYT family stopped everything to check a stopwatch nobody was looking at. MrHamstring spent a whole evening tracking it down &mdash; thank you.</p>
+<p>In plain terms: less work in the background on big maps &mdash; one cause of a short freeze every few seconds is fixed.</p>
+<ul>
+<li><strong>Fixed:</strong> every 10 seconds the PYT engine read other PYT mods' saved data for its performance meter, even with the meter closed &mdash; on a big save that is slow work. It now reads only while the meter in PYT &mdash; Settings is open</li>
+<li><strong>Smoother:</strong> the map still reads itself again about once a minute, but now only redraws when something on it changed. The Refresh button still updates everything at once</li>
+<li><strong>Tip:</strong> think of the map like a web browser &mdash; 20 pages open and any computer slows down. Every layer you switch on is more for the map to plot, so show what you're focused on right now and switch the rest off. Big maps will thank you</li>
+<li><strong>Thanks:</strong> to <strong>MrHamstring</strong>, who switched mods off one by one to find it &mdash; reports like this improve the mods for everyone, so keep them coming</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.4.1: Eine Ursache für kurzes Einfrieren alle paar Sekunden ist behoben &mdash; die PYT-Engine liest die Daten anderer PYT-Mods nur noch bei offenem Leistungsmesser, und die Karte zeichnet sich nur neu, wenn sich etwas geändert hat. Danke an MrHamstring!</em></p></div></div></details>
+<details><summary><span class="v">1.4</span>SMOOTH OPERATOR</summary><div class="body"><p>The map used to redraw the whole country every time a bus moved. It has learned to look up from the paper only for the bits that changed.</p>
+<p>In plain terms: the map draws in small slices and reuses what didn't change, so big maps stay smooth &mdash; and it shares one time budget with the rest of the PYT family.</p>
+<ul>
+<li>Smoother on big maps: the map is built a slice per frame, and when only the vehicle dots or the plan move, the map underneath is kept, not redrawn</li>
+<li>One budget for the family: the map's drawing counts in PYT &mdash; Settings' performance meter and follows its 'Time per frame' (Light / Balanced / Full) and 'How often jobs run'</li>
+<li>PYT &mdash; Settings: the PYT button can fade until your mouse is over it, and a Language choice for the PYT windows</li>
+</ul></div></details>
+<details><summary><span class="v">1.3.2</span>CONSOLE FRIENDLY</summary><div class="body"><p>Our windows politely asked the PlayStation for a close button. The PlayStation doesn't have one, took offence and walked out &mdash; taking your whole interface with it. We've had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> on PS5, the PYT news and Settings windows no longer crash the interface (the map window was already fine). On PC nothing changes</li>
+<li><strong>Thanks:</strong> to <strong>Maxmadimus</strong>, whose Pay Your Tolls report found it</li>
+</ul></div></details>
+<details><summary><span class="v">1.3.1</span>THE LONG AND THE SHORT OF IT</summary><div class="body"><p>Busted: our developer only ever tested on square maps. Very square indeed. modiorange plays on a map five times longer than it is wide &mdash; and thanks to them, the square developer has been sent to stand in the corner.</p>
+<p>In plain terms: on a rectangular map (1:2, 1:3, or longer), the Minimap now shows the map at its true shape instead of stretching it into a square.</p>
+<ul>
+<li><strong>Fixed:</strong> rectangular maps were stretched into a square &mdash; the map now keeps its real shape, centred in the window, with the area beyond the map's edge shown dark</li>
+<li><strong>Fixed:</strong> town borders stop at the map's edge</li>
+<li>Click the dark area and the camera flies to the nearest edge of the map. Square maps look exactly as before</li>
+<li><strong>Thanks:</strong> to modiorange, who spotted it on a 1:5 map &mdash; reports like this improve the mods for everyone, so keep them coming</li>
+</ul></div></details>
+<details><summary><span class="v">1.3</span>JUST AS YOU LEFT IT</summary><div class="body"><p>Ten66 set the map up just so, saved the game, loaded it again &mdash; and the map had forgotten everything. A goldfish has a better memory. Not any more.</p>
+<p>In plain terms: every choice you make in the map is now saved with your game, and a new Vehicles switch shows where a line's vehicles are right now.</p>
+<ul>
+<li><strong>Fixed:</strong> Population, and every other switch, came back off after saving and loading &mdash; now every choice is saved with your game: the layers, the open panel, Name / Population / Borders / Wanted goods, every filter, the zoom and the tolls' sizing</li>
+<li><strong>New:</strong> Vehicles: On &mdash; in Lines, click a line under Your lines to show it on its own, then switch Vehicles on: its vehicles appear as white dots where they are right now, updated every few seconds</li>
+<li><strong>Fixed:</strong> dragged right up to the top edge of the screen, the map's fold and size buttons stopped responding &mdash; the map now never sits higher than where they still work</li>
+<li><strong>Thanks:</strong> to Ten66, who found the forgetful Population switch &mdash; reports like this improve the mods for everyone, so keep them coming</li>
+</ul></div></details>
+<details><summary><span class="v">1.2.1</span>TOP OF THE WORLD</summary><div class="body"><p>Parked it in the top-right corner? It turns out 'top right' means top AND right. The map knows that now.</p>
+<p>In plain terms: a map parked at the top of the screen stays at the top when it grows or shrinks -- it only moves sideways as far as it must.</p>
+<ul>
+<li><strong>Fixed:</strong> parked at the top, growing or shrinking the map no longer dropped it down the screen &mdash; it keeps its height and only slides sideways</li>
+<li><strong>Thanks:</strong> to everyone who parks their map in the corner &mdash; we do too</li>
+</ul></div></details>
+<details><summary><span class="v">1.2</span>THE MAP THAT COULD NOT MAP</summary><div class="body"><p>Park it in the top-right corner, open a panel &mdash; and off it wandered, right over the edge of your screen. A map that couldn&rsquo;t find its own way. We&rsquo;ve had a word with it. Again.</p>
+<ul>
+<li><strong>Stays on screen</strong> &mdash; parked on the right or at the bottom, a panel, the card or a bigger size now moves it back into view (one quick blink), and folding it puts it back where you parked it</li>
+<li>Never while you drag it &mdash; it only steps in after a click on one of its own buttons</li>
+<li>It sits right on top of the game&rsquo;s bottom bar, and remembers spots in the bottom-right corner too</li>
+<li><strong>Size S:</strong> town names show once you zoom in (x2 and up)</li>
+<li><strong>In plain terms:</strong> the window no longer runs off the edge of the screen when it grows</li>
+</ul>
+<p>&#9733; <strong>Thank you, QuantumBlue1!</strong> You spotted it running off the edge and explained it perfectly &mdash; it took us a few tries, and here it is.</p></div></details>
+<details><summary><span class="v">1.1</span>A CLOSER LOOK</summary><div class="body"><p><img src="https://tfbpx.com/pyt-minimap-folded.png" alt="PYT - Minimap folded down to just the map" width="360"></p>
+<blockquote><p><strong><em>&ldquo;It looks small, but it packs a punch &mdash; everything you could want and more.&rdquo;</em></strong></p></blockquote>
+<p>We gave the map a magnifying glass &mdash; and a memory. It now remembers where you left it, which is more than we can say for our car keys.</p>
+<ul>
+<li><strong>Zoom in</strong> &mdash; the &minus; and + or your mouse wheel, from x2 up to x12, right where you point; zoomed in, the map follows your camera</li>
+<li><strong>Town info card</strong> &mdash; point at a town for its population, the goods it wants (supplied / wanted), how happy it is and its worst line; switch it off in Towns &gt; Info card</li>
+<li><strong>Wanted goods</strong> under each town&rsquo;s name (Towns &gt; Wanted goods): orange = short of it, blue = supplied</li>
+<li><strong>The capital wears a crown</strong>; town names are shortened when zoomed out, so they stop piling up</li>
+<li><strong>Pin it</strong> and ESC leaves it open; it reopens where you left it, and <strong>your save remembers</strong> its size, place, pin and whether it was open</li>
+<li><strong>Fold it to just the map</strong> with the arrow in the title bar</li>
+<li><strong>Click a PYT piece</strong> (a toll, a warehouse&hellip;) and the camera flies right down to it</li>
+<li>Pay Your Tolls 2.9&rsquo;s map button opens the Minimap on your tolls</li>
+<li>Sketches start hidden &mdash; the Sketches icon shows them</li>
+<li><strong>In plain terms:</strong> zoom, a town card, a remembered window and a cleaner look &mdash; plus 1.0.1&rsquo;s log fix, finished</li>
+</ul>
+<p>&#9733; <strong>Thank you, QuantumBlue1!</strong> Pinning past ESC, the map reopening where you left it and the shorter town names were your ideas. Keep them coming &mdash; that&rsquo;s how PYT gets better.</p></div></details>
+<details><summary><span class="v">1.0.1</span>A QUIETER MAP</summary><div class="body"><p>Our map was keeping a diary of every frame it drew &mdash; in the game&rsquo;s log, all of it. We&rsquo;ve had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> the Minimap no longer fills the game&rsquo;s log with warnings while it&rsquo;s open (worst on the S size or with the icons folded) &mdash; the log stays small and long sessions run smoother</li>
+<li>No other changes &mdash; zoom and more are coming in 1.1</li>
+</ul>
+<hr></div></details>
+  </div>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="pyt-mods.html">PYT mods &amp; update notes</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+</body>
+</html>

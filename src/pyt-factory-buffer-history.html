@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Factory Buffer -- update history</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Every release of PYT - Factory Buffer, what changed and why.">
+<link rel="canonical" href="https://tfbpx.com/pyt-factory-buffer-history.html">
+<meta property="og:title" content="PYT - Factory Buffer -- update history">
+<meta property="og:description" content="Every release of PYT - Factory Buffer, what changed and why.">
+<meta property="og:url" content="https://tfbpx.com/pyt-factory-buffer-history.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/2766/6464870/0.10.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <p class="eyebrow">Update history</p>
+    <h1>PYT - Factory Buffer</h1>
+    <p class="sub">Every release, newest first. <a href="pyt-factory-buffer.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-factory-buffer">mod.io</a></p>
+  </div>
+  <div class="pm-hist">
+<details open><summary><span class="v">1.1.5</span>YOUR BAYS, YOUR RULES</summary><div class="body"><p>The buffer was so keen to help that it kept handing out bays nobody had asked for. We've had a word, and given it an off switch.</p>
+<p>In plain terms: alternative bays you switch off now stay off, a new switch on each buffer decides whether bays are handed out by themselves, the Upgrade box can slide a buffer, a crash after planning an upgrade is gone, and the station window names the bays properly.</p>
+<ul>
+<li><strong>Fixed:</strong> alternative bays came back after you switched them off &mdash; the buffer put them back when you opened its window, after an edit and after a load. Now a stop gets every bay only when you add it or make a new line, and the new bays after an Upgrade. Your &ldquo;don't use&rdquo; stays as you set it</li>
+<li><strong>New:</strong> <strong>Auto-assign alternative bays</strong> in the buffer's window, one switch per buffer, kept in your save &mdash; on: every line stopping there may use every truck bay, new lines and the new bays after an Upgrade too; off: every line keeps its own bay and nothing changes what you set in the line window. The same switch as Mega Warehouse 2.3.3</li>
+<li><strong>New:</strong> <strong>Move</strong> in the Upgrade box &mdash; slide the buffer Back, Forward, Left or Right, 10 or 50 m a press. It moves at once, stock and line kept; if its gates leave the road, draw a road to them. Grow then grows it where it stands</li>
+<li><strong>Fixed:</strong> a buffer with an upgrade planned (the grey ground) could crash the game on its next rebuild &mdash; the Plan step is gone. Grow checks the room itself: the first press shows the price, and if something stands in the way it says what. A plan left in a buffer from an older version is cleared by itself</li>
+<li><strong>Fixed:</strong> the station window called every bay &ldquo;Flatbed&rdquo; &mdash; they're &ldquo;All Cargo Types&rdquo;, as they always loaded</li>
+<li><strong>Thanks:</strong> to Stephen Spry, whose report on Mega Warehouse found it &mdash; the buffer shares the same bay system</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1.5: Ausweichbuchten, die du abschaltest, bleiben jetzt aus, ein neuer Schalter je Puffer entscheidet, ob Buchten von selbst vergeben werden, der Upgrade-Kasten kann einen Puffer verschieben, ein Absturz nach dem Planen eines Upgrades ist behoben, und das Stationsfenster benennt die Buchten richtig.</em></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> Ausweichbuchten kamen zur&uuml;ck, nachdem du sie abgeschaltet hattest &ndash; der Puffer setzte sie wieder, wenn du sein Fenster &ouml;ffnetest, nach einer &Auml;nderung und nach dem Laden. Jetzt bekommt ein Halt jede Bucht nur noch, wenn du ihn hinzuf&uuml;gst oder eine neue Linie anlegst, und die neuen Buchten nach einem Upgrade. Dein &bdquo;nicht nutzen&ldquo; bleibt</li>
+<li><strong>Neu:</strong> <strong>Ausweichbuchten automatisch zuweisen</strong> im Fenster des Puffers, ein Schalter je Puffer, im Spielstand gespeichert &ndash; an: jede Linie, die dort h&auml;lt, darf jede Lkw-Bucht nutzen, auch neue Linien und die neuen Buchten nach einem Upgrade; aus: jede Linie beh&auml;lt ihre eigene Bucht, und nichts &auml;ndert, was du im Linienfenster einstellst. Derselbe Schalter wie in Mega Warehouse 2.3.3</li>
+<li><strong>Neu:</strong> <strong>Verschieben</strong> im Upgrade-Kasten &ndash; schiebe den Puffer zur&uuml;ck, nach vorn, links oder rechts, 10 oder 50 m pro Klick. Er bewegt sich sofort, Lager und Linie bleiben; verlassen die Tore die Stra&szlig;e, zieh eine Stra&szlig;e zu ihnen. &bdquo;Vergr&ouml;&szlig;ern&ldquo; baut ihn dann dort gr&ouml;&szlig;er</li>
+<li><strong>Behoben:</strong> ein Puffer mit geplantem Upgrade (der graue Boden) konnte das Spiel beim n&auml;chsten Umbau abst&uuml;rzen lassen &ndash; der Planungsschritt ist weg. &bdquo;Vergr&ouml;&szlig;ern&ldquo; pr&uuml;ft den Platz selbst: der erste Klick zeigt den Preis, und wenn etwas im Weg steht, sagt es was. Ein Plan aus einer &auml;lteren Version wird von selbst entfernt</li>
+<li><strong>Behoben:</strong> das Stationsfenster nannte jede Bucht &bdquo;Pritsche&ldquo; &ndash; sie hei&szlig;en &bdquo;Alle Frachtarten&ldquo;, wie sie schon immer luden</li>
+<li><strong>Danke:</strong> an Stephen Spry, dessen Meldung zu Mega Warehouse es aufgedeckt hat &ndash; der Puffer nutzt dasselbe Buchtensystem</li>
+</ul></div></div></details>
+<details><summary><span class="v">1.1.4</span>RAILS, WIRES AND THE RIGHT TURN</summary><div class="body"><p>Our art department said 'soon'. It turns out 'soon' meant Wednesday.</p>
+<p>In plain terms: the yard has real tram rails and overhead wire now, the garage's Buy Vehicles window works again on tram buffers, and every line that stops at a buffer gets all its bays as alternatives by itself.</p>
+<ul>
+<li><strong>New:</strong> rails through the whole yard &mdash; into the bays, through the shed, round every bend &mdash; and, with Electric tram, our own poles (cast iron until 1960, galvanised after) and wire at the game's own height. The road's tram track joins straight onto them at the gates</li>
+<li><strong>New:</strong> the way out curves. With 8 or 12 bays the exit lane used to meet the gate at a hard right angle; now it sweeps round in two curves, the wire hung over both</li>
+<li><strong>Fixed:</strong> on a buffer with Tram track, the garage's Buy Vehicles list was empty and could restart the interface. The garage is the trucks' depot (buses and trucks); trams come from a tram depot, as in the game</li>
+<li><strong>Fixed:</strong> 'every bay as an alternative' never worked &mdash; our line-reading call returns nothing in TF3, and we're sorry it took a player to show us. Now it does, with no checking in the background: a line that stops at a buffer gets every other bay the moment you add the stop (from any window), open the buffer's window or finish an Upgrade &mdash; and once when a save loads</li>
+<li><strong>1960:</strong> the yard is asphalt with wheel tracks along the lanes, like Mega Warehouse's</li>
+<li>A buffer already placed: open it, Upgrade &rarr; Tram track, and it is rebuilt in place with the rails &mdash; stock, line and split kept</li>
+<li><strong>Thanks:</strong> to jhughes for the trams, and to everyone who told us the alternatives weren't setting</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1.4: Echte Stra&szlig;enbahnschienen und Oberleitung im ganzen Hof, der Fahrzeugkauf in der Garage eines Stra&szlig;enbahn-Puffers geht wieder, und jede Linie am Puffer bekommt alle Buchten als Alternativen von selbst.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> Schienen durch den ganzen Hof &mdash; in die Buchten, durch den Schuppen, um jede Kurve &mdash; und bei Elektrisch eigene Masten (Gusseisen bis 1960, danach verzinkt) und Fahrdraht in der H&ouml;he des Spiels. Das Gleis der Stra&szlig;e schlie&szlig;t an den Toren direkt an</li>
+<li><strong>Neu:</strong> die Ausfahrt f&auml;hrt in B&ouml;gen. Bei 8 oder 12 Buchten traf die Ausfahrtsspur das Tor im rechten Winkel; jetzt zwei B&ouml;gen, der Draht dar&uuml;ber geh&auml;ngt</li>
+<li><strong>Behoben:</strong> bei einem Puffer mit Stra&szlig;enbahngleis war die Fahrzeugkauf-Liste der Garage leer und konnte die Oberfl&auml;che neu starten. Die Garage ist das Depot der LKW (Busse und LKW); Stra&szlig;enbahnen kommen aus einem Stra&szlig;enbahndepot, wie im Spiel</li>
+<li><strong>Behoben:</strong> 'jede Bucht als Alternative' hat nie funktioniert &mdash; jetzt schon, ohne Pr&uuml;fung im Hintergrund: eine Linie am Puffer bekommt alle anderen Buchten, sobald du den Halt setzt (aus jedem Fenster), das Fenster des Puffers &ouml;ffnest oder ein Upgrade abschlie&szlig;t &mdash; und einmal beim Laden</li>
+<li><strong>1960:</strong> der Hof ist Asphalt mit Fahrspuren entlang der Spuren, wie beim Mega Warehouse</li>
+<li>Ein schon gebauter Puffer: &ouml;ffnen, Upgrade &rarr; Stra&szlig;enbahngleis, und er wird am Ort mit Schienen neu gebaut &mdash; Bestand, Linie und Aufteilung bleiben</li>
+<li><strong>Danke:</strong> an jhughes f&uuml;r die Stra&szlig;enbahnen und an alle, die uns sagten, dass die Alternativen nicht gesetzt wurden</li>
+</ul></div></div></details>
+<details><summary><span class="v">1.1.3</span>DING DING!</summary><div class="body"><p>A player asked why our buffer wouldn't let trams in. We had no good answer, so we gave it rails instead.</p>
+<p>In plain terms: cargo trams can now use the Factory Buffer, <strong>fully working today</strong> &mdash; pick <strong>Tram track</strong> in its build settings. Only the decorative rails inside the yard are still to come.</p>
+<ul>
+<li><strong>New:</strong> Tram track &mdash; None / Tram / Electric tram, in the buffer's build settings. The gates get the game's own tram track (with wires for Electric), and the truck bays take cargo trams too. <strong>Trams work fully right now</strong>: in, load or unload at a bay, out. Only the decorative rails inside the yard are still to come &mdash; until then the trams run on the ground there. Those rails are with our art department (they said &lsquo;soon&rsquo;, which in art department means &lsquo;soon&rsquo;)</li>
+<li>A buffer you have already built: open it, <strong>Upgrade &rarr; Tram track</strong>. It is rebuilt in place &mdash; stock, line and split kept</li>
+<li><strong>Fixed:</strong> with Factory Buffer as your only PYT mod, PYT &mdash; Settings (language, the fading PYT button) was missing &mdash; it's there now</li>
+<li><strong>Thanks:</strong> to jhughes, for asking &mdash; questions like that are why this community rocks</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1.3: Güterstraßenbahnen können jetzt den Factory Buffer nutzen &mdash; voll funktionsfähig, einfach &bdquo;Straßenbahngleis&ldquo; in den Baueinstellungen wählen. Nur die Zierschienen im Hof kommen noch.</em></p></div></div></details>
+<details><summary><span class="v">1.1.2</span>QUIET PLEASE</summary><div class="body"><p>Our NEW button bounced like a puppy at the door, shoving every button beside it. It has been rehomed. And clicking the PYT row could pull the rug out from under the game &mdash; the rug is now nailed down.</p>
+<p>In plain terms: clicking the PYT row no longer crashes the game, the NEWS button is gone, and PYT &mdash; Settings no longer stutters on big maps.</p>
+<ul>
+<li><strong>Fixed:</strong> on big saves the game could freeze for about a second every 10 seconds, even with no window open &mdash; the same fix as PYT - Minimap 1.4.1</li>
+<li><strong>Fixed:</strong> clicking the PYT icon or a tile in its row could crash the game &mdash; the button was taken away while the game was still handling the click (seen together with the Mod Bar mod)</li>
+<li><strong>Gone:</strong> the NEWS button in the PYT row. It bounced and pushed other buttons around, and you told us you didn't want it &mdash; we listen</li>
+<li><strong>Tidier:</strong> the PYT row shows one settings cog (some setups showed two), and the 'fade until the mouse is over it' setting is always in PYT &mdash; Settings</li>
+<li><strong>Smoother:</strong> with PYT &mdash; Settings open on a big map, its performance meter no longer stalls the game every 10 seconds (it could make the sound flutter) &mdash; it reads once when you open it, then every 2 minutes</li>
+<li><strong>Thanks:</strong> to QuickNiq for the crash log and honest feedback, and to the Mod Bar players who spoke up</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.1.2: Ein Klick in die PYT-Leiste lässt das Spiel nicht mehr abstürzen, der NEWS-Knopf ist weg, und PYT &mdash; Settings ruckelt auf großen Karten nicht mehr.</em></p></div></div></details>
+<details><summary><span class="v">1.1.1</span>ONE FOR THE ROAD</summary><div class="body"><p>Turns out a buffer with nothing to buffer gave the game an existential crisis. It now always keeps at least one cargo, just to stay sane.</p>
+<p>In plain terms: switching off the last cargo in a buffer crashed the game. Fixed &mdash; and saves where it happened are repaired.</p>
+<ul>
+<li>Fixed: All off (or the icon) on the last cargo of a buffer crashed the game when the mouse passed over it. The card now says a buffer needs at least one cargo &mdash; to stop using one, remove it</li>
+<li>A save made after that happened is repaired by itself: the buffer is rebuilt once with its first cargo back on</li>
+</ul></div></details>
+<details><summary><span class="v">1.1</span>ROOM TO GROW</summary><div class="body"><p>The Factory Buffer spent a month watching its big brother get bigger bays, an Off switch and a forklift licence. It has stopped sulking.</p>
+<p>In plain terms: a big update &mdash; more truck bays you can grow in place, a 1960 look, an Off switch per cargo, and every bay at 2x speed.</p>
+<ul>
+<li>Truck bays 4, 8 or 12 &mdash; pick them when you build (Auto follows the store size), or grow a placed buffer in its Upgrade toolbox: Plan marks the ground it needs in grey gravel, you clear it, Grow builds it &mdash; stock kept</li>
+<li>A refused upgrade now says what's in the way, instead of just 'Construction Not Possible'</li>
+<li>The 1960 tin shed: from 1960 the office and every store take their 1960 look, rebuilt in place once, stock kept</li>
+<li>Off per cargo: click a cargo's icon in the split to stop storing it &mdash; its space goes to the others of its kind. Holding stock? 'Off once shipped out' or 'Destroy'. All off / All on for a whole kind</li>
+<li>Truck bays load and unload at 2x for every kind of cargo, like the game's specialised truck stations &mdash; PYT - Mixed Cargo trucks included</li>
+<li>Forklifts in the stores, and office windows with blinds and curtains, lit at night</li>
+<li>PYT &mdash; Settings: the PYT button can fade until your mouse is over it, and a Language choice for the PYT windows</li>
+</ul></div></details>
+<details><summary><span class="v">1.0.2</span>CONSOLE FRIENDLY</summary><div class="body"><p>Our windows politely asked the PlayStation for a close button. The PlayStation doesn't have one, took offence and walked out &mdash; taking your whole interface with it. We've had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> on PS5, the PYT news window no longer crashes the interface. On PC nothing changes</li>
+<li><strong>Thanks:</strong> to <strong>Maxmadimus</strong>, whose Pay Your Tolls report found it</li>
+</ul></div></details>
+<details><summary><span class="v">1.0.1</span>THE ICON SITS STILL</summary><div class="body"><p>Our PYT icon got a little too excited about its news and wouldn&#39;t stop bouncing. We&#39;ve had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> The PYT icon at the top of the screen no longer pulses. The NEW tile only moves inside the PYT row when you open it, and stops once you&#39;ve read the news.</li>
+</ul>
+<hr></div></details>
+  </div>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>

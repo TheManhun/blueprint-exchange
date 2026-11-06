@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Pay Your Tolls -- Transport Fever 3</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Road tolls for TF3: drop a Toll Sign, Toll Gantry or Toll Plaza on any road and every car, bus and truck that passes pays into your Finances -- with toll keepers, slow zones and the town&#x27;s name over the door.">
+<link rel="canonical" href="https://tfbpx.com/pyt-pay-your-tolls.html">
+<meta property="og:title" content="PYT - Pay Your Tolls -- Transport Fever 3">
+<meta property="og:description" content="Road tolls for TF3: drop a Toll Sign, Toll Gantry or Toll Plaza on any road and every car, bus and truck that passes pays into your Finances -- with toll keepers, slow zones and the town&#x27;s name over the door.">
+<meta property="og:url" content="https://tfbpx.com/pyt-pay-your-tolls.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/09e9/6415619/0.27.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">PYT mod &middot; Transport Fever 3 &middot; free on mod.io</p>
+    <h1>PYT - Pay Your Tolls</h1>
+    <p class="sub">Road tolls for TF3: drop a Toll Sign, Toll Gantry or Toll Plaza on any road and every car, bus and truck that passes pays into your Finances -- with toll keepers, slow zones and the town&#x27;s name over the door.</p>
+  </div>
+  <div class="pm-hero"><div>
+<ul class="pm-meta"><li>Version 3.0.1</li><li>Tested on TF3 build 40425</li><li>Road</li><li>Road Construction</li></ul>
+<div class="pm-actions"><a class="btn" href="https://mod.io/g/transportfever3/m/pay-your-tolls">Get it on mod.io</a><a class="btn secondary" href="pyt-pay-your-tolls-history.html">Update history</a><a class="btn secondary" href="pyt-mods.html">All PYT mods</a></div>
+</div>
+<div><img src="https://image.modcdn.io/mods/09e9/6415619/0.27.png" alt="PYT - Pay Your Tolls"></div>
+  </div>
+  <section class="pm-sec"><h2>What it does</h2>
+<blockquote><p><strong><em>"The first fully functional road toll script in Transport Fever history!"</em></strong></p></blockquote>
+<p>&#9989; <strong>Checked with TF3's first stability update (build 40420) &mdash; 9 October 2026</strong></p>
+<p>&#11088; <strong>Top 50 most popular TF3 mods on mod.io</strong> &mdash; #41 of 1,995, reached within two weeks of the game's release (12 October 2026)</p>
+<p>&#10067; <strong>Many people ask: will tolls change the way traffic chooses its route?</strong> Not currently. Transport Fever 3's route choice doesn't take our toll charges into account, and our research hasn't found a supported way to make drivers avoid a road because of its price. For now, the practical way to take traffic off a road is to offer a faster alternative. (You could cut the speed on your whole motorway instead&hellip; but that kills the immersion!) <strong>We're open to suggestions:</strong> if you've cracked this last piece of the puzzle, tell us in the comments &mdash; we'll build it in as fast as we can, and credit you for it.</p>
+</section>
+  <section class="pm-sec"><h2>How to start</h2>
+<ol>
+<li>Road menu &gt; the PYT tab &gt; Toll Sign, Toll Gantry or Toll Plaza</li>
+<li>Drop it on a busy road &mdash; it snaps into place and picks its own size</li>
+<li>Click it, or PYT in the top bar, to watch it earn</li>
+</ol>
+</section>
+  <section class="pm-sec"><h2>Works with pyt - minimap</h2>
+<p><a href="https://mod.io/g/transportfever3/m/pyt-mini-map"><img src="https://image.modcdn.io/mods/03c3/6467242/0.png" alt="PYT - Minimap" width="400"></a></p>
+<p><strong>See every toll on your map &mdash; and which one earns you the most cash. Size them by cars or by income, this month, this year or all time, and click any toll to fly straight to it.</strong></p>
+<p>&#128073; <a href="https://mod.io/g/transportfever3/m/pyt-mini-map"><strong>Get PYT - Minimap</strong></a> &mdash; free, and it works with this mod straight away.</p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <em>Deutsch? Eine Kurzfassung auf Deutsch findet ihr weiter unten.</em></p>
+</section>
+  <section class="pm-sec"><h2>What you can build</h2>
+<p><em>(road menu &gt; the PYT tab)</em></p>
+<ul>
+<li><strong>Toll Sign</strong> &mdash; in the style of its era: a 1900 gas lantern, a 1940 electric lamp, a 1980 light bar, a 2020 sign with glowing letters. It snaps beside the road, or choose Free to place it anywhere &mdash; even on another toll booth model to make it collect tolls.</li>
+<li><strong>Toll Gantry</strong> &mdash; a Wooden Turnpike before 1980, then the steel gantry (pick its era any time). It snaps across any road at the right size &mdash; one-way or two-way, 1 to 3 lanes &mdash; and follows when the road is widened.</li>
+<li><strong>Toll Plaza</strong> &mdash; a stretch of road that is the toll, in the style you choose, staffed by toll keepers.</li>
+<li><strong>Entry / Exit Signs</strong> &mdash; TOLL AHEAD and THANK YOU boards: an entry, an exit, or one on each side.</li>
+<li><strong>Lights</strong> &mdash; the plazas' own lamps, for any road; the twin lamp sits on the centre line.</li>
+</ul>
+<p>A Toll Sign or Gantry costs $25,000 and $500 a year to run; a Toll Plaza $50,000 and $1,000 a year &mdash; scaled to the era like everything else.</p>
+</section>
+  <section class="pm-sec"><h2>What’s in the box — 169 models in a 16 mb download</h2>
+<ul>
+<li><strong>24 toll plazas</strong> &mdash; 1900 timber plazas in all six sizes (one-way and two-way, 1 to 3 lanes), the 1900 Toll Barn, the 1900 Grand Gateway and the 1980 Toll Way canopy in three sizes each, plus 9 &ldquo;under construction&rdquo; plazas</li>
+<li><strong>6 toll gantries</strong> &mdash; the 1980 steel gantry in five sizes and the snap-on gantry</li>
+<li><strong>9 toll signs</strong> &mdash; 1900, 1940, 1980 and 2020, with kerbside versions</li>
+<li><strong>70 entry / exit boards</strong> &mdash; TOLL AHEAD and THANK YOU in every era, each with its speed limit</li>
+<li><strong>54 lights</strong> &mdash; 6 lamp designs (single and twin), each in era, warm-yellow and white light at three brightnesses</li>
+<li><strong>Barriers and arrows</strong> &mdash; the Timber Rail, a white barrier nose and three chevron markers</li>
+</ul>
+<p>Add <strong>PYT - Harbour City</strong> and <strong>PYT - 1940 Home Front</strong> and their plazas, gantries, signs, lamps and barriers join the same buttons.</p>
+</section>
+  <section class="pm-sec"><h2>Click any toll</h2>
+<p>Every toll has its own window: a live camera view, cars and trucks counted, money earned (lifetime, this year, this month), its price, its speed and its road signs &mdash; and for a Toll Plaza, its keepers.</p>
+</section>
+  <section class="pm-sec"><h2>The Pay Your Tolls window</h2>
+<p><em>(PYT in the top bar &gt; the Pay Your Tolls tab)</em></p>
+<ul>
+<li>Every toll with a picture of its type, its cars, trucks / buses and revenue</li>
+<li>Click a price or a speed to change it; sort by any column; rename a toll or jump the camera to it</li>
+<li>Tolls close together on one road show as one toll point</li>
+<li>Move a toll's name and takings to a new one</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>The council</h2>
+<p>When a town widens a road over your sign, the council puts up a new one at the kerb, at its own cost.</p>
+</section>
+  <section class="pm-sec"><h2>Settings</h2>
+<p><em>(the gear under the toll list)</em></p>
+<ul>
+<li>Price per car and per truck / bus</li>
+<li><strong>Traffic multiplier (x1-500)</strong> &mdash; the game simulates only a share of real traffic, so each vehicle's toll is multiplied (default: $3 x 200 = $600 a car). Set x1 for realistic low tolls.</li>
+<li>Toll slow zones on / off</li>
+<li><strong>Performance tuner</strong> &mdash; Light / Balanced / Accurate &mdash; with live graphs of what the mod costs your game</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>Smooth by design</h2>
+<p>We went to great lengths to keep your game running smoothly. Big jobs &mdash; upgrading your tolls, road works, new signs &mdash; are spread out a little at a time, so a change might not happen instantly, but it happens at the best moment and your world keeps running smoothly. Watch what the mod costs your game, live, in Settings.</p>
+</section>
+  <section class="pm-sec"><h2>Fair tolls</h2>
+<p>Each vehicle pays once every 20 seconds, at whichever toll it reaches first &mdash; so stacking tolls earns nothing extra. People walking past don't count.</p>
+</section>
+  <section class="pm-sec"><h2>Languages</h2>
+<p>English, Deutsch, Fran&ccedil;ais, Русский, Svenska and Українська &mdash; thank you Tuvka, Zeni, Kristina and Wenche! (German and French are auto-translated &mdash; corrections welcome.)</p>
+</section>
+  <section class="pm-sec"><h2>Earlier updates</h2>
+
+</section>
+  <section class="pm-sec"><h2>Help us improve</h2>
+<p>Something not working, or missing a feature you'd love? Leave a comment &mdash; every one gets read, and fixes usually land within days.</p>
+<p><strong>Follow TheEpod on mod.io</strong> (click the name at the top of this page) to hear about new PYT mods first.</p>
+<p><em>Version 3.0.1 &mdash; PYT &mdash; Created by Epod, built by the world.</em></p>
+<p>&#128211; <strong>A gift to all my fellow modders:</strong> <a href="https://tfbpx.com/modder-notes.html"><strong>Transport Fever Modder Field Notes</strong></a> &mdash; everything we have learned building these mods, free for anyone to use.</p>
+</section>
+  <section class="pm-sec"><h2>Watch it</h2>
+<p>A big thank-you to <strong>SeniacTWO</strong> for featuring Pay Your Tolls in <em>5 MORE MODS YOU NEED in Transport Fever 3</em>! Watch him discover the mod and put those toll booths to work. &#128513;</p>
+<p><a href="https://www.youtube.com/watch?v=qsIivJDUnSQ&amp;t=335s"><img src="https://img.youtube.com/vi/qsIivJDUnSQ/hqdefault.jpg" alt="SeniacTWO - 5 MORE MODS YOU NEED in Transport Fever 3" width="400"></a></p>
+<p><img src="https://tfbpx.com/pyt-youtube.png" alt="YouTube" width="28"> <a href="https://www.youtube.com/watch?v=qsIivJDUnSQ&amp;t=335s"><strong>Watch the Pay Your Tolls segment (starts at 5:35)</strong></a></p>
+<p>Thanks for the feature, SeniacTWO &mdash; it's fantastic seeing PYT out in the wild!</p>
+<p>A big thank-you to <strong>Chris &amp; Ingo</strong> for a whole episode on Pay Your Tolls! (in German)</p>
+<p><a href="https://www.youtube.com/watch?v=E_VVE6voHJQ"><img src="https://img.youtube.com/vi/E_VVE6voHJQ/hqdefault.jpg" alt="Chris &amp; Ingo - Modvorstellung - Mautgeb&uuml;hren" width="400"></a></p>
+<p><img src="https://tfbpx.com/pyt-youtube.png" alt="YouTube" width="28"> <a href="https://www.youtube.com/watch?v=E_VVE6voHJQ"><strong>Watch: Modvorstellung &mdash; Mautgeb&uuml;hren (Chris &amp; Ingo)</strong></a></p>
+<p>&#128161; <strong>Tip:</strong> Toll Ways size themselves &mdash; drop one on any two-way road and it matches it (1 to 3 lanes each way), and follows when you widen or narrow the road.</p><a class="btn secondary pm-video" href="https://www.youtube.com/watch?v=fTOk_sIi0Lg">&#9654; Video 1</a>
+</section>
+  <section class="pm-sec" style="max-width:none"><h2>Screenshots</h2>
+<div class="pm-gallery"><a href="https://image.modcdn.io/mods/09e9/6415619/1.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/1.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/2.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/2.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/3.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/3.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/4.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/4.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/5.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/5.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/6.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/6.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/7.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/7.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/8.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/8.1.png" alt=""></a><a href="https://image.modcdn.io/mods/09e9/6415619/9.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/09e9/6415619/9.1.png" alt=""></a></div>
+</section>
+  <section class="pm-sec"><details><summary><h2 style="display:inline">Auf Deutsch</h2></summary>
+<p><em>Getestet mit Transport Fever 3, Build 40423.</em></p>
+<p><em>Pay Your Tolls bei SeniacTWO auf YouTube &mdash; ab 5:35.</em></p>
+<p><em>Danke an Chris &amp; Ingo f&uuml;r die ausf&uuml;hrliche Modvorstellung auf Deutsch!</em></p>
+<p><em>Mautstationen passen sich selbst an die Stra&szlig;e an &mdash; 1 bis 3 Spuren je Richtung, auch wenn ihr sie sp&auml;ter verbreitert oder verkleinert.</em></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 3.0.1: Auf der PS5 st&#252;rzte die Oberfl&#228;che beim Klick auf den PYT-Knopf ab &mdash; behoben.</strong></p>
+<!-- PENDING-NOTICE: remove once the pending update is approved -->
+<p>&#9203; <strong>Dieses Update wartet noch auf die Freigabe &mdash; zum Download steht noch 3.0 bereit. Auf dem PC l&#228;uft sie einwandfrei.</strong> Konsolenspieler: bitte das Fenster erst &#246;ffnen, wenn das Update da ist.</p>
+<ul lang="de">
+<li><strong>Kurz gesagt:</strong> Auf der PS5 bringt der PYT-Knopf die Oberfl&#228;che nicht mehr zum Absturz. Auf dem PC &#228;ndert sich nichts</li>
+<li><strong>Danke:</strong> an Maxmadimus f&#252;r die Meldung</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 3.0: Schau durch das Fenster des Mauth&#228;uschens. Was siehst du? Zoom ganz nah heran. &#128527;</strong></p>
+<ul lang="de">
+<li><strong>Kurz gesagt:</strong> jedes Maut&#228;uschen hat jetzt durchsichtige Fenster, eine Einrichtung und einen richtigen Boden &mdash; und leer ist es auch nicht mehr</li>
+<li><strong>Linksverkehr:</strong> die Fans des Linksverkehrs wollten nur Tempo-Schilder. Ganz im PYT-Stil haben wir gleich alles umgebaut. Mit dem Mod &#8222;Left Hand Traffic&#8220; folgt Pay Your Tolls der Fahrseite deiner Stra&#223;en: Spuranzeigen an den Mautbr&#252;cken, Mautscheunen, Mautstationen und Verkehrsschilder &mdash; sofort beim Bauen</li>
+<li><strong>Z&#246;llner:</strong> einer pro H&#228;uschen &mdash; das Wooden-Turnpike-H&#228;uschen braucht einen, die gro&#223;en Plazas mehr. Voll besetzt gibt es +25 % Einnahmen; eine gro&#223;e Plaza braucht nach dem Update eventuell eine Minute, bis alle da sind</li>
+<li><strong>Bestehende Mautstellen aktualisieren sich selbst:</strong> nichts abrei&#223;en, nichts neu bauen</li>
+<li><strong>Lieber leere H&#228;uschen?:</strong> Konfigurieren &#8594; Toll keepers: Off &#128521;</li>
+<li><strong>Danke:</strong> an <strong>Chris &amp; Ingo</strong> (selbst TF3-Modder, &bdquo;Let&rsquo;s talk about mods&ldquo;), die sich in ihrem Video ein spannenderes Innenleben gew&#252;nscht haben &mdash; hier ist es</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 2.9: Das PYT-Fenster hat jetzt ein Kartensymbol &ndash; mit PYT - Minimap seht ihr alle Mautstellen auf der Karte und welche am meisten verdient.</strong></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 2.8: Straßenbahnen fahren jetzt durch eure Mautstraßen &ndash; die Gleise liegen, sobald ihr baut. PYT spricht 14 Sprachen, und das PYT-Symbol pulsiert nicht mehr.</strong></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 2.7: Pay Your Tolls hei&szlig;t jetzt PYT - Pay Your Tolls &ndash; sucht im Mod-Browser nach PYT und ihr findet die ganze Familie. Ein NEW-Knopf f&uuml;r alle PYT-Mods.</strong></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 2.6.2:</strong> Die Ortsnamen der 1980er-Mautstation leuchten nachts, und das Mautpersonal der Harbour-City- und 1940-Plazas z&auml;hlt jetzt &mdash; bis zu +25&nbsp;% Einnahmen und Wartung im Umkreis von 300&nbsp;m.</p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 2.6:</strong> Fahr mit der Maus &uuml;ber das PYT-Symbol &mdash; jede Seite ist einen Klick entfernt. Dazu mautfreie Stellen und ein Deko-Modus ganz ohne Z&auml;hlung.</p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>PYT spricht jetzt Deutsch!</strong> Alle Fenster, Karten und Einstellungen &mdash; automatisch &uuml;bersetzt. Etwas klingt falsch? Schreib es in die Kommentare, wir korrigieren es im n&auml;chsten Update.</p>
+<p><em>Germany is PYT's biggest supporter: more of our players come from Germany than from any other country. Since you back us the most, it's only fair you get the brief in German too. Spot some clumsy German? Tell us in the comments!</em></p>
+<p><strong>Danke, Deutschland!</strong> Die meisten PYT-Spieler kommen aus Deutschland &ndash; ihr seid unsere größten Unterstützer. Da ist es nur fair, dass ihr die Kurzfassung auch auf Deutsch bekommt. Unser Deutsch ist nicht perfekt: Wenn euch ein holpriger Satz auffällt, schreibt es gern in die Kommentare &ndash; wir freuen uns darüber.</p>
+<p><strong>Worum es geht:</strong> Maut auf euren Straßen. Mautschilder, Mautbrücken und Mautstationen passen sich selbst an die Straße an und bringen euch Geld ein &ndash; Autos, Busse und Lkw zahlen im Vorbeifahren. Klickt eine Mautstelle an, um Einnahmen und Einstellungen zu sehen. Alle Fenster und Einstellungen sind bereits auf Deutsch.</p>
+<p><strong>So geht&rsquo;s:</strong></p>
+<ol>
+<li>Im Straßenmenü den Reiter <strong>PYT</strong> öffnen</li>
+<li>Ein Mautschild, eine Mautbrücke oder eine Mautstation auf die Straße setzen &ndash; sie passt sich selbst an</li>
+<li>Über das <strong>PYT</strong>-Symbol oben links öffnet ihr das Fenster mit allen Einnahmen</li>
+</ol>
+</details></section>
+<div class="pm-pending" style="border-left:4px solid #e6b800;padding:10px 14px;margin:0 0 18px;background:rgba(230,184,0,.08)"><p style="color:#e6b800;margin:0 0 4px"><strong>Pending: version 3.0.2</strong></p><p style="color:#e6b800;margin:0">Waiting for mod.io&rsquo;s approval. A PC copy is on the <a href="early-access.html" style="color:#ffd84d">early-access page</a>; it comes off once mod.io approves.</p></div>
+  <section class="pm-sec"><h2>Latest update</h2>
+<p><strong>3.0.1 &mdash; CONSOLE FRIENDLY</strong></p>
+<!-- PENDING-NOTICE: remove once the pending update is approved -->
+<p>&#9203; <strong>This update is pending approval &mdash; the current version for download is 3.0. It works fine on PC.</strong> Console players: please don&rsquo;t open its window until this update is live.</p>
+<p>Our windows politely asked the PlayStation for a close button. The PlayStation doesn't have one, took offence and walked out &mdash; taking your whole interface with it. We've had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> on PS5, clicking the PYT button no longer crashes the interface. On PC nothing changes</li>
+<li><strong>Thanks:</strong> to <strong>Maxmadimus</strong> for reporting it, and for pinning down exactly which button</li>
+</ul>
+<p><a href="pyt-pay-your-tolls-history.html">Full update history &rarr;</a></p></section>
+<p class="pm-ea">Waiting for mod.io&rsquo;s approval? <a href="early-access.html#vt-pyt">Get it now for PC</a> &mdash; a hand-install zip, removed once mod.io approves.</p>
+  <section class="pm-sec"><h2>More PYT mods</h2>
+<ul class="pm-related"><li><a href="pyt-blueprint-exchange.html">Blueprint Exchange</a></li><li><a href="pyt-drone.html">Drone</a></li><li><a href="pyt-harbour-city.html">Harbour City</a></li><li><a href="pyt-1940-home-front.html">1940 Home Front</a></li><li><a href="pyt-town-signs.html">Town Signs</a></li><li><a href="pyt-distance-signs.html">Distance Signs</a></li><li><a href="pyt-mega-warehouse.html">Mega Warehouse</a></li><li><a href="pyt-speed-signs.html">Speed Signs</a></li><li><a href="pyt-factory-buffer.html">Factory Buffer</a></li><li><a href="pyt-minimap.html">Minimap</a></li><li><a href="pyt-a-plus.html">A+ (Advanced Auto Naming)</a></li><li><a href="pyt-tram-doctor.html">Tram Doctor</a></li><li><a href="pyt-early-mixed-cargo-trucks.html">Early Mixed Cargo Trucks</a></li><li><a href="pyt-late-mixed-cargo-trucks.html">Late Mixed Cargo Trucks</a></li><li><a href="pyt-load-planner.html">Load Planner</a></li><li><a href="pyt-mixed-cargo-vanilla-conversion-kit.html">Mixed Cargo Vanilla Conversion Kit</a></li></ul></section>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="pyt-mods.html">PYT mods &amp; update notes</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+</body>
+</html>

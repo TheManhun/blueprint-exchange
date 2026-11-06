@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Tram Doctor -- update history</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Every release of PYT - Tram Doctor, what changed and why.">
+<link rel="canonical" href="https://tfbpx.com/pyt-tram-doctor-history.html">
+<meta property="og:title" content="PYT - Tram Doctor -- update history">
+<meta property="og:description" content="Every release of PYT - Tram Doctor, what changed and why.">
+<meta property="og:url" content="https://tfbpx.com/pyt-tram-doctor-history.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/ef72/6490738/0.3.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="masthead" href="./"><img src="bpx-banner-1060.jpg" srcset="bpx-banner-1060.jpg 1060w, bpx-banner-2120.jpg 2120w" sizes="(min-width: 1092px) 1060px, calc(100vw - 32px)" width="1060" height="238" alt="Blueprint Exchange Library, a Transport Fever 2 and 3 community hub. Go to the home page."></a>
+    <nav class="site-nav" aria-label="Main">
+      <a class="navbtn" href="./" data-nav="index"><img src="nav-community.png" width="114" height="46" alt="Community Blueprints"><img class="on" src="nav-community-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="upload.html" data-nav="upload"><img src="nav-upload.png" width="114" height="46" alt="Upload My Blueprint"><img class="on" src="nav-upload-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="guides.html" data-nav="guides"><img src="nav-guides.png" width="114" height="46" alt="Guides"><img class="on" src="nav-guides-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="tools.html" data-nav="tools"><img src="nav-tools.png" width="114" height="46" alt="Tools"><img class="on" src="nav-tools-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="resources.html" data-nav="resources"><img src="nav-resources.png" width="114" height="46" alt="Resources"><img class="on" src="nav-resources-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="plug-my-mod.html" data-nav="plug"><img src="nav-plug.png" width="114" height="46" alt="Plug My Mod"><img class="on" src="nav-plug-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="about.html" data-nav="about"><img src="nav-about.png" width="114" height="46" alt="About"><img class="on" src="nav-about-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="https://tfbpx.discourse.group/" target="_blank" rel="noopener" data-nav="forum"><img src="nav-forum.png" width="114" height="46" alt="Community Forum (opens in a new tab)"><img class="on" src="nav-forum-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+      <a class="navbtn" href="report.html" data-nav="support"><img src="nav-support.png" width="114" height="46" alt="Support: report a problem"><img class="on" src="nav-support-on.png" width="114" height="46" alt="" aria-hidden="true"></a>
+    </nav>
+  </header>
+
+  <div class="page-head">
+    <p class="eyebrow">Update history</p>
+    <h1>PYT - Tram Doctor</h1>
+    <p class="sub">Every release, newest first. <a href="pyt-tram-doctor.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-tram-doctor">mod.io</a></p>
+  </div>
+  <div class="pm-hist">
+<details open><summary><span class="v">1.0.3</span>THE RIGHT TOOL</summary><div class="body"><p>The grey <strong>road tool</strong> button looked like a button and acted like a sticker. Now it does something: it flies you to the road piece the doctor can't fix itself and tells you what to build there &mdash; click again for the next piece. And Tram Doctor on its own now has its <strong>PYT &mdash; Settings</strong> (language, the PYT button fade).</p><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.0.3: Der Knopf &bdquo;Stra&szlig;enwerkzeug&ldquo; fliegt jetzt zum Stra&szlig;enst&uuml;ck und sagt, was dort zu bauen ist; PYT &mdash; Einstellungen (Sprache, Ausblenden) auch ohne andere PYT-Mods.</em></p></div></div></details>
+<details><summary><span class="v">1.0.2</span>QUIET PLEASE</summary><div class="body"><p>Our NEW button bounced like a puppy at the door, shoving every button beside it. It has been rehomed. And clicking the PYT row could pull the rug out from under the game &mdash; the rug is now nailed down.</p>
+<p>In plain terms: clicking the PYT row no longer crashes the game, the NEWS button is gone, and PYT &mdash; Settings no longer stutters on big maps.</p>
+<ul>
+<li><strong>Fixed:</strong> on big saves the game could freeze for about a second every 10 seconds, even with no window open &mdash; the same fix as PYT - Minimap 1.4.1</li>
+<li><strong>Fixed:</strong> clicking the PYT icon or a tile in its row could crash the game &mdash; the button was taken away while the game was still handling the click (seen together with the Mod Bar mod)</li>
+<li><strong>Gone:</strong> the NEWS button in the PYT row. It bounced and pushed other buttons around, and you told us you didn't want it &mdash; we listen</li>
+<li><strong>Tidier:</strong> the PYT row shows one settings cog (some setups showed two), and the 'fade until the mouse is over it' setting is always in PYT &mdash; Settings</li>
+<li><strong>Smoother:</strong> with PYT &mdash; Settings open on a big map, its performance meter no longer stalls the game every 10 seconds (it could make the sound flutter) &mdash; it reads once when you open it, then every 2 minutes</li>
+<li><strong>Thanks:</strong> to QuickNiq for the crash log and honest feedback, and to the Mod Bar players who spoke up</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 1.0.2: Ein Klick in die PYT-Leiste lässt das Spiel nicht mehr abstürzen, der NEWS-Knopf ist weg, und PYT &mdash; Settings ruckelt auf großen Karten nicht mehr.</em></p></div></div></details>
+<details><summary><span class="v">1.0.1</span>TACK! ДЯКУЮ!</summary><div class="body"><p>The doctor has been learning languages. Two more, to be exact &mdash; for some very important people in Epod&rsquo;s house.</p>
+<ul>
+<li><strong>In plain terms:</strong> Tram Doctor now speaks <strong>Swedish</strong> and <strong>Ukrainian</strong>, and follows the PYT Language setting like the rest of the family (Auto still uses the game&rsquo;s language)</li>
+<li><strong>Never a cargo bay:</strong> a station bay that handles cargo is no longer picked for buses or trams when the stop has a passenger bay &mdash; and a line already on one is flagged, with Fix moving it (thanks Epod, who had to move one by hand)</li>
+<li><strong>Station bays to spare:</strong> at a station building the line gets the station's other fitting bays as alternatives, so trams and buses use any free one &mdash; and <strong>cargo trams</strong> get cargo bays</li>
+<li><strong>PYT &mdash; Settings:</strong> the PYT button can fade until your mouse is over it</li>
+<li><strong>Something reads oddly?</strong> Tell us in the comments &mdash; we fix translations fast</li>
+</ul></div></details>
+<details><summary><span class="v">1.0</span>THE DOCTOR WILL SEE YOU NOW</summary><div class="body"><p>Your trams have been suffering in silence. Not any more.</p>
+<p>In plain terms: this is the first release &mdash; everything below is new.</p></div></details>
+  </div>
+
+  <footer class="site-footer">
+    <p class="hint" id="fanNote">Blueprint Exchange and the PYT mods are fan-made community projects for Transport Fever 2 and Transport Fever 3 players. It is unofficial and not affiliated with, endorsed by, or the responsibility of the game&rsquo;s developers or publishers.</p>
+    <p class="hint">Inspired by <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2992565461">Copy It! by okeating</a> &mdash; a superb TF2 utility whose approach to capturing and rebuilding constructions and track is the foundation Blueprint Exchange builds on.</p>
+    <p class="hint"><a href="./">&larr; Back to Community Blueprints</a> &middot; <a href="pyt-mods.html">PYT mods &amp; update notes</a> &middot; <a href="report.html">Report a problem</a> &middot; <a href="https://tfbpx.discourse.group/" target="_blank" rel="noopener">Community forum</a></p>
+    <p id="bmcRow"><a href="https://buymeacoffee.com/epodtheman5" target="_blank" rel="noopener"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Epod a coffee" width="180" height="50"></a></p>
+    <p class="hint" id="bmcNote">Blueprint Exchange and the PYT mods are free &mdash; support is completely optional.</p>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Mega Warehouse -- update history</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Every release of PYT - Mega Warehouse, what changed and why.">
+<link rel="canonical" href="https://tfbpx.com/pyt-mega-warehouse-history.html">
+<meta property="og:title" content="PYT - Mega Warehouse -- update history">
+<meta property="og:description" content="Every release of PYT - Mega Warehouse, what changed and why.">
+<meta property="og:url" content="https://tfbpx.com/pyt-mega-warehouse-history.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/d5ab/6455636/0.18.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <p class="eyebrow">Update history</p>
+    <h1>PYT - Mega Warehouse</h1>
+    <p class="sub">Every release, newest first. <a href="pyt-mega-warehouse.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-mega-warehouse">mod.io</a></p>
+  </div>
+  <div class="pm-hist">
+<details open><summary><span class="v">2.3.3</span>QUICK ON ITS FEET</summary><div class="body"><p>A player clicked his 1900 camp and watched his frame rate fall from 60 to 17. The camp had been counting every crate, sixty times a second. Now it counts them when a truck actually brings one or takes one away.</p>
+<p>In plain terms: the warehouse window no longer slows the game, the alternative bays stay as you set them (one switch per warehouse decides whether they're handed out by themselves), tram rails survive an Upgrade, and the 1900 camp's yard gets carts, crates and barrels.</p>
+<ul>
+<li><strong>Fixed:</strong> opening a warehouse's window cost a lot of frame rate (60 down to 17 fps on a big 1900 camp) &mdash; the stores were re-read every frame; now only when a truck loads or unloads, and every 10 seconds for crates going off</li>
+<li><strong>Fixed:</strong> alternative bays came back after you switched them off &mdash; a check in the background put them back after every reload. It's gone: a stop gets every bay only when you add it or make a new line, and the new bays after an Upgrade. Your &ldquo;don't use&rdquo; stays as you set it</li>
+<li><strong>New:</strong> <strong>Auto-assign alternative bays</strong> in the warehouse's window, one switch per warehouse, kept in your save &mdash; on: every line stopping there may use every truck bay, new lines and the new bays after an Upgrade too; off: every line keeps its own bay and nothing changes what you set in the line window</li>
+<li><strong>Fixed:</strong> with the camp's own Tram track option, the yard's rails and wires vanished after an Upgrade (the trams still drove) &mdash; they stay now</li>
+<li><strong>New:</strong> the 1900 camp's yard is less bare &mdash; horse-less carts (flat, hay and water), crates, barrels and a water trough stand about in the free spots</li>
+<li><strong>Thanks:</strong> to Stephen Spry for both reports</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.3.3: Das Lagerfenster bremst das Spiel nicht mehr, die Ausweichbuchten bleiben, wie du sie einstellst (ein Schalter je Lager entscheidet, ob sie von selbst vergeben werden), die Stra&szlig;enbahngleise &uuml;berstehen ein Upgrade, und der Hof des 1900er-Lagers bekommt Karren, Kisten und F&auml;sser.</em></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> das Fenster eines Lagers kostete viel Bildrate (60 auf 17 fps bei einem gro&szlig;en 1900er-Lager) &ndash; die Lager wurden jedes Bild neu gelesen; jetzt nur, wenn ein Lkw l&auml;dt oder entl&auml;dt, und alle 10 Sekunden f&uuml;r verderbende Kisten</li>
+<li><strong>Behoben:</strong> Ausweichbuchten kamen zur&uuml;ck, nachdem du sie abgeschaltet hattest &ndash; eine Pr&uuml;fung im Hintergrund setzte sie nach jedem Laden wieder. Sie ist weg: ein Halt bekommt jede Bucht nur noch, wenn du ihn hinzuf&uuml;gst oder eine neue Linie anlegst, und die neuen Buchten nach einem Upgrade. Dein &bdquo;nicht nutzen&ldquo; bleibt</li>
+<li><strong>Neu:</strong> <strong>Ausweichbuchten automatisch zuweisen</strong> im Lagerfenster, ein Schalter je Lager, im Spielstand gespeichert &ndash; an: jede Linie, die dort h&auml;lt, darf jede Lkw-Bucht nutzen, auch neue Linien und die neuen Buchten nach einem Upgrade; aus: jede Linie beh&auml;lt ihre eigene Bucht, und nichts &auml;ndert, was du im Linienfenster einstellst</li>
+<li><strong>Behoben:</strong> mit der eigenen Stra&szlig;enbahn-Option des Lagers verschwanden Gleise und Oberleitung im Hof nach einem Upgrade (die Bahnen fuhren trotzdem) &ndash; sie bleiben jetzt</li>
+<li><strong>Neu:</strong> der Hof des 1900er-Lagers ist weniger kahl &ndash; Karren ohne Pferde (Pritsche, Heu und Wasser), Kisten, F&auml;sser und ein Wassertrog stehen auf den freien Pl&auml;tzen</li>
+<li><strong>Danke:</strong> an Stephen Spry f&uuml;r beide Meldungen</li>
+</ul></div></div></details>
+<details><summary><span class="v">2.3.2</span>STYLE THE OLD WAREHOUSE YOUR WAY</summary><div class="body"><p>A reviewer called the Classic camp a city. We looked at it from the air and he had a point: 720 metres end to end. Epod drew it again on a napkin, and the napkin won.</p>
+<p>In plain terms: the Classic layout now packs the way Epod sketched it &mdash; tanks and the office in front on the left, cold rows and rack halls on the right with the timber yard behind them, bunkers and barns at the back &mdash; a 5,000 camp on 460 x 330 m instead of 720 x 330. Compact is unchanged. And the 1900 camp is yours to dress: pick its ground, brick and roof when you build it, and change them later in the Upgrade box.</p>
+<ul>
+<li><strong>New:</strong> the Classic layout re-packed to Epod's sketch &mdash; its two bands kept, the stores where Classic always had them, a third less ground at 5,000. The 500 and 1,000 camps keep their old Classic shape, which is the smaller one there</li>
+<li><strong>New:</strong> three style rows for the 1900 camp &mdash; <strong>Ground</strong> (Auto follows your map's climate, Dirt road, Mossy, Dirt, Dark soil, Gravel), <strong>Brick</strong> (Red, Dark red, Brown, Sooty, Yellow stock, Whitewashed) and <strong>Roof</strong> (Slate, Shingles, Red tiles, Grey tiles, Corrugated iron) &mdash; all the game's own materials; the first of each is the old look, so no camp changes until you pick</li>
+<li><strong>New:</strong> the same three rows in the camp's Upgrade box &mdash; restyle a built camp in place, stock, lines and split kept</li>
+<li><strong>New:</strong> a 1900 camp is dressed &mdash; grass patches and the game's own trees and bushes in the gaps between the buildings, the same after every Upgrade</li>
+<li><strong>New:</strong> an existing Classic camp re-packs on its next Upgrade &mdash; the buildings move, the stock and the split stay. Until you upgrade it, it keeps its footprint</li>
+<li><strong>Fixed:</strong> the 1900 camp looked too new &mdash; the office, the fence and the tank bases wear the game's own brick and stone now, the one brick the barns already had, and every 1900 roof the game's weathered slate</li>
+<li><strong>Fixed:</strong> the truck office's name board was blank &mdash; it shows the station's name now, so renaming the station renames the board</li>
+<li><strong>Thanks:</strong> to Chris and Ingo (BGS Transporthaus) once more &mdash; it was the Classic camp in their video</li>
+</ul>
+<h4>EARLIER VERSIONS</h4>
+
+<p>2.3.1 Light On Its Feet &middot; 2.3 Ding Ding, Twice &middot; 2.2.2 Quiet Please &middot; 2.2.1 Never Empty-handed &middot; 2.2 Fancy Bays &middot; 2.1.1 Console Friendly &middot; 2.1 The MrHamstring System &middot; 2.0 Drive Right Through &middot; 1.3.2 Money&rsquo;s No Object &middot; 1.3.1 The Icon Sits Still &middot; 1.3 A Mega Upgrade!</p>
+
+<h4>WHAT CAN IT DO NOW?</h4>
+
+<p><strong>🚚 YOUR TRUCKS ARE WELCOME</strong></p>
+<p>Your Mega Warehouse can now be built with its own truck stops and depot. Load cargo, unload cargo and buy your trucks without building separate facilities.</p>
+<p>Don't want truck stops? Leave them off. The choice is yours.</p>
+<p><strong>🏗️ GROW YOUR WAREHOUSE</strong></p>
+<p>Started small? No need to start over.</p>
+<p>Upgrade your existing warehouse to a larger capacity, or add truck stops when you need them.</p>
+<p>Plan your expansion first, see how much space you'll need, then make room and commit the upgrade. You pay the difference to building it new &mdash; nothing more, and turning or moving it is free.</p>
+<p>You can even adjust its position and rotation to help it fit.</p>
+<p><strong>📦 YOUR CARGO STAYS PUT</strong></p>
+<p>We've worked to make upgrading as painless as possible. Your existing warehouse, stock and established transport connections are intended to stay intact through successful upgrades.</p>
+<p>No tearing down years of hard work just to get the latest features.</p>
+<p><strong>👷 FROM HAND TROLLEYS TO FORKLIFTS</strong></p>
+<p>In 1900, your warehouse workers move cargo the old-fashioned way, with sack barrows.</p>
+<p>From 1925, the forklifts arrive, bringing 3&times; cargo-handling speed.</p>
+<p>And your existing warehouses upgrade themselves as the years progress.</p>
+<p><strong>⏳ KEEP AN EYE ON YOUR CARGO</strong></p>
+<p>Not every cargo lasts forever &mdash; at least, not according to Transport Fever 3!</p>
+<p>Mega Warehouse now lets you choose when expired stock should be cleared. Set your threshold in days, or leave automatic disposal switched off.</p>
+<p>And when something has run out, one press clears only the expired crates &mdash; the game's own bin empties the whole store; ours keeps your good stock.</p>
+<p><strong>🏭 MEET OUR LITTLE BROTHER</strong></p>
+<p>We've also created PYT &mdash; Factory Buffer: Protect Your Throughput.</p>
+<p>A smaller, smarter warehouse for your factories. Place it nearby, let it identify the industry and configure the right storage. It can even help set up the transport lines and trucks.</p>
+<p>Search PYT in the mod browser.</p>
+
+<h4>THANK YOU!</h4>
+
+<p>You've given Mega Warehouse an incredible welcome, and this update is our way of saying thanks.</p>
+<p>We hope these new tools make your existing transport empire a little easier to manage, and a lot more fun to build.</p>
+<p><strong>PYT &mdash; Play Your Transport.</strong><br>Designed by Epod. Built with AI assistance. Made better with your feedback.</p>
+<hr>
+<div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.3.2: Das 1900er-Lager l&auml;sst sich gestalten &mdash; Boden, Backstein und Dach w&auml;hlbar, auch sp&auml;ter im Upgrade-Fenster. Das klassische Layout packt jetzt nach Epods Skizze &mdash; Tanks und B&uuml;ro vorn links, K&uuml;hlreihen und Regalhallen rechts mit dem Holzhof dahinter, Bunker und Scheunen hinten &mdash; ein 5.000er-Lager auf 460 x 330 m statt 720 x 330. Kompakt bleibt, wie es ist.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> das klassische Layout nach Epods Skizze neu gepackt &mdash; seine zwei Reihen bleiben, die Lager stehen, wo sie im Klassischen immer standen, ein Drittel weniger Fl&auml;che bei 5.000. Die 500er und 1.000er behalten ihre alte klassische Form, die dort die kleinere ist</li>
+<li><strong>Neu:</strong> drei Stilzeilen f&uuml;r das 1900er-Lager &mdash; <strong>Boden</strong> (Auto passt zum Klima der Karte, Feldweg, Moosig, Erde, Dunkle Erde, Kies), <strong>Backstein</strong> (Rot, Dunkelrot, Braun, Rußig, Gelber Backstein, Wei&szlig; getüncht) und <strong>Dach</strong> (Schiefer, Schindeln, Rote Ziegel, Graue Ziegel, Wellblech) &mdash; alles Materialien des Spiels; der erste Eintrag ist der alte Look, bis ihr w&auml;hlt</li>
+<li><strong>Neu:</strong> dieselben drei Zeilen im Upgrade-Fenster &mdash; ein gebautes Lager neu einkleiden, Bestand, Linien und Aufteilung bleiben</li>
+<li><strong>Neu:</strong> ein 1900er-Lager ist bepflanzt &mdash; Grasfl&auml;chen und B&auml;ume des Spiels zwischen den Geb&auml;uden, nach jedem Upgrade gleich</li>
+<li><strong>Neu:</strong> ein bestehendes klassisches Lager packt sich beim n&auml;chsten Upgrade neu &mdash; die Geb&auml;ude r&uuml;cken, Bestand und Aufteilung bleiben. Bis dahin beh&auml;lt es seine Fl&auml;che</li>
+<li><strong>Behoben:</strong> das Lager von 1900 sah zu neu aus &mdash; B&uuml;ro, Zaun und Tanksockel tragen jetzt den Backstein und Stein des Spiels, denselben Backstein wie die Scheunen, und jedes Dach von 1900 den verwitterten Schiefer des Spiels</li>
+<li><strong>Behoben:</strong> das Namensschild des LKW-B&uuml;ros war leer &mdash; es zeigt jetzt den Stationsnamen, umbenennen benennt auch das Schild um</li>
+<li><strong>Danke:</strong> noch einmal an Chris und Ingo (BGS Transporthaus) &mdash; im Video war das klassische Lager</li>
+</ul></div></div></details>
+<details><summary><span class="v">2.3.1</span>LIGHT ON ITS FEET</summary><div class="body"><p>A reviewer opened our station window and his frame counter fainted. We had told the game to keep an eye on a third of his map for cargo. It only ever needed to watch the yard.</p>
+<p>In plain terms: the Mega Warehouse's station window no longer drags the frame rate down &mdash; one catchment circle per station instead of one per bay plus a grid over the site &mdash; the game's trees no longer stand in the yard, and the Compact layout packs the camp into two columns.</p>
+<ul>
+<li><strong>New:</strong> the Compact layout packs tighter &mdash; the quarters in two columns, racks and cold rows under the barns, tanks beside the crane under the bunkers (Epod's sketch) &mdash; a 5,000 camp on 460 x 330 m instead of 400 x 440. An existing Compact camp re-packs on its next Upgrade: the buildings move, the stock and the split stay. Classic stays the spread-out option</li>
+<li><strong>Fixed:</strong> the frame rate with the station window open &mdash; the camp's catchment was a 300 m circle for every bay plus one every 200 m across the site, and the game computed and painted every one of them; now one circle per station, as the game's own stations have. An industry that only reached the station through a far corner's circle may need a road now</li>
+<li><strong>Fixed:</strong> trees in the yard &mdash; the game only clears them under a model, so the whole plot is tiled with invisible ones; nothing is left standing in the sand</li>
+<li><strong>Fixed:</strong> a bay named 'Flatbed' in the station window &mdash; 'All Cargo Types' again (the game names a bay after the last cargo class listed)</li>
+<li><strong>Fixed:</strong> the shed's roof vents stood over the glass roof lights &mdash; all along the roof now</li>
+<li><strong>Fixed:</strong> the 1960 cantilever rack's cargo board hung behind the next row's column &mdash; moved into the clear bay</li>
+<li><strong>Fixed:</strong> the 1900 rack's outside stair climbed to blank brick &mdash; it ends at a loft door now</li>
+<li><strong>Tip:</strong> the warehouse snaps to a road, as the game's depots do, and a snapped ghost won't turn &mdash; hold <strong>C</strong> (the game's no-snap key) to place it free, then <strong>N</strong> / <strong>M</strong> turn it</li>
+<li><strong>Thanks:</strong> to Chris and Ingo (BGS Transporthaus), whose review on YouTube put a frame counter on it and found most of this list &mdash; <a href="https://www.youtube.com/watch?v=lIElFf7bgME&amp;t=845s"><strong>watch the review</strong></a>, from 14:05</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.3.1: Das Stationsfenster des Mega Warehouse zieht die Bildrate nicht mehr herunter &mdash; ein Einzugskreis je Station statt einem je Bucht plus einem Raster &uuml;ber das Gel&auml;nde &mdash; und die B&auml;ume des Spiels stehen nicht mehr im Hof.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> das kompakte Layout packt dichter &mdash; die Viertel in zwei Spalten, Regale und K&uuml;hlreihen unter den Scheunen, Tanks neben dem Kran unter den Bunkern (Epods Skizze) &mdash; ein 5.000er-Lager auf 460 x 330 m statt 400 x 440. Ein bestehendes kompaktes Lager packt sich beim n&auml;chsten Upgrade neu: die Geb&auml;ude r&uuml;cken, Bestand und Aufteilung bleiben. Klassisch bleibt die weitl&auml;ufige Variante</li>
+<li><strong>Behoben:</strong> die Bildrate bei offenem Stationsfenster &mdash; der Einzugsbereich des Lagers war ein 300-m-Kreis je Bucht plus einer alle 200 m &uuml;ber das Gel&auml;nde, und das Spiel hat jeden davon berechnet und gezeichnet; jetzt ein Kreis je Station, wie bei den Stationen des Spiels. Eine Industrie, die die Station nur &uuml;ber den Kreis einer entfernten Ecke erreicht hat, braucht jetzt eventuell eine Stra&szlig;e</li>
+<li><strong>Behoben:</strong> B&auml;ume im Hof &mdash; das Spiel r&auml;umt sie nur unter einem Modell weg, darum ist das ganze Gel&auml;nde mit unsichtbaren gekachelt; im Sand bleibt nichts stehen</li>
+<li><strong>Behoben:</strong> eine Bucht hie&szlig; im Stationsfenster 'Sperrgut' &mdash; wieder 'Alle Frachtarten' (das Spiel benennt eine Bucht nach der zuletzt gelisteten Frachtklasse)</li>
+<li><strong>Behoben:</strong> die Dachl&uuml;fter des Schuppens standen &uuml;ber den Glas-Oberlichtern &mdash; jetzt alle l&auml;ngs des Dachs</li>
+<li><strong>Behoben:</strong> das Frachtschild des Kragarmregals von 1960 hing hinter der St&uuml;tze der n&auml;chsten Reihe &mdash; in das freie Feld ger&uuml;ckt</li>
+<li><strong>Behoben:</strong> die Au&szlig;entreppe des Regals von 1900 f&uuml;hrte auf blanken Backstein &mdash; jetzt endet sie an einer Bodent&uuml;r</li>
+<li><strong>Tipp:</strong> das Lager rastet an einer Stra&szlig;e ein, wie die Depots des Spiels, und ein eingerasteter Geist dreht sich nicht &mdash; <strong>C</strong> gedr&uuml;ckt halten (die Nicht-Einrasten-Taste des Spiels), dann drehen <strong>N</strong> / <strong>M</strong></li>
+<li><strong>Danke:</strong> an Chris und Ingo (BGS Transporthaus), deren Review auf YouTube einen Bildz&auml;hler drangehalten und das meiste dieser Liste gefunden hat &mdash; <a href="https://www.youtube.com/watch?v=lIElFf7bgME&amp;t=845s"><strong>Review ansehen</strong></a>, ab 14:05</li>
+</ul></div></div></details>
+<details><summary><span class="v">2.3</span>DING DING, TWICE</summary><div class="body"><p>A player asked why our warehouse wouldn't let trams in. We said 'soon'. Our art department said 'soon'. It turns out 'soon' meant Wednesday &mdash; for the camp and the shed both.</p>
+<p>In plain terms: cargo trams can use the Mega Warehouse &mdash; the 1900 camp's truck yard and the 1960 shed &mdash; with real rails and overhead wire, and every line that stops here gets all its bays as alternatives by itself.</p>
+<ul>
+<li><strong>New:</strong> Tram track &mdash; None / Tram / Electric tram &mdash; in the build settings of every Mega Warehouse, camp and 1960 shed alike, and in the Upgrade box of one already built (rebuilt in place &mdash; stock, lines and split kept). The gates get the game's own tram track; the bays and the shed's lanes take cargo trams</li>
+<li><strong>New:</strong> rails through the whole yard &mdash; round every bend, into the bays, through the shed &mdash; and, with Electric tram, our own poles (cast iron at the camp, galvanised steel at the shed) and wire at the game's own height. Inside the shed the wire hangs from the building</li>
+<li><strong>Fixed:</strong> 'every bay as an alternative' never worked &mdash; our line-reading call returns nothing in TF3, and we're sorry it took a player to show us. Now it does, with no checking in the background: a line that stops here gets every other bay the moment you add the stop (from any window), open the warehouse's window or finish an Upgrade &mdash; and once when a save loads</li>
+<li>The garages stay the trucks' depot (buses and trucks); trams come from a tram depot, as in the game</li>
+<li><strong>Thanks:</strong> to jhughes, whose Factory Buffer question started all this</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.3: G&uuml;terstra&szlig;enbahnen k&ouml;nnen das Mega Warehouse nutzen &mdash; den LKW-Hof des Lagers von 1900 wie den Schuppen von 1960 &mdash; mit echten Schienen und Oberleitung, und jede Linie, die hier h&auml;lt, bekommt alle Buchten als Alternativen von selbst.</em></p>
+<ul lang="de">
+<li><strong>Neu:</strong> Stra&szlig;enbahngleis &mdash; Keins / Stra&szlig;enbahn / Elektrische Stra&szlig;enbahn &mdash; in den Baueinstellungen jedes Mega Warehouse, Lager wie Schuppen von 1960, und im Upgrade-Kasten eines schon gebauten (am Ort neu gebaut &mdash; Bestand, Linien und Aufteilung bleiben). Die Tore bekommen das Gleis des Spiels; die Buchten und die Spuren des Schuppens nehmen G&uuml;terstra&szlig;enbahnen</li>
+<li><strong>Neu:</strong> Schienen durch den ganzen Hof &mdash; um jede Kurve, in die Buchten, durch den Schuppen &mdash; und bei Elektrisch eigene Masten (Gusseisen am Lager, verzinkter Stahl am Schuppen) und Fahrdraht in der H&ouml;he des Spiels. Im Schuppen h&auml;ngt der Draht am Geb&auml;ude</li>
+<li><strong>Behoben:</strong> 'jede Bucht als Alternative' hat nie funktioniert &mdash; jetzt schon, ohne Pr&uuml;fung im Hintergrund: eine Linie, die hier h&auml;lt, bekommt alle anderen Buchten, sobald du den Halt setzt (aus jedem Fenster), das Fenster des Lagers &ouml;ffnest oder ein Upgrade abschlie&szlig;t &mdash; und einmal beim Laden</li>
+<li>Die Garagen bleiben das Depot der LKW (Busse und LKW); Stra&szlig;enbahnen kommen aus einem Stra&szlig;enbahndepot, wie im Spiel</li>
+<li><strong>Danke:</strong> an jhughes, dessen Frage beim Factory Buffer das alles angesto&szlig;en hat</li>
+</ul></div></div></details>
+<details><summary><span class="v">2.2.2</span>QUIET PLEASE</summary><div class="body"><p>Our NEW button bounced like a puppy at the door, shoving every button beside it. It has been rehomed. And clicking the PYT row could pull the rug out from under the game &mdash; the rug is now nailed down.</p>
+<p>In plain terms: clicking the PYT row no longer crashes the game, the NEWS button is gone, and PYT &mdash; Settings no longer stutters on big maps.</p>
+<ul>
+<li><strong>Fixed:</strong> on big saves the game could freeze for about a second every 10 seconds, even with no window open &mdash; the same fix as PYT - Minimap 1.4.1</li>
+<li><strong>Fixed:</strong> clicking the PYT icon or a tile in its row could crash the game &mdash; the button was taken away while the game was still handling the click (seen together with the Mod Bar mod)</li>
+<li><strong>Gone:</strong> the NEWS button in the PYT row. It bounced and pushed other buttons around, and you told us you didn't want it &mdash; we listen</li>
+<li><strong>Tidier:</strong> the PYT row shows one settings cog (some setups showed two), and the 'fade until the mouse is over it' setting is always in PYT &mdash; Settings</li>
+<li><strong>Smoother:</strong> with PYT &mdash; Settings open on a big map, its performance meter no longer stalls the game every 10 seconds (it could make the sound flutter) &mdash; it reads once when you open it, then every 2 minutes</li>
+<li><strong>Thanks:</strong> to QuickNiq for the crash log and honest feedback, and to the Mod Bar players who spoke up</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.2.2: Ein Klick in die PYT-Leiste lässt das Spiel nicht mehr abstürzen, der NEWS-Knopf ist weg, und PYT &mdash; Settings ruckelt auf großen Karten nicht mehr.</em></p></div></div></details>
+<details><summary><span class="v">2.2.1</span>NEVER EMPTY-HANDED</summary><div class="body"><p>Our little brother found a way to crash the game by switching everything off. We checked: the big one could too. Not any more.</p>
+<p>In plain terms: a safety fix &mdash; switching off every cargo in a warehouse can no longer leave it without a store (which crashes the game).</p>
+<ul>
+<li>Safety: with every cargo switched off, the warehouse keeps its first cargo on &mdash; a warehouse with no store at all crashes the game (found in PYT - Factory Buffer)</li>
+</ul></div></details>
+<details><summary><span class="v">2.2</span>FANCY BAYS</summary><div class="body"><p>Our truck bays treated every lorry like a stranger &mdash; one speed for all, and specialists made to wait. They've been on a hospitality course.</p>
+<p>In plain terms: the warehouse's truck bays now load and unload every kind of cargo at 2x, like the game's specialised truck stations.</p>
+<ul>
+<li>Truck bays load and unload at 2x for every kind of cargo &mdash; bulk, liquid, goods, flatbed and universal</li>
+<li>Specialised trucks (tankers, tippers, box vans) no longer lose speed to 'Specializations don't match' at our bays</li>
+<li>PYT - Mixed Cargo trucks load every compartment at full speed here</li>
+<li>A warehouse you built before: change any of its settings once and its bays take the new speed</li>
+<li>PYT &mdash; Settings: the PYT button can fade until your mouse is over it, and a Language choice for the PYT windows</li>
+</ul></div></details>
+<details><summary><span class="v">2.1.1</span>CONSOLE FRIENDLY</summary><div class="body"><p>Our windows politely asked the PlayStation for a close button. The PlayStation doesn't have one, took offence and walked out &mdash; taking your whole interface with it. We've had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> on PS5, the PYT news and Settings windows no longer crash the interface. On PC nothing changes</li>
+<li><strong>Thanks:</strong> to <strong>Maxmadimus</strong>, whose Pay Your Tolls report found it</li>
+</ul></div></details>
+<details><summary><span class="v">2.1</span>THE MRHAMSTRING SYSTEM</summary><div class="body"><p>A player told us he couldn&rsquo;t stop his warehouse taking a cargo. He was right &mdash; the lowest a cargo went was 50. So now there&rsquo;s an <strong>Off</strong> switch, and it&rsquo;s polite about what&rsquo;s already on the shelves.</p>
+<p>In plain terms: switch off any cargo you don&rsquo;t want stored; its space goes to the others of its kind.</p>
+<ul>
+<li><strong>Click a cargo&rsquo;s icon</strong> in the Storage split to switch it off: it isn&rsquo;t stored here any more, its icon goes grey and locks, and its space is shared by the other cargos of its kind. Click again to switch it back on</li>
+<li><strong>Holding stock? You choose:</strong> <em>Off once shipped out</em> (nothing more comes in, the space frees up as it leaves, off when empty) or <em>Destroy</em> (gone at once, space freed now)</li>
+<li><strong>All off / All on</strong> for a whole kind &mdash; every liquid off in one click, say</li>
+<li>Sliding a cargo right down to 0 switches it off too; <strong>Balance</strong> leaves switched-off cargos alone</li>
+<li><strong>Thanks:</strong> to MrHamstring, who asked for exactly this</li>
+</ul></div></details>
+<details><summary><span class="v">2.0</span>DRIVE RIGHT THROUGH</summary><div class="body"><p><img src="https://tfbpx.com/pyt-youtube.png" alt="YouTube" width="28"> <a href="https://youtu.be/YkY4BM8K3EY"><strong>Watch the 1960 shed in action</strong></a> &mdash; one minute, real in-game footage. <img src="https://tfbpx.com/pyt-youtube.png" alt="YouTube" width="28"> <a href="https://youtu.be/p-cIyltxjh4"><strong>How to upgrade</strong></a> &mdash; 30 seconds, step by step.</p>
+<p>It&rsquo;s 1960. Your trucks are bigger, your towns are busier, and nobody has time to reverse into a loading bay any more. Meet the <strong>1960 drive-through shed</strong>: trucks drive in one end, load along the docks and drive straight out the other.</p>
+<ul>
+<li><strong>The 1960 shed has its own button</strong> in the PYT warehouses tab, from 1960 on. The same locked store for every cargo &mdash; tanks, bins, racks with a travelling crane, a cold store, a gas station and its own truck depot.</li>
+<li><strong>Truck lanes: 4, 6, 8 or 12.</strong> Each lane is <strong>one stop</strong>, just like the game&rsquo;s own truck station: the first truck drives to the front, the next pull up behind it, and they all load at once. Every lane is added to your lines by itself.</li>
+<li><strong>Real staff.</strong> People from your towns come to work here &mdash; 2 to 16 jobs by size. No staff: loading 3x. Fully staffed: 5x. The warehouse window shows who&rsquo;s at work.</li>
+<li><strong>A bus stop for the staff</strong> in front of the office &mdash; buses only, passengers only. Trucks never use it.</li>
+<li><strong>Lit for the night shift.</strong> Light masts fill every dark corner of the yard.</li>
+<li><strong>Upgrade a camp into the shed</strong> from 1960 &mdash; same stores, same stock, same split. The upgrade can now add truck bays and lanes too.</li>
+<li><strong>A bigger garage:</strong> the truck depot looks after 12 to 24 trucks at a time (was 8).</li>
+<li><strong>Your language on the sign:</strong> the office board shows your company&rsquo;s name and &ldquo;Warehouse&rdquo; in your game&rsquo;s language.</li>
+<li><strong>The 1900 camp got a polish:</strong> a dirt yard, the whole truck yard cobbled from gate to gate with stone kerbs, a glass roof on the rack hall, brick gables and a crane sized to its yard.</li>
+<li><strong>An easter egg:</strong> build the 12-lane shed and take a close look through the office window.</li>
+</ul>
+<p>&#128591; <strong>Thanks to Sascha</strong> (<img src="https://tfbpx.com/pyt-youtube.png" alt="YouTube" width="28"> <a href="https://www.youtube.com/@ZoneOffGames">P4NtR / @ZoneOffGames</a>) for showing Mega Warehouse on YouTube &mdash; his &ldquo;only four truck stops&rdquo; started the bigger truck offices, and the 12-lane office is his.</p></div></details>
+<details><summary><span class="v">1.3.2</span>MONEY’S NO OBJECT</summary><div class="body"><p>Playing with unlimited money? Our warehouse tried to write &ldquo;infinity dollars&rdquo; in its notebook and fell over. It now counts to infinity like the rest of us &mdash; it just writes &ldquo;inf&rdquo;.</p>
+<ul>
+<li><strong>In plain terms:</strong> with unlimited money (sandbox), a Storage split, an upgrade or adding truck stops no longer crashes the game with a Lua error</li>
+</ul></div></details>
+<details><summary><span class="v">1.3.1</span>THE ICON SITS STILL</summary><div class="body"><p>Our PYT icon got a little too excited about its news and wouldn&#39;t stop bouncing. We&#39;ve had a word.</p>
+<ul>
+<li><strong>In plain terms:</strong> The PYT icon at the top of the screen no longer pulses. The NEW tile only moves inside the PYT row when you open it, and stops once you&#39;ve read the news.</li>
+</ul>
+<hr></div></details>
+<details><summary><span class="v">1.3</span>A MEGA UPGRADE!</summary><div class="body"><p>Mega Warehouse has had a mega upgrade!</p>
+<p>First, let's get something straight. This isn't a bug-fix update.</p>
+<p>We fumigated the warehouse before opening day and made sure there weren't any bugs hiding between the crates.</p>
+<p>But after such an overwhelmingly positive launch &mdash; 100% thumbs up! &mdash; we thought, why stop at making a warehouse that works?</p>
+<p>Let's bring it up to the PYT standard and give it a little of that magic some of you have come to expect from us.</p>
+<p>So, as a thank-you to everyone who's supported our little mod, we've been busy.</p></div></details>
+  </div>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>

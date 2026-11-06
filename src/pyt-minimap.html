@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>PYT - Minimap -- Transport Fever 3</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="description" content="Your whole map at a glance: towns, roads, rail, stations, industries, lines, depots and maintenance reach -- click anything to fly there. Peruse Your Territory.">
+<link rel="canonical" href="https://tfbpx.com/pyt-minimap.html">
+<meta property="og:title" content="PYT - Minimap -- Transport Fever 3">
+<meta property="og:description" content="Your whole map at a glance: towns, roads, rail, stations, industries, lines, depots and maintenance reach -- click anything to fly there. Peruse Your Territory.">
+<meta property="og:url" content="https://tfbpx.com/pyt-minimap.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="tfbpx.com">
+<meta property="og:image" content="https://image.modcdn.io/mods/03c3/6467242/0.11.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<style>
+  .pm-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px 32px; align-items: center; margin: 6px 0 26px; }
+  .pm-hero img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  @media (max-width: 760px) { .pm-hero { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .pm-actions .btn { text-decoration: none; }
+  .pm-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .pm-meta li { font: 600 12px/1 Barlow, sans-serif; letter-spacing: .05em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 99px; padding: 6px 10px; color: var(--ink-2); background: var(--surface); }
+  .pm-sec { margin: 34px 0 0; max-width: 78ch; }
+  .pm-sec > h2 { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 28px; margin: 0 0 8px; text-wrap: balance; }
+  .pm-sec ul { padding-left: 20px; } .pm-sec li { margin: 4px 0; }
+  .pm-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 0; }
+  .pm-gallery img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .pm-video { display: inline-flex; margin: 4px 14px 4px 0; }
+  .pm-hist { max-width: 78ch; } .pm-hist details { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin: 10px 0; padding: 0 14px; }
+  .pm-hist summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+  .pm-hist summary .v { font-family: "Barlow Condensed", Barlow, sans-serif; font-size: 22px; margin-right: 8px; }
+  .pm-hist .body { padding: 0 0 12px; } .pm-hist .de { border-top: 1px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+  .pm-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 0 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .pm-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: var(--surface-2); }
+  .pm-card h3 { margin: 12px 14px 4px; font-size: 20px; } .pm-card p { margin: 0 14px 10px; color: var(--ink-2); font-size: 15px; flex: 1; }
+  .pm-card .row { margin: 0 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<!--HEADER:none-->
+
+  <div class="page-head">
+    <p class="eyebrow">PYT mod &middot; Transport Fever 3 &middot; free on mod.io</p>
+    <h1>PYT - Minimap</h1>
+    <p class="sub">Your whole map at a glance: towns, roads, rail, stations, industries, lines, depots and maintenance reach -- click anything to fly there. Peruse Your Territory.</p>
+  </div>
+  <div class="pm-hero"><div>
+<ul class="pm-meta"><li>Version 1.5</li><li>Tested on TF3 build 40425</li></ul>
+<div class="pm-actions"><a class="btn" href="https://mod.io/g/transportfever3/m/pyt-mini-map">Get it on mod.io</a><a class="btn secondary" href="pyt-minimap-history.html">Update history</a><a class="btn secondary" href="pyt-mods.html">All PYT mods</a></div>
+</div>
+<div><img src="https://image.modcdn.io/mods/03c3/6467242/0.11.png" alt="PYT - Minimap"></div>
+  </div>
+  <section class="pm-sec"><h2>What it does</h2>
+<blockquote><p><strong><em>"It might be a mini map, but it&rsquo;s packed with information."</em></strong></p></blockquote>
+<p><strong>Towns, roads, rail, stations, industries, every line, your depots and their maintenance reach &mdash; in one window. Click anything and the camera flies there.</strong></p>
+
+
+<p>Where was that coal mine? Which towns does my bus line actually reach? Is anything maintaining the trucks out east? The Minimap answers at a glance: your map from above, north always up, an arrow where your camera is &mdash; and every layer a click on or off.</p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <em>Deutsch? Eine Kurzfassung auf Deutsch findet ihr weiter unten.</em></p>
+</section>
+  <section class="pm-sec"><h2>What you get</h2>
+<ul>
+<li><strong>Know your towns</strong> &mdash; every town by name, its population and where its land ends; the capital in gold</li>
+<li><strong>Find the factory</strong> &mdash; every industry by type, or <strong>Only the ones I ship from</strong>: your own supply chain</li>
+<li><strong>Find that item</strong> &mdash; every product as its own icon on the map; click one to fly straight there</li>
+<li><strong>Find your stations</strong> &mdash; train stations, bus and truck stops, harbours, airports and drone ports, each in its own colour (colour-blind safe)</li>
+<li><strong>Find your depots</strong> &mdash; train, road, tram and ship depots, aircraft hangars and maintenance buildings</li>
+<li><strong>Check your maintenance coverage</strong> &mdash; the reach of every depot and maintenance building, from the game&rsquo;s own figures; road, rail, ships and aircraft each with its own switch, the busy ones in orange</li>
+<li><strong>Follow every line</strong> &mdash; each in its colour along the real roads and rails; lines that can&rsquo;t run all the way are flagged, and any line opens in the game&rsquo;s line manager from the list</li>
+<li><strong>Spot the traffic jams</strong> &mdash; jams in orange, your own roads in yellow, every road type in its colour, and where tram track ends</li>
+<li><strong>Plan a path</strong> &mdash; sketch your next line across the map, name and colour it, and build along it; your sketches are saved with your game</li>
+<li><strong>Three sizes</strong> &mdash; S, M and L, the side panel folds away, and the map reads itself again about once a minute</li>
+</ul>
+</section>
+  <section class="pm-sec"><h2>How to start</h2>
+<ol>
+<li>The <strong>PYT</strong> row at the top of the screen &gt; the <strong>map</strong> tile</li>
+<li>It opens with roads and town names; click a heading icon to show stations, industries, lines, depots and more &mdash; the panel on the right filters each one</li>
+<li>Click anything on the map to fly there</li>
+</ol>
+</section>
+  <section class="pm-sec"><h2>With other pyt mods</h2>
+<p>Got <a href="https://mod.io/g/transportfever3/m/pay-your-tolls">PYT - Pay Your Tolls</a>? Your tolls show on the map with their cars or income &mdash; this month, this year or all time. Mega Warehouses, Factory Buffers, town, speed and distance signs and drone bases from the other PYT mods appear under the <strong>PYT</strong> heading. <em>Tell me about these mods</em> shows what each one adds.</p>
+</section>
+  <section class="pm-sec" style="max-width:none"><h2>Screenshots</h2>
+<div class="pm-gallery"><a href="https://image.modcdn.io/mods/03c3/6467242/1.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/1.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/2.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/2.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/3.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/3.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/4.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/4.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/5.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/5.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/6.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/6.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/7.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/7.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/8.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/8.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/9.1.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/9.1.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/10.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/10.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/11.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/11.png" alt=""></a><a href="https://image.modcdn.io/mods/03c3/6467242/12.png"><img loading="lazy" src="https://image.modcdn.io/mods/03c3/6467242/12.png" alt=""></a></div>
+</section>
+  <section class="pm-sec"><details><summary><h2 style="display:inline">Auf Deutsch</h2></summary>
+<p><em>Getestet mit Transport Fever 3, Build 40423.</em></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.4: Die Karte zeichnet in kleinen Teilen und nutzt Unver&#228;ndertes weiter &mdash; gro&#223;e Karten bleiben fl&#252;ssig; sie teilt sich ein Zeitbudget mit der PYT-Familie.</strong></p>
+<ul lang="de">
+<li>Fl&#252;ssiger auf gro&#223;en Karten: die Karte wird Teil f&#252;r Teil pro Bild aufgebaut, und wenn sich nur Fahrzeugpunkte oder der Plan bewegen, bleibt die Karte darunter stehen</li>
+<li>Ein Budget f&#252;r die Familie: das Zeichnen der Karte z&#228;hlt im Leistungsmesser von PYT &mdash; Settings und folgt 'Time per frame' (Light / Balanced / Full) und 'How often jobs run'</li>
+<li>PYT &mdash; Settings: der PYT-Knopf kann verblassen, bis die Maus dar&#252;ber ist, und eine Sprachwahl f&#252;r die PYT-Fenster</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.3.2: Auf der PS5 st&#252;rzte die Oberfl&#228;che ab &mdash; behoben.</strong></p>
+<ul lang="de">
+<li><strong>Kurz gesagt:</strong> Auf der PS5 das PYT-Neuigkeiten- und das Einstellungsfenster bringen die Oberfl&#228;che nicht mehr zum Absturz. Auf dem PC &#228;ndert sich nichts</li>
+<li><strong>Danke:</strong> an Maxmadimus, dessen Meldung bei Pay Your Tolls den Fehler fand</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.3.1: Rechteckige Karten werden jetzt in ihrer echten Form gezeigt, statt zu einem Quadrat gestaucht.</strong></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> Rechteckige Karten wurden zu einem Quadrat gestreckt &mdash; jetzt beh&#228;lt die Karte ihre echte Form, mittig im Fenster, der Bereich jenseits des Kartenrands ist dunkel</li>
+<li><strong>Behoben:</strong> Stadtgrenzen enden am Kartenrand</li>
+<li>Ein Klick ins Dunkle fliegt die Kamera zum n&#228;chsten Kartenrand. Quadratische Karten sehen aus wie bisher</li>
+<li><strong>Danke:</strong> an modiorange, der es auf einer 1:5-Karte entdeckt hat &mdash; solche Berichte machen die Mods f&#252;r alle besser, also immer her damit</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.3: Jede Einstellung der Karte wird jetzt mit dem Spielstand gespeichert &mdash; und ein neuer Schalter zeigt, wo die Fahrzeuge einer Linie gerade sind.</strong></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> Einwohner und jeder andere Schalter waren nach Speichern und Laden wieder aus &mdash; jetzt wird jede Einstellung mit dem Spielstand gespeichert: Ebenen, das offene Panel, Name / Einwohner / Grenzen / Gesuchte Waren, alle Filter, der Zoom und die Mautanzeige</li>
+<li><strong>Neu:</strong> Fahrzeuge: An &mdash; unter Linien eine Linie bei Deine Linien anklicken, damit sie allein gezeigt wird, dann Fahrzeuge einschalten: ihre Fahrzeuge erscheinen als wei&#223;e Punkte, wo sie gerade sind, alle paar Sekunden neu</li>
+<li><strong>Behoben:</strong> ganz an den oberen Bildschirmrand gezogen, reagierten die Kn&#246;pfe zum Auf-/Zuklappen und f&#252;r die Gr&#246;&#223;e nicht mehr &mdash; die Karte sitzt jetzt nie h&#246;her, als sie noch funktionieren</li>
+<li><strong>Danke:</strong> an Ten66, der den vergesslichen Einwohner-Schalter gefunden hat &mdash; solche Berichte machen die Mods f&#252;r alle besser, also immer her damit</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.2.1: Oben rechts geparkt, bleibt die Karte jetzt auch oben, wenn sie gr&#246;&#223;er oder kleiner wird.</strong></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> oben geparkt, rutschte die Karte beim Vergr&#246;&#223;ern oder Verkleinern nach unten &mdash; jetzt beh&#228;lt sie ihre H&#246;he und schiebt sich nur zur Seite</li>
+<li><strong>Danke:</strong> an alle, die ihre Karte in die Ecke parken &mdash; wir auch</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.2: Die Karte bleibt jetzt im Bild &ndash; rechts oder unten geparkt, r&uuml;ckt sie beim Aufklappen selbst zur&uuml;ck auf den Bildschirm und beim Zuklappen wieder an ihren Platz.</strong></p>
+<ul lang="de">
+<li><strong>Bleibt im Bild</strong> &ndash; rechts oder unten geparkt, schiebt ein Panel, die Infokarte oder eine gr&ouml;&szlig;ere Stufe die Karte jetzt zur&uuml;ck ins Bild (ein kurzes Blinken); beim Zuklappen kehrt sie an ihren Platz zur&uuml;ck</li>
+<li>Nie beim Verschieben &ndash; sie greift nur nach einem Klick auf einen ihrer eigenen Kn&ouml;pfe ein</li>
+<li>Sie sitzt direkt &uuml;ber der unteren Spielleiste und merkt sich auch Pl&auml;tze in der Ecke unten rechts</li>
+<li><strong>Gr&ouml;&szlig;e S:</strong> Ortsnamen erscheinen, sobald ihr hineinzoomt (ab x2)</li>
+<li><strong>Kurz gesagt:</strong> das Fenster l&auml;uft beim Vergr&ouml;&szlig;ern nicht mehr &uuml;ber den Bildschirmrand hinaus</li>
+</ul>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.1: Zoom bis x12 (auch mit dem Mausrad), eine Infokarte f&uuml;r jede Stadt, die Hauptstadt mit Krone &ndash; und euer Spielstand merkt sich Gr&ouml;&szlig;e, Platz und Nadel der Karte.</strong></p>
+<p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="30"> <strong>Neu in 1.0.1: Die Karte schreibt nicht mehr Hunderte MB Warnungen ins Spiel-Log &ndash; lange Sitzungen laufen ruhiger.</strong></p>
+<p><em>Germany is PYT's biggest supporter; here is the short version in German.</em></p>
+<p><strong>Danke, Deutschland!</strong> Die meisten PYT-Spieler kommen aus Deutschland &ndash; ihr seid unsere größten Unterstützer. Unser Deutsch ist nicht perfekt: Wenn euch ein holpriger Satz auffällt, schreibt es gern in die Kommentare.</p>
+<p><strong>Worum es geht:</strong> Eure ganze Karte in einem Fenster &ndash; Städte, Straßen, Schienen, Stationen, Industrien, alle Linien, eure Depots und ihre Wartungsreichweite. Ein Klick, und die Kamera fliegt hin. Findet die Fabrik, findet jede Ware als Symbol auf der Karte, prüft eure Wartungsabdeckung (Straße, Schiene, Schiffe, Flugzeuge), seht Staus und folgt jeder Linie. Skizziert eure nächste Strecke direkt auf der Karte. Drei Größen, die Menüs sind auf Deutsch. Mit PYT - Pay Your Tolls zeigt die Karte eure Mautstellen mit Fahrzeugen und Einnahmen.</p>
+</details></section>
+  <section class="pm-sec"><h2>Latest update</h2>
+<p><strong>1.5 &mdash; MADE TO MEASURE</strong></p>
+<p>Ten66 asked why their long, thin map came in a square box with dark curtains drawn either side. We took the curtains down.</p>
+<p>In plain terms: on a 1:2 or 1:3 map the minimap now takes the map's own shape -- no dark borders, and the map shown bigger -- and the window follows it.</p>
+<ul>
+<li><strong>New:</strong> a map that isn't square fills the minimap &mdash; its short side at full size, its long side running on. No more dark borders, and a 1:2 or 1:3 map is shown up to two or three times as big</li>
+<li><strong>New:</strong> the window follows the map's shape &mdash; on a narrow map the buttons wrap into extra rows, the layer icons get a little smaller and the title shortens to MM. S, M and L keep their sizes, and the window always stays on the screen</li>
+<li><strong>Better:</strong> the window no longer hops when you pick a size or fold it &mdash; it only moves when it would run off the screen</li>
+<li>A square map looks just as before</li>
+<li><strong>Thanks:</strong> to Ten66 for the idea</li>
+</ul>
+<p><a href="pyt-minimap-history.html">Full update history &rarr;</a></p></section>
+  <section class="pm-sec"><h2>More PYT mods</h2>
+<ul class="pm-related"><li><a href="pyt-pay-your-tolls.html">Pay Your Tolls</a></li><li><a href="pyt-blueprint-exchange.html">Blueprint Exchange</a></li><li><a href="pyt-drone.html">Drone</a></li><li><a href="pyt-harbour-city.html">Harbour City</a></li><li><a href="pyt-1940-home-front.html">1940 Home Front</a></li><li><a href="pyt-town-signs.html">Town Signs</a></li><li><a href="pyt-distance-signs.html">Distance Signs</a></li><li><a href="pyt-mega-warehouse.html">Mega Warehouse</a></li><li><a href="pyt-speed-signs.html">Speed Signs</a></li><li><a href="pyt-factory-buffer.html">Factory Buffer</a></li><li><a href="pyt-a-plus.html">A+ (Advanced Auto Naming)</a></li><li><a href="pyt-tram-doctor.html">Tram Doctor</a></li><li><a href="pyt-early-mixed-cargo-trucks.html">Early Mixed Cargo Trucks</a></li><li><a href="pyt-late-mixed-cargo-trucks.html">Late Mixed Cargo Trucks</a></li><li><a href="pyt-load-planner.html">Load Planner</a></li><li><a href="pyt-mixed-cargo-vanilla-conversion-kit.html">Mixed Cargo Vanilla Conversion Kit</a></li></ul></section>
+
+<!--FOOTER-->
+</div>
+</body>
+</html>
