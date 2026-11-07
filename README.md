@@ -151,7 +151,7 @@ slot file overwritten by the real download.
 
 ## Banner
 
-`bpx-banner-1060.jpg` / `bpx-banner-2120.jpg` (from the BPX banner art)
+`tfbpx-banner-1060.jpg` / `tfbpx-banner-2120.jpg` (Blender Claude, 2026-11-07: the PYT shield, "Transport Fever Blueprint Exchange", the 1936 Streamliner as linework; sources in the Blender session's banner folder; the old BPX art is kept as bpx-banner-*.jpg)
 are the page heading on the library page, and a link home at the top of
 the guide and About pages, served with `srcset` so big screens get the
 sharp one and phones the small one. The banner's own fan-made /
