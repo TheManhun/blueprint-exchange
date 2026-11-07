@@ -55,6 +55,38 @@ def render(name, header, footer):
     return text
 
 
+def page_date(src_path):
+    """The day the page's own source last changed: its last commit, or today while it has uncommitted edits.
+    Only src/<page> counts -- a shared header / footer change is not new content."""
+    import datetime
+    import subprocess
+    rel = os.path.relpath(src_path, ROOT).replace(os.sep, "/")
+    run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if run("status", "--porcelain", "--", rel):
+        return datetime.date.today().isoformat()
+    return run("log", "-1", "--format=%cs", "--", rel) or datetime.date.today().isoformat()
+
+
+def sitemap_lastmod():
+    """Keep sitemap.xml's page list as written, with a <lastmod> per page (Search Console, 2026-11-07)."""
+    path = os.path.join(ROOT, "sitemap.xml")
+    text = read(path)
+
+    def one(m):
+        loc = m.group(1)
+        name = loc.split("tfbpx.com/", 1)[1] or "index.html"
+        src = os.path.join(SRC, name)
+        if not os.path.exists(src):
+            return "  <url><loc>%s</loc></url>" % loc
+        return "  <url><loc>%s</loc><lastmod>%s</lastmod></url>" % (loc, page_date(src))
+
+    new = re.sub(r"  <url><loc>([^<]+)</loc>(?:<lastmod>[^<]*</lastmod>)?</url>", one, text)
+    if new != text:
+        with io.open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(new)
+        print("sitemap.xml: lastmod dates updated")
+
+
 def main():
     check = "--check" in sys.argv
     header = read(os.path.join(SRC, "_header.html"))
@@ -71,6 +103,8 @@ def main():
             if not check:
                 with io.open(out_path, "w", encoding="utf-8", newline="\n") as f:
                     f.write(built)
+    if not check:
+        sitemap_lastmod()
     if check:
         if stale:
             print("out of date:", ", ".join(stale))
