@@ -75,11 +75,11 @@
     </div>
 
     <div class="ea-mod">
-      <h3>PYT - Pay Your Tolls<span class="ver">3.1.1</span></h3>
-      <p><strong>Your fleet, your roads:</strong> trams pay tolls, and cars, buses, trucks and trams each have their own price. My Fleet in the toll window shows buses, trucks, trams or your whole fleet. New option: tolls only on roads you own (a red padlock shows the rest). Signs and gantries keep off the lanes &mdash; at Y splits, on curves and when a town builds a junction beside them. Lighter plaza models at a distance, and the 1980 gantry lights glow at night again. New in 3.1.1: the toll on your screen comes first in the toll list, in blue, and every toll&rsquo;s card has an Open toll list button. Includes 3.0.2&rsquo;s Mod Bar fix, the fading PYT button and the PlayStation fix waiting on mod.io.</p>
-      <div class="ea-facts"><span>19.4 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl">VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/75914a5cb2be09a0a39be64d25c469afd3557266afc39f5ca456f84b8f3b4a4b" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.1.1_PC.zip" hidden></span></div>
-      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.1.1_PC.zip">Download Pay Your Tolls 3.1.1</a>
-      <span class="hash">SHA-256 75914A5CB2BE09A0A39BE64D25C469AFD3557266AFC39F5CA456F84B8F3B4A4B</span>
+      <h3>PYT - Pay Your Tolls<span class="ver">3.1.2</span></h3>
+      <p><strong>Your fleet, your roads:</strong> trams pay tolls, and cars, buses, trucks and trams each have their own price. My Fleet in the toll window shows buses, trucks, trams or your whole fleet. New option: tolls only on roads you own (a red padlock shows the rest). Signs and gantries keep off the lanes &mdash; at Y splits, on curves and when a town builds a junction beside them &mdash; and every toll keeps 10 m clear of an intersection (on a stretch too short for that, it stands in the middle). Lighter plaza models at a distance, and the 1980 gantry lights glow at night again. New in 3.1.1: the toll on your screen comes first in the toll list, in blue, and every toll&rsquo;s card has an Open toll list button. Includes 3.0.2&rsquo;s Mod Bar fix, the fading PYT button and the PlayStation fix waiting on mod.io.</p>
+      <div class="ea-facts"><span>19.4 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl" hidden>VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/118eb850b421285b4990021064cc52b2fab4556c9d0983a4fd3c584854dddb2a" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.1.2_PC.zip" hidden></span></div>
+      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.1.2_PC.zip">Download Pay Your Tolls 3.1.2</a>
+      <span class="hash">SHA-256 118EB850B421285B4990021064CC52B2FAB4556C9D0983A4FD3C584854DDDB2A</span>
     </div>
 
     <div class="ea-mod">
@@ -126,10 +126,10 @@
 const FILES = {
   "98FEA2CC8489D4A9999056347AABBEFFBA23669E45AA212F98EFD71E9BF4648A": { name: "PYT - A Plus 1.0.3", vt: "vt-aplus" },
   "6C4467A70880B01245978C723A508D55061DB68483D519C42A353566682D8716": { name: "PYT - Blueprint Exchange 1.3.2", vt: "vt-bpx" },
-  "75914A5CB2BE09A0A39BE64D25C469AFD3557266AFC39F5CA456F84B8F3B4A4B": { name: "PYT - Pay Your Tolls 3.1.1", vt: "vt-pyt" },
+  "118EB850B421285B4990021064CC52B2FAB4556C9D0983A4FD3C584854DDDB2A": { name: "PYT - Pay Your Tolls 3.1.2", vt: "vt-pyt" },
   "5DBAF53BA5EB56BDFD33B4C07508DD58F3A3B066CFFEBA33C020A72223C960CD": { name: "PYT - Drone 2020 1.1.4", vt: "vt-drone" },
 };
-const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone', 'vt-pyt']); // files VirusTotal has (Epod uploads them; only those get a report link)
+const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone']); // files VirusTotal has (Epod uploads them; only those get a report link)
 const vtUrl = h => "https://www.virustotal.com/gui/file/" + h.toLowerCase();
 // every VirusTotal link on the page goes to its file's live report, by fingerprint
 for (const [h, f] of Object.entries(FILES)) { const a = document.getElementById(f.vt); if (a) a.href = vtUrl(h); }
