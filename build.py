@@ -48,6 +48,10 @@ def render(name, header, footer):
         text = text.replace("<!--FOOTER-->", footer.rstrip("\n"))
     text = re.sub(r"<!--INCLUDE:(\w+)-->",
                   lambda m: read(os.path.join(SRC, "_%s.html" % m.group(1))).rstrip("\n"), text)
+    # Search Console (2026-11-07: 'User-declared canonical: None'): every indexable page names its own address
+    if 'rel="canonical"' not in text and "noindex" not in text and "</head>" in text:
+        url = "https://tfbpx.com/" + ("" if name == "index.html" else name)
+        text = text.replace("</head>", '<link rel="canonical" href="%s">\n</head>' % url, 1)
     return text
 
 
