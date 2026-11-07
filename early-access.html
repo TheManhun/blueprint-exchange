@@ -150,7 +150,7 @@ const FILES = {
   "9DEED5D516891022053A630EBB8F23DED807216B115FAC289C092F4AB263A967": { name: "PYT - Pay Your Tolls 3.1", vt: "vt-pyt" },
   "5DBAF53BA5EB56BDFD33B4C07508DD58F3A3B066CFFEBA33C020A72223C960CD": { name: "PYT - Drone 2020 1.1.4", vt: "vt-drone" },
 };
-const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone']); // files VirusTotal has (Epod uploads them; only those get a report link)
+const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone', 'vt-pyt']); // files VirusTotal has (Epod uploads them; only those get a report link)
 const vtUrl = h => "https://www.virustotal.com/gui/file/" + h.toLowerCase();
 // every VirusTotal link on the page goes to its file's live report, by fingerprint
 for (const [h, f] of Object.entries(FILES)) { const a = document.getElementById(f.vt); if (a) a.href = vtUrl(h); }
