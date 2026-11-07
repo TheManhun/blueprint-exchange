@@ -162,6 +162,18 @@
         <h3>Test pure-Lua modules outside the game <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>Modules with no game API calls (data, serialisers, geometry) run unmodified in <code>lupa</code>, Python's embedded Lua. Give the harness a global table that refuses new globals to catch strict-global errors offline.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: print() from a construction script may never reach the log &mdash; try debugPrint <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Lines written with plain <code>print</code> inside a construction script never showed up in <code>stdout.txt</code>; the same lines through <code>debugPrint</code> did. (A game script&rsquo;s <code>print</code> does reach the log.) If a construction&rsquo;s log lines seem to vanish, switch to <code>debugPrint</code> before deciding the code isn&rsquo;t running.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: what a save load picks up, and what needs a full restart <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul><li>A change to a game script (the <code>.script.lua</code> behind a <code>.gs.lua</code>) was picked up just by loading a save (seen).</li><li>New files are not indexed until a full restart: a .mdl naming a new sound set logged <code>Referenced sound set not found</code> until the game was restarted (seen). Sound sets and model metadata load at start-up.</li><li>Loading a save re-read the <code>.con</code> files (a changed <code>availability</code> year took effect), but a changed construction build script seemed to need a full restart (inferred).</li></ul><p>When in doubt, restart the game before judging a test.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: no // in TF3&rsquo;s Lua &mdash; the file never loads <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>TF3 runs LuaJIT (Lua 5.1 syntax), so the Lua 5.3 floor division <code>//</code> is a syntax error (<code>unexpected symbol near '/'</code>): the construction script failed to compile and the warehouse never built. Write <code>math.floor(a / b)</code>. Check syntax with LuaJIT &mdash; a 5.3 / 5.4 checker accepts <code>//</code> and won&rsquo;t warn you. Seen in game.</p>
+      </article>
     </div>
   </section>
 
@@ -217,6 +229,14 @@ end</pre>
       <article class="note" data-g="tf2">
         <h3>Strict globals and declaration order <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p>Assigning an undeclared global fails with <code>res/scripts/init.lua:130: creating globals by assignment is not allowed</code>. That usually means a file-level <code>local</code> was declared <em>below</em> the function that uses it. Likewise, a <code>local function</code> defined below its caller is nil at the call: <code>attempt to call global '&hellip;' (a nil value)</code>.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a game script&rsquo;s GUI hook is its own Lua world <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Window scripts share one Lua state (and one <code>string.*</code> table, which is how mods can share data). A game script&rsquo;s <code>guiUpdate</code> hook is not part of it: figures two game scripts put on a <code>string.*</code> field never reached a window script. What worked: keep the figures in the game script&rsquo;s saved <code>state</code> and read <code>api.engine.getComponent(gameScriptSystem.getEntityForGameScript("&lt;modId&gt;::/x.gs"), GAME_SCRIPT).state</code> from the window &mdash; an expensive read (see Performance). Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: &lsquo;Missing builtin recipeId&rsquo; means a game script loaded window code <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A shared module did <code>ug_require "::/gui/main/react.lua"</code> (and other UI helpers) at file level, and game scripts &mdash; which also run on the simulation threads, with no window toolkit &mdash; required it: the log filled with &ldquo;Missing builtin recipeId&rdquo; (24 in one session). Fetch UI modules lazily, inside a function that only runs when something is drawn, and keep any file game scripts may load free of window code at top level. Seen in game.</p>
       </article>
     </div>
   </section>
@@ -277,6 +297,18 @@ end</pre>
         <h3>Entity ids are reused <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>A record keyed by id alone matched a quarry that had taken an old town's id ("% Owned 9434.40%"). An undo "new since my snapshot" diff picked up four of the player's rebuilt track pieces. Never cache "what this id is" across passes. Store the type, and the position where it stood, with the id, and re-check both before acting.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a vehicle&rsquo;s own sound set (.snd.lua) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>In the base zips a <code>.snd</code> is the file <code>x.snd.lua</code>: plain Lua &mdash; <code>soundsetutil.makeSoundSet()</code>, then one <code>soundsetutil.addTrackParam01(data, wav, reach_m, volumeCurve, pitchCurve, {"vehicle","speed01"|"power01"})</code> per layer, and <code>addEvent(data, "horn", {wavs})</code>. WAV paths are relative to the .snd.lua&rsquo;s folder; the base helicopter WAVs are 48 kHz, mono, 16-bit.</p><p>The <code>.mdl</code> names the set without <code>.lua</code>: <code>soundConfig.soundSet.name = "mymod_1::/my_sound/my.snd"</code>. A copied base set&rsquo;s first line must become <code>require "::/scripts/soundsetutil.lua"</code>; as copied, the require fails and the whole set is dropped (<code>Referenced sound set not found</code>). To lower the volume, halve each track&rsquo;s first curve &mdash; <code>addEvent</code> has no gain. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: keep every file path lower case <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The Validation Report warns once per file: &ldquo;File path contains uppercase characters, but lowercase is recommended&rdquo; &mdash; 23 warnings for one Model Editor folder (<code>PYT_toll_sign/</code>) plus a picture named <code>flag_pt_BR</code>. All lower case: &ldquo;No Issues Found&rdquo; on PC and Console. Renaming a model breaks saves that hold it, and on Windows git doesn&rsquo;t see a case-only rename (use <code>git mv</code>). Seen.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a word you didn&rsquo;t translate gets the game&rsquo;s translation <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>_("Balance")</code> had no entry in our strings.json; a Traditional Chinese game showed 收支 &mdash; the game&rsquo;s word for the <em>financial</em> balance, not our &lsquo;share the space evenly&rsquo;. <code>_()</code> falls back to the game&rsquo;s own catalogue, so a common English word the game uses (Balance, Apply, Off, Stock&hellip;) silently gets the game&rsquo;s meaning in every language you didn&rsquo;t cover. Give every key every language you ship, or use keys the game can&rsquo;t have (<code>mymod_balance</code>). Seen in game.</p>
+      </article>
     </div>
   </section>
 
@@ -328,6 +360,10 @@ end</pre>
         </ul>
         <p>Units: the label's <code>transf</code> scales by 0.01, so <code>size</code> is in centimetres. The A4's plate is <code>size = { 145.8, 13.6 }</code>, about 1.46 &times; 0.14 m. So a vehicle can carry player-chosen text: give it a <code>NAME</code> label and the player sets the text by renaming the vehicle.</p>
         <p><strong>Seen working</strong> on a helicopter-type vehicle (a blimp's side billboard): a <code>NAME</code> label with <code>childId</code> on the board's node, <code>size = { 2500, 250 }</code> (25 &times; 2.5 m), placed about 1.3 cm off the board's face (4 cm made it vanish), <code>alignment</code> and <code>verticalAlignment</code> <code>CENTER</code>, <code>fitting = "CUT"</code>. The player renamed the blimp and the board showed it, about 30 characters across. <strong>Seen (TF3 40420): label text is NOT lit at night.</strong> On a glowing (emissive) board it shows dark, even at dusk, and a <code>color</code> above white (4, 4, 4) changes nothing. For a sign that must read at night, paint the text into an emissive texture instead.</p>
+        <p><strong>Light a label at night with SPOT lights.</strong></p>
+        <p>Labels are unlit at night, but you can light them: two SPOT lights per label face in the .mdl&rsquo;s <code>lightSourceList</code>, about 3 m in front and 1.8 m below the board, at a quarter and three-quarters of its width, aimed up &mdash; cool white (0.9, 0.95, 1), strength 0.35, radius 9, angles 100 / 40, on 17:30&ndash;6:30. A colour brighter than white (4) did nothing. Seen in game.</p>
+        <p><strong>Labels under about 0.15 m break up; COMPANY_NAME works on constructions.</strong></p>
+        <p>Test boards (CUSTOM labels 0.05&ndash;0.40 m, STD and SCALE, on plain and busy backgrounds): 0.07 m text broke into fragments everywhere; 0.15 m and up drew clean. Bake smaller text into the texture. A <code>COMPANY_NAME</code> label on a construction&rsquo;s model shows the player&rsquo;s company name, not only on vehicles. Seen in game.</p>
       </article>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Every construction's params need a seed <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
@@ -354,6 +390,8 @@ end</pre>
         <h3>TF3: asking for a removed entity throws <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p><code>api.engine.getComponent(e, …)</code> on an entity that no longer exists does not return <code>nil</code>: it throws <code>Invalid entity</code>. Inside a <code>sendCommand</code> callback that is fatal (<code>Engine.cpp:1136 GetRevisionExisting: Assertion 'engine.EntityExists(entity)' failed</code>). BPX removed an industry, then checked it was gone with a bare <code>getComponent</code>, and the game crashed even though the removal had worked. Wrap every lookup of something you may just have removed in <code>pcall</code>, and treat a throw as "gone".</p>
         <p>The same applies to the entity list a build command hands back. After an in-place rebuild (a proposal that removes a construction and re-adds it with <code>old2new</code>, the base game's way of moving an industry), that list also holds entities the command removed. BPX looked up every entity in it, hit one of those, and crashed. Treat a command's result entities as "may be gone" too.</p>
+        <p><strong>Inside a rebuild&rsquo;s callback, lines still name the deleted stations.</strong></p>
+        <p>Going through the lines stopping at a construction <em>inside</em> its rebuild&rsquo;s callback: a line&rsquo;s stops can still name the stations the rebuild just removed, and asking about one was an engine assert pcall can&rsquo;t catch (<code>FATAL it != components.end()</code>, 7 crashes). Queue that work a few seconds later and check every id with <code>api.engine.entityExists</code> first. Seen.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: any construction can be a road maintenance post <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -404,6 +442,20 @@ end</pre>
         <h3>Ghosts with mixed passenger and cargo terminals crash <span class="tags"><span class="tag tf2">TF2</span><span class="tag crash">Fatal</span></span></h3>
         <p>A construction or build ghost holding passenger <em>and</em> cargo terminal-defining models died with <code>Assertion allPersonEdgesHaveTransportModePerson != allPersonEdgesHaveTransportModeCargo failed</code>. A ghost carrying terminal models plus rail station track died with <code>StationSystem.cpp:113 EntityAdded: Assertion pr.second failed</code>. Any new <em>kind</em> of model in a ghost is a crash risk. Model metadata (<code>modelRep.get(i).metadata.transportNetworkProvider.terminals</code>) is readable from the GUI to screen them.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a construction rebuilt in place comes back with a new entity id <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>After a replace (<code>createProposalReplaceConstruction</code>, or remove plus add) the construction is a new entity. A script that tracked &lsquo;recently placed, re-check every 2 s&rsquo; by entity id lost it the moment its own rebuild landed, and the follow-up work arrived minutes late. Track pending work by place (position within a few metres plus file name), or re-key it from the build result. Seen in game.</p>
+        <p><strong>One rebuild of a construction at a time.</strong></p>
+        <p>A second job rebuilding the same construction while the first rebuild was still in flight failed with &ldquo;invalid entity&rdquo; and was refused. Mark a construction &lsquo;rebuilding&rsquo; when you send, let other jobs wait for the build to land, chain the next step from the build&rsquo;s callback, and retry a refused rebuild a few times. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: spawning an industry from a game script &mdash; makeIndustrySpawnProposal <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>From an engine-thread game script, <code>api.engine.util.proposal.makeIndustrySpawnProposal(tag, town)</code> sent with <code>makeWorldBuildProposalCmd</code> (no callback) spawned an Iron Ore Mine, and later a Coal Mine and an Oil Well &mdash; the base prospection path without its permit queue. The placement tag equals the industry name for <code>iron_ore_mine</code>, <code>coal_mine</code>, <code>oil_well</code>, <code>steel_mill</code>, <code>oil_refinery</code>, <code>chemical_plant</code>. Crude oil has two producers, <code>oil_well</code> and <code>oil_platform</code> &mdash; check both before deciding a map lacks it. Skip it in the map editor (<code>isMapEditor</code>). Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: rebuilt constructions collect numbers on their names (&ldquo; 2 2 2&rdquo;) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>When a renamed &lsquo;X 2&rsquo; is rebuilt while the old piece still stands in the same proposal, the game adds another number every rebuild &mdash; saves ended up with &ldquo;Grimsby Toll Gantry 2 2 2 &hellip; 2&rdquo; (19 twos). Strip runs of trailing numbers back to the root, and re-apply your chosen name after each rebuild. Seen in game.</p>
+      </article>
     </div>
   </section>
 
@@ -449,6 +501,8 @@ end</pre>
       <article class="note" data-g="tf2 tf3 crash">
         <h3>Snap nodes need exactly one edge <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>TF2: <code>Assertion it-&gt;second.second == 1 failed</code> when two edges ended at a construction snap node. TF3: <code>Assertion nodeInfo.edgeCount == 1</code>. Very short snap pieces in TF3 also crashed on hover: <code>it2 != nodeSegment2minDist.end()</code>.</p>
+        <p><strong>Very short snap pieces crash the snap preview.</strong></p>
+        <p>A construction whose snap ends were 2 m road stubs crashed while its ghost hovered over a road: &ldquo;Assertion it2 != nodeSegment2minDist.end()&rdquo;. With 30 m in / out pieces snapping at the outer ends the crash was gone (cause inferred). Keep snap pieces a normal length.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>Curvature and slope: the real limits <span class="tags"><span class="tag tf2">TF2</span></span></h3>
@@ -541,6 +595,24 @@ end</pre>
           <li><strong>Modular station layout:</strong> each unbroken run of track modules is its own stop. Cargo platforms are two slots wide. The maximum length is 840 m.</li>
         </ul>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: transportModesStreet on a street type sorts vehicles into roads <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Changing each lane&rsquo;s <code>transportModes</code> did not change routing; the street type&rsquo;s <code>transportModesStreet = {"BUS"}</code> / <code>{"TRUCK"}</code> / <code>{"CAR"}</code> did &mdash; buses took their own road at once. Vehicles keep the route planned when they set off and switch only on a re-route (redrawing a road forces one). A cars-only road doesn&rsquo;t fully keep trucks out when their route needs it, and at a split cars take the most direct branch. For a road that is really bus / truck only, use <code>{"BUS","TRUCK"}</code>, as the game&rsquo;s own bus lanes do. Seen in game.</p>
+        <p><strong>Lane locks hold within one road only.</strong></p>
+        <p>Where a road splits into separate booth roads, routing takes the quicker branch: cars took the bus booth on a 3-lane plaza, and a truck used the truck booth one way and the car booth back. Lock the lanes on the approach road, as vanilla bus lanes do, so only the right lane leads into each branch; for line vehicles add a waypoint (next note). Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: adding line waypoints from a script <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A waypoint lives on the stop it follows: <code>stop.waypoints = { Waypoint }</code>, each with <code>edgePos = { edgeId = { entity = road piece, index = lane }, param = 0..1 }</code>. Setting <code>wp.edgePos.param</code> in place fails (&ldquo;cannot write to read only member &lsquo;param&rsquo;&rdquo;): build it whole &mdash; <code>api.type.EdgePos.new(api.type.EdgeId.new(piece, lane), 0.5)</code> &mdash; assign it to <code>api.type.Waypoint.new().edgePos</code>, put the stops back into the line and send <code>makeLineUpdateCmd</code>. A waypoint on a lane the vehicle may not use made its route loop. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: several roads leaving one point collide with themselves <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A plaza splitting into three 9 m booth roads from one point was refused with &ldquo;Collision&rdquo; &mdash; their footway shoulders overlapped. Starting each road on its own side of the shared joint (outer lanes about 5 m off, heading straight ahead), as a hand-built fan does, fixed it. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a construction&rsquo;s road end that matches a town street gets a pedestrian crossing <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>When a construction&rsquo;s road end was made the same type as the town street it joined, the joint was drawn with a pedestrian crossing. Match end types on country roads only, if you don&rsquo;t want crossings. Seen in game.</p>
+      </article>
     </div>
   </section>
 
@@ -598,6 +670,8 @@ end</pre>
         <h3>A model-only construction becomes a decoration <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>A construction holding only a model, with no ground paint, roads or snap patch, is flattened into an ASSET_GROUP (a decoration), not a CONSTRUCTION. It can't be clicked, and its <code>.con</code> is never read again. Only position and rotation are kept, so scale is lost. Adding <code>groundFaces</code> or a snapPoint ground patch, or owning roads, keeps it a construction. This is a trap for toll booths, and the key to pasting decorations (see below).</p>
         <p>It's also a trap for scripts that place such a <code>.con</code> and later look for it again, like PYT's speed boards. A <code>CONSTRUCTION</code> search never finds it, and any custom params are gone. Search <code>ASSET_GROUP</code> instead, match the model name from <code>MODEL_INSTANCE_LIST</code> <code>fatInstances</code> (<code>api.res.modelRep.getName</code>), and remove it with a full <code>api.type.Proposal</code> (<code>toRemove</code>), not <code>SimpleProposal.constructionsToRemove</code>. Every rebuild we did the other way stacked another copy.</p>
+        <p><strong>A lone road edge on a model-only construction crashed the builder.</strong></p>
+        <p>Giving a model-only gantry one straight 24 m STREET edge with <code>snapNodes {0, 1}</code> (like the base roundabout) to keep it from becoming a decoration crashed the builder on placing: &ldquo;Assertion (angle)&gt;=(.0f) failed -nan&rdquo;. The idea was dropped, so the exact cause is unknown.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>The held tool caches its preview <span class="tags"><span class="tag tf2">TF2</span></span></h3>
@@ -626,10 +700,14 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: snapping to roads <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>The con-level <code>snapping = { road = true }</code> did nothing. <code>result.snapPoint = { transf, snapToBaseEdgeTypes = {"STREET"}, allowSnapToBaseEdgeEnds = true }</code> works, but snaps to the road's <em>edge</em>, so offset by half the road width.</p>
+        <p><strong>Place from the measured traffic lanes, not the snap edge.</strong></p>
+        <p>On a narrow dirt road the game&rsquo;s &lsquo;edge&rsquo; lies outside the visible surface, so a snapped sign stood in the road. Read the snapped piece, sum the widths of its traffic lanes, and place from that. On base country roads the outer lane is 5 m and the inner lanes 4 m &mdash; the white line sits inside the outer lane with a shoulder beyond, so treat an outer lane over 3.5 m as lane plus shoulder.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: edge objects snap only as stops or signals <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>edgeObject = { snapToStreet = true }</code> with <code>result.edgeModels</code> snaps only if the object is a stop or a signal (EdgeObjectType has only STOP_LEFT / STOP_RIGHT / SIGNAL). The result is an EDGE_OBJECT entity that the game treats as a bus stop. The placement preview ignores an edgeModels translation.</p>
+        <p><strong>A kerbside edge object is a stop to the game.</strong></p>
+        <p>A kerb-snapping sign built as a stop (<code>edgeObject = { snapToStreet = true }</code> plus a street terminal) gets a stop window, catchment and name, and bus lines can use it. It can&rsquo;t share a road side with a real bus stop (&ldquo;Replacing Existing&rdquo;). Kerb snapping is set per .con, not by a param, so &lsquo;snap / free&rsquo; needs two build-menu entries. Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: roads inside constructions <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -642,6 +720,8 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: collision can depend on rotation <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Construction junctions collided at some angles only. Sweep angles with dry runs (<code>makeProposalData</code> per angle step and params variant) to find them, and space pieces off the junction point.</p>
+        <p><strong>Measured junction spacing that passes at every angle.</strong></p>
+        <p>A construction&rsquo;s split junctions, dry-run with <code>makeProposalData</code> at every 10&deg; (the params need a <code>seed</code>): three pieces at one junction failed at some angle in every layout; one piece on the junction point plus one beside it failed at some angles; two pieces both off the point at &plusmn;3 to &plusmn;5 m passed at every angle, while &plusmn;6 to &plusmn;8 m failed at all (&ldquo;Construction Not Possible&rdquo;). Leaving the junction angled about 4&deg; outward fixed the 2-lane case. For a 3-way split, use two two-piece splits spaced 3.5 / 4.5 m. Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3 .con basics that bite <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -652,10 +732,14 @@ end</pre>
           <li>A maintenanceCost of 0 or missing becomes cost/6 a year; set 1 to make it negligible.</li>
           <li>No construction script sees the game year, so era variants are separate entries with yearFrom/yearTo. yearTo 1 hides an entry but keeps it for old saves.</li>
         </ul>
+        <p><strong>An untouched menu param can arrive as 0.</strong></p>
+        <p>A choice the player picks arrives 1-based, but a row left at its default came in as <strong>0</strong>: Layout at its default read 0, the script treated 0 as &lsquo;not set&rsquo; and built the other layout. Treat 0 and 1 both as the first choice (<code>math.max(tonumber(v) or 1, 1)</code>) and log the raw value once. Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: build-menu tabs are data <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>gui/construction/menu/menu_categories/category_&lt;x&gt;.res.lua</code> returns <code>{ type = "menu_category", data = { category, order, name, icon, menu = "ROADS" } }</code>. The icon is 48×48 white-on-black, @2x. Put your entries in that category and they get their own tab. The icon must be an <strong>8-bit greyscale</strong> TGA (type 3): white is the glyph, black is see-through, and the game tints it like its own tabs. A full-colour RGBA icon shows its background as a dark square. <code>menu = "LANDSCAPING"</code> works the same way, and a tile there can open a window: fire a react event when its action mounts.</p>
+        <p><strong>Each mod must ship the tab icon itself.</strong></p>
+        <p>Two mods shared one menu category; the one that didn&rsquo;t ship <code>category_&lt;x&gt;@2x.tga</code> showed the missing-texture square when it was the only one installed. Every mod that declares the category needs its own copy of the icon. Seen.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a template whose preview fails crashes the build menu <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -726,6 +810,8 @@ end</pre>
           <li>A segment refresh that takes a new street template rebuilds a road or track piece with a different template.</li>
         </ul>
         <p>Never remove a construction's own pieces (its <code>frozenEdges</code>) by hand.</p>
+        <p><strong>A script can&rsquo;t replace a construction&rsquo;s own road pieces, even with ignoreErrors.</strong></p>
+        <p>A well-formed proposal rebuilding junctions made of a construction&rsquo;s own pieces (20 added, 8 removed, 4 nodes swapped) was refused &mdash; &ldquo;Construction Not Possible&rdquo;, also with <code>ignoreErrors = true</code>. An earlier version died on <code>lc.segment0 / lc.segment1 not found</code>, because junctions at the far ends still listed the removed pieces. To change a construction&rsquo;s roads, change its <code>edgeLists</code> and rebuild the construction. Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a custom tool's mouse, and a fatal zero-length line <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -786,6 +872,12 @@ end</pre>
         <p>A construction whose models all have collider NONE (they stand over lanes) and whose subconstructions carry no <code>colliders</code> occupies nothing as far as the game is concerned: the map's trees stood through its buildings, and later the industry spawner put a steel mill on top of it. Vegetation and spawning are both governed by the construction's <code>colliders</code>, not its ground faces. The base game's fields do it with one flat <code>POINT_CLOUD</code> over the whole extent (<code>industries/fieldutil.lua</code>): <code>colliders = { { type = "POINT_CLOUD", transf = IDENT, params = { points = { the site's corners at z 0 and z 14 } } } }</code> on a subconstruction that is actually emitted (we first put it on a helper sub whose models and lanes were merged into another sub -- the collider was left behind and the hub had none). The collider must not overlap the construction's own street stubs (those are refused "Construction Not Possible"). 2026-10-17, PYT Fleet Control (H20 / H25)</p>
         <h3>TF3: a module's model collider counts against its own construction <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A module whose model still had a BOX collider (from the Model Editor's default) was refused on a road-owning construction: "Construction Not Possible", with the construction's own lane pieces drawn red where the box overlapped them. Set the collider to <code>NONE</code> on models that stand over roads or inside other pieces, modules included. The Model Editor resets it to BOX on every re-save.</p>
+        <p><strong>Base paths inside a mod&rsquo;s .mdl need ::/ too.</strong></p>
+        <p>Model metadata too: base files write <code>/vehicle/shared/ani/props_on.ani</code> or <code>/vehicle/helicopter/shared/sound/helicopter_jet.snd</code>, but inside a mod a leading <code>/</code> means the mod&rsquo;s own root &mdash; write <code>::/vehicle/...</code>. Check that every <code>::/</code> path in your .mdl exists, remembering <code>x.snd</code> and <code>x.trf</code> are stored as <code>x.snd.lua</code> and <code>x.trf.lua</code>. Seen in game.</p>
+        <p><strong>Nothing is paid for delivering into a warehouse.</strong></p>
+        <p>Cargo delivered INTO a TF3 warehouse earns nothing (unlike TF2); payment comes when it reaches its customer, shared by distance between the lines that carried it. Tell players, or they think the storage line loses money.</p>
+        <p><strong>Trees: a collider box didn&rsquo;t clear them; model bounding boxes did.</strong></p>
+        <p>Trees grew inside a big yard; a collider box over it did not remove them. The game clears trees where a <em>model&rsquo;s bounding box</em> stands, even with no collider, so the plot was tiled with mesh-less &lsquo;clearing&rsquo; models: an .mdl with only <code>boundingInfo</code> (bbMin -10,-10,-0.5 / bbMax 10,10,1), <code>collider.type = "NONE"</code> and one empty LOD node, in 60 / 20 / 10 m sizes. Seen in game; which property the engine reads for industry spawning is not settled.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a red slot means the slot itself collides <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -798,6 +890,10 @@ end</pre>
       <article class="note" data-g="tf3">
         <h3>TF3: loading a save doesn't re-run construction scripts <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Changing a <code>.con</code>'s script (for example making it modular) doesn't change constructions already in a save: they keep the result saved with them until something rebuilds them. Existing pieces only get the new behaviour (here, a module slot) after a rebuild, for example <code>api.engine.util.proposal.refreshConstruction</code> or an upgrade. New placements use the new script at once.</p>
+        <p><strong>A construction placed by an older version may refuse every rebuild.</strong></p>
+        <p>A plaza placed with an earlier version of its mod refused every rebuild (&ldquo;Construction Not Possible&rdquo;); a newly placed one of the same .con rebuilt fine. Expect old placed pieces to break when a .con&rsquo;s geometry or params change: read the build result and tell the player to bulldoze and re-place rather than retrying silently. Seen.</p>
+        <p><strong>Never delete a model that has shipped.</strong></p>
+        <p>A save keeps every placed construction&rsquo;s models until something rebuilds it, so a model removed in an update goes missing from players&rsquo; saves. When pruning files, keep everything that was in any released version (check your release tags) and everything a build can still place in any size, era or climate, plus what those models name.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a react-plugin's condition hides the whole plugin <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -845,11 +941,73 @@ end</pre>
         <p>Read the values in game with <code>api.engine.config.getModParams()[&lt;mod folder id&gt;][key]</code>, and at load in a <code>postRunScript</code> as the third argument of <code>postRunFn(_, _, allModParams)</code>. Print what arrives before you index with it, and clamp it (<code>math.max(1, &hellip;)</code>): ours indexed straight into a 1-based Lua list. The player sets them before a save loads, and can change them on the next load.</p>
         <p>The setup screen shows <strong>no tooltips</strong> and can&rsquo;t calculate anything. It does keep line breaks in a <code>name</code>, so a display-only entry (a <code>Button</code> nobody reads) can carry a short multi-line price chart under your sliders.</p>
         <p>To scale a construction&rsquo;s build price: in <code>postRunFn</code>, write the setting into each of your .con&rsquo;s <code>updateScript.params</code>, then multiply <code>result.cost</code> in its update function. The build menu, placing, upgrades and resizes all charge it, natively.</p>
+        <p><strong>The setup panel is narrow, and saved choices are positions.</strong></p>
+        <p>A row with values like &ldquo;$1,000,000&rdquo; or a long name ran past the panel&rsquo;s edge and added a side scroll (seen twice) &mdash; put the unit in the name and keep values short. A choice is saved as its <em>position</em>, so you can rename values and players keep their setting as long as the order stays. A display-only entry still needs one short value (&ldquo;Set&rdquo;); an empty one pushed a side scroll.</p>
       </article>
       <article class="note" data-g="tf3 crash">
         <h3>TF3: changing another mod&rsquo;s construction from a build hook &mdash; copy, never edit in place <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Seen</span></span></h3>
         <p>A hook that wraps every construction&rsquo;s update function (e.g. to add tram lanes to an industry&rsquo;s yard) gets back tables a mod may <em>share</em> between builds. One mod built its yard from template pieces kept in a module. Our hook wrote the tram modes into those templates, so every later build already &lsquo;had&rsquo; trams and our rails were skipped: the trams ran, but no track or wire was drawn.</p>
         <p>Copy every lane, edge, station and sub-construction table you change, and put the copy in its place. Never write into the pieces another mod hands you.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: helicopter pads from a construction script (the heliport pattern) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Copy <code>stations/air.zip</code>&rsquo;s helipad: two short HELICOPTER lanes on the pad, a LANDING runway on the first and TAKEOFF over both; the terminal&rsquo;s <code>vehicleNode</code> on the second lane; a linkable PERSON / CARGO lane to the street. The depot&rsquo;s lane must run straight on into the landing lane &mdash; a U-turn gave &ldquo;Vehicles could not be assigned to line&rdquo;, even between two base helipads. A helicopter lands on the LANDING node and is then moved to the stop, so a landing node off the pad centre makes it jump sideways. Pads 5.2 m apart fit vehicles up to 3.5 m. Test the station with base helicopters first. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a depot model&rsquo;s open / close animation is its door <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Put the building model inside the depot&rsquo;s own subconstruction, as the base heliport&rsquo;s hangar does: the engine plays the model&rsquo;s open / close animation whenever a vehicle leaves or enters. A sliding roof over a helicopter depot worked this way, with no script. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: Configure shows a module bar only on a construction that already has a module <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A road-free construction with slots but no module showed no module bar in Configure; TF3 treated it as modular only once it was created with a module in a slot (we put its style module in slot 1). The module files must also sit in a menu category Configure lists: <code>modules_decoration</code> didn&rsquo;t; a mod&rsquo;s own category with <code>menu = "MODULES"</code> did. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: name a placed station after its town &mdash; namePrefix <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Next to <code>description</code> in a station <code>.con</code>: <code>namePrefix = _("{townName} Drone Base")</code> and <code>subConstructionNamePrefix = "{constructionName}"</code> &mdash; the base stations&rsquo; key. A placed station came up as &ldquo;Tenterden Drone Delivery&rdquo;. Only new placements get the name. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf2 tf3">
+        <h3>Can&rsquo;t find your new entry in the build menu? Check its years first <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>The mod was active, the log clean, <code>_content.json</code> listed the files &mdash; and nothing was in the menu: <code>availability.yearFrom = 2020</code> in a save that started earlier. Vehicles hide the same way. For testing, set <code>yearFrom = 0</code> with a script that can switch it back, and run its &lsquo;release&rsquo; mode before every upload. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: grass grows through floors &mdash; ground paint clears it <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The game&rsquo;s grass came up through booth floors. A <code>groundFaces</code> entry with <code>modes = {{ type = "FILL", key = "::/terrain/materials/dirt/dirt.gtex" }}</code> under the footprint clears it, and an <code>EQUAL</code> <code>terrainAlignmentLists</code> face levels the ground; put both in the subconstruction beside the model. Trap: builders often reuse one shared groundFaces table &mdash; appending to it grew it on every rebuild, so copy it first. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a construction script&rsquo;s file-level variables are shared by every call <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>To measure a planned footprint, an updateFn called itself in a &lsquo;planning&rsquo; mode; that inner call reset the script-wide variables the real build used (rail / wire / tram flags), so the build that followed laid no rails and trams drove on bare asphalt after every Upgrade. Save every file-level variable before a nested call and restore it after, or pass state as arguments. Inside the game you can&rsquo;t call your own <code>data()</code> again (it was nil) &mdash; keep a reference to the table it returned. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: a depot with lanes is road OR tram, never both <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>A garage whose <code>depot.transportModes</code> held BUS + TRUCK + TRAM + ELECTRIC_TRAM showed an empty Buy Vehicles window, then the UI reloaded (<code>bad argument #1 to 'ipairs'</code> in vehicle_store_window); the log said <code>Vehicle depot has invalid transport modes</code>. Use <code>{ "BUS", "TRUCK" }</code> or <code>{ "TRAM", "ELECTRIC_TRAM" }</code>. Fields that worked: <code>depot = { capacity, transportModes, inNodes, outNodes, catchmentArea = { radius, position }, maintenancePool, filterTags }</code> &mdash; make <code>catchmentArea</code> cover your bays or vehicles there aren&rsquo;t serviced, and give <code>maintenancePool</code> at least 12. A depot with no lanes, used only for maintenance, can take all four modes. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: let the game&rsquo;s tram-track and wire tools upgrade your construction <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>The tram-track tool on a construction&rsquo;s own street killed the game: <code>AreAllNodesEmpty</code> (action-trackmodifier). Do what the modular street station does: add <code>isAffectedByToolScript</code> and <code>upgradeScript</code> next to <code>updateScript</code>. <code>isAffectedByToolFn(_, _, add, remove)</code> returns true only when <code>add</code> or <code>remove</code> carries <code>tramTrack</code> or <code>tramCatenary</code>; <code>upgradeFn(_, params, _, cfg)</code> turns <code>cfg.tramTrack</code> (1 none, 2 tram, 3 electric) and <code>cfg.tramCatenary == 2</code> into your own param and returns <code>params</code>. The game then rebuilds the construction properly. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: every edgeList needs a snapNodes key, even when it has none <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Internal street pieces with no <code>snapNodes</code> field logged <code>Required key not found: snapNodes</code> every frame: write <code>snapNodes = {}</code>. Short bends built as street pieces were refused (&ldquo;Too Much Curvature / Collision&rdquo;); street pieces on the straights and plain <code>laneLists</code> for the bends worked. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a bay&rsquo;s name comes from the LAST cargo class in cargoTransferSpeeds &mdash; UNIVERSAL last <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Bays listing only UNIVERSAL loaded class-specialised trucks slowly (players saw 50%). Listing every class (at <code>loadSpeedModifier</code> 2, as the game&rsquo;s specialised bays) made the station window name every bay &ldquo;Flatbed&rdquo; &mdash; it takes the <em>last</em> class, and shows &ldquo;All Cargo Types&rdquo; only when that is UNIVERSAL. List GOODS, BULK, LIQUID, FLATBED&hellip; then UNIVERSAL: every truck loads at full speed and the bay reads All Cargo Types. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: how the game&rsquo;s modular_terminal queues vehicles &mdash; one terminal per lane, the stop at its front <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>One terminal per parking slot gave up to 72 stops, and trucks aimed at a lane&rsquo;s back slot so its front slot could only be reached by driving past them (seen). The game&rsquo;s <code>modular_terminal</code> makes one terminal per platform row: every piece in <code>vehicleEdges</code>, front first, and <code>vehicleNode</code> at the front &mdash; the first vehicle drives to the front and the next pull up behind, all loading. If you number several slots, number the front slots first across all lanes.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: a warehouse with no store kills the game when the mouse passes over it <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Switching off the last cargo rebuilt a warehouse subconstruction with no <code>STORAGE_STOCK</code>; the game crashed as the mouse passed over it (an ecs TransportNetwork assert in <code>UI::CSelector</code>). Always build at least one store and refuse the last &lsquo;off&rsquo; in your UI. A save that already holds a store-less copy keeps crashing, because loading doesn&rsquo;t re-run the build &mdash; rebuild those once a session. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 crash inferred">
+        <h3>TF3: don&rsquo;t rebuild a construction while its window is open <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Twice the game crashed with no message when a script rebuilt a warehouse in the background while that warehouse&rsquo;s window was open. Since background passes skip any construction whose window is open (and do one rebuild, never two in a row), neither crash came back.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: level the ground the way the road depot does &mdash; EQUAL with slopeLow / slopeHigh <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Placement was refused on gentle slopes where the game&rsquo;s own buildings fit. The base road depot levels with <code>{ type = "EQUAL", faces = {...}, slopeLow = 0.75, slopeHigh = 2.5 }</code>, which banks the edges instead of refusing. Split the faces into what must be flat (<code>optional = false</code>) and the rest of the site (<code>optional = true</code>). Checked offline.</p>
       </article>
     </div>
   </section>
@@ -918,6 +1076,8 @@ end</pre>
         <h3>TF3: upgrading a construction in place -- free, so charge the difference; turning and moving it keep the stock <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p><code>createProposalReplaceConstruction</code> with new params rebuilds in place and keeps the stock -- and <strong>costs $0</strong> (seen with the game paused: 1,000 &rarr; 2,000 per cargo, balance unchanged). To charge fairly, price both versions the game's own way: a dry run (<code>api.engine.util.proposal.makeProposalData</code>) of a <em>fresh</em> <code>SimpleProposal.ConstructionEntity</code> at the construction's own transf (copy <code>c.transf[1..16]</code> into a <code>Mat4f</code>) gives era-scaled <code>pd.costs</code>; charge new minus old after the rebuild succeeds, with a <code>JournalEntry</code> of negative amount through <code>makeJournalBookAssetCmd</code> (the Marketing Campaign pattern).</p>
         <p>Moving or turning by remove + add <strong>loses the stock</strong>. Instead, keep the construction where it is and turn / slide everything <em>inside its own frame</em> in <code>updateFn</code> (models' transf, lane nodes and tangents, ground and alignment faces, collider points, catchment circles -- a depot's too -- edge positions and tangents, the snap point; map each shared table once). It stays an in-place replace: stock, lines and settings kept. A refused build's <code>collisionInfo.collisionEntities</code> with <em>negative</em> ids means the new version collides with itself. 2026-10-20, PYT Mega Warehouse 1.3 (Plan / Commit, Turn, Move).</p>
+        <p><strong>When the dry-run price looks wrong.</strong></p>
+        <p>Pricing the old version with a dry run sometimes gave nonsense ($1.6 M for a small two-office buffer). Fall back to your own price list. Two presses: the first shows the price, the second pays and builds; refuse when the player can&rsquo;t afford it. Seen.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: a wrong path in a .res.lua is a fatal load crash <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1024,6 +1184,42 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>TF3: whole-map octree queries spike <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>One whole-map circle (83,559 groups) took about 51 ms, with 50-93 ms spikes. Cutting the map into 2048 m patches, one per look, brought it to 4.6 ms per look (worst 34 ms, 1.1% of the time). "Invalid entity" for something removed mid-scan is normal.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a line stop uses one terminal &mdash; extra platforms need alternativeTerminals <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A station with ten pads still had its vehicles queuing for one: each <code>Line.Stop</code> has one <code>terminal</code> plus <code>alternativeTerminals</code> (the line manager&rsquo;s &lsquo;Alternative / Preferred&rsquo; list). To fill it, copy the line (<code>api.type.Line.new(comp)</code>), set <code>stop.alternativeTerminals</code> to <code>api.type.StationTerminal.new(stop.station, t)</code> for the other terminals and send <code>makeLineUpdateCmd</code>. <code>stop.station</code> is the stop&rsquo;s own zero-based index within its group (in TF2 a group entity id there crashed with <code>stIdx0 &gt;= 0</code>). Fill each new stop once and leave the player&rsquo;s own choices alone. Seen: the queue spread over the pads.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: changing a line or rebuilding a station under parked aircraft strands them <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>After a line update, or a script rebuilding the station in place, helicopters already on its pads sat with doors shut &mdash; no loading, no departure &mdash; until the player pressed Reverse. Defer script rebuilds while your vehicles are close (about 350 m, with a time cap), and give a still, shut vehicle there one reverse, recorded in the save so several script copies don&rsquo;t each send one. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a helicopter&rsquo;s cargo capacity shows as round(capacity / 4) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>On a helicopter-type vehicle the number the shop and load badge show is not the .mdl&rsquo;s <code>cargoEntry.capacity</code>: 6 &rarr; 2, 4 &rarr; 1, 12 &rarr; 3, 16 &rarr; 4, for GOODS, BULK and UNIVERSAL alike. To carry 4 units, write 16. Read one badge in game before you balance anything. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a light modded helicopter landed but never taxied to its stop <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>With small-drone <code>airVehicle</code> numbers (maxThrust 5,400, weightEmpty 180, wingArea 0.3, hasFlaps false, timeToFullThrust 2) it landed and stuck (&ldquo;has been stuck for a while without moving&rdquo;). With the base Bell 206&rsquo;s (25,000 / 998 / 0.811 / true / 3) it taxied and delivered; its own topSpeed was harmless. Which number blocks the taxi is untested &mdash; start from a base helicopter&rsquo;s full <code>airVehicle</code> block and change one key per restart.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: crewModels = {} still draws a pilot on a crew seat <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>An unmanned helicopter-type vehicle with <code>seatProvider.crewModels = {}</code> still showed a person on its <code>crew = true</code> seat (seen). We kept the seat and scaled its <code>transf</code> to 0.001 inside the body; that fix was not checked in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: aircraft fly a circuit to line up with the pad &mdash; space stations a few km apart <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A pad&rsquo;s LANDING and TAKEOFF runways run one way, so a helicopter leaves along the take-off direction and circles back to land. Stations a few hundred metres apart produced long laps (base helicopters do the same); a few km apart turned the lap into a hook. <code>Modifiers.topSpeedScale</code> slows the flight but keeps the laps; <code>AircraftInfo</code> is read-only. Four pads on one deck all facing one way blocked each other&rsquo;s approaches; facing outward, 90&deg; apart, four could land at once. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: vehicles have no BOUNDING_VOLUME; new helicopters are named &lsquo;Helicopter N&rsquo; <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Helicopter-type vehicles have no <code>BOUNDING_VOLUME</code>; <code>api.engine.util.vehicle.getPosition(vehicle)</code> gives the position. The game names them &lsquo;Helicopter N&rsquo; in the player&rsquo;s language, so a mod vehicle that isn&rsquo;t a helicopter needs a rename (<code>makeEntitySetNameCmd</code>) &mdash; once per vehicle, remembered in the save, keeping names the player changed. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a locked train set (.mu.lua) can name a base-game locomotive by path <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A multiple-unit file lists its vehicles: <code>vehicles = { { name = "::/vehicle/train/emd_f/emd_fa.mdl", forward = true }, { name = "&lt;mod&gt;::/my_wagon/my_wagon.mdl", forward = true }, ... }</code> with <code>name</code>, <code>desc</code> and <code>filterTags</code>. The base EMD F A-unit plus six of our wagons was sold and ran on a line &mdash; a themed set needs no loco model of its own. A train stops centred on its stop node, so only a fixed-length set lines up the same at every stop. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: joint production &mdash; one rule, several outputs; the biggest industry store is 800 <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>From base/content/industries: livestock farm makes meat + wool, farm vegetables + grain, saw mill planks + sawdust, steel mill steel + sheet metal, chemical plant dyes + plastic, refinery fuel + chemicals + fertilizer &mdash; each in ONE production rule, so a full store of one output likely stops all (players report it; not measured). The largest industry store is 800 per cargo. Seen: a train bringing 141 wool to a mill with room for 65 unloaded what fitted and took the rest round again.</p>
+      </article>
     </div>
   </section>
 
@@ -1053,6 +1249,8 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 tf3">
         <h3>Game time is not the calendar <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
         <p>TF2: <code>getGameTime().time</code> tracks roughly real seconds of play. The calendar is <code>getGameTime().date</code> = {day, month, year}. TF3: <code>os.clock</code> is real time at any speed, the year is <code>api.engine.util.getYear()</code>, and the speed is the world's GAME_SPEED <code>speedup</code> (which may not read 2 at 2×).</p>
+        <p><strong>TF3: check os.clock before pacing with it.</strong></p>
+        <p>One of our engine-thread game scripts timed &lsquo;every N seconds&rsquo; with <code>os.clock()</code> and fired far too often; switching to <code>os.time()</code> (whole real seconds) gave a steady 30 s. Our reading: on the simulation threads <code>os.clock</code> is CPU time, which can run faster than the wall clock. Not proven &mdash; measure <code>os.clock</code> against <code>os.time</code> on your own thread before relying on it.</p>
       </article>
       <article class="note" data-g="tf2 inferred">
         <h3>math.randomseed seemed to do nothing <span class="tags"><span class="tag tf2">TF2</span><span class="tag inferred">Inferred</span></span></h3>
@@ -1068,6 +1266,10 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
         <h3>TF3: put a script charge on the right line of the finances &mdash; and the game&rsquo;s own upkeep <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Book it with <code>api.cmd.makeJournalBookAssetCmd(player, entry, position)</code>, where <code>entry = api.type.JournalEntry.new()</code>, <code>entry.amount</code> is negative for a cost and <code>entry.time = -1</code>. Set <code>entry.category.type = JournalEntry.Type.MAINTENANCE</code>, <code>category.maintenance = JournalEntry.Maintenance.INFRASTRUCTURE</code> and <code>category.carrier = JournalEntry.Carrier.ROAD</code> and it lands under Road &rsaquo; Upkeep Buildings. Leave the carrier empty and it is filed under &lsquo;General&rsquo;. Set each field in its own <code>pcall</code>.</p>
         <p>The yearly upkeep the construction&rsquo;s own window shows is <code>MAINTENANCE_COST.maintenanceCost &times; baseConfig.costs.infrastructureMaintenanceScale</code> (&times; the year multiplier where the construction uses one), as the game&rsquo;s <code>entity_window_util</code> works it out. It differs by difficulty. To replace it with your own price, book only the difference.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: unlimited money is an infinite balance &mdash; %d can&rsquo;t print it <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>With unlimited money the player&rsquo;s balance is infinite; <code>string.format("%d", balance)</code> raised a Lua error and broke a rebuild for those players (a hotfix). Format money with <code>%.0f</code>, or check <code>v ~= v or v == math.huge</code> first, and wrap log lines in pcall so a debug print can never stop real work. Seen.</p>
       </article>
     </div>
   </section>
@@ -1197,6 +1399,44 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
           <li>UI scripts reload with "Reload UI" on the UI error screen. Loading a save re-reads scripts and <code>.con</code> files.</li>
         </ul>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: cards in the vehicle and station windows &mdash; and the reused window <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The vehicle window takes cards through the react-plugin <code>VehicleEowExtensionPoint</code> (the base Basics, Condition and Balance cards are plugins too); the station window through <code>StationGroupEowExtensionPoint</code>. The game also draws a vehicle&rsquo;s Modifiers as badges on its picture. Trap: the vehicle window is reused for the next vehicle clicked without asking your plugin&rsquo;s condition again, so our card appeared on base helicopters &mdash; check &lsquo;is this mine?&rsquo; on every draw and draw nothing otherwise. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 crash inferred">
+        <h3>TF3: never remove the element being clicked inside its own handler <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A top-bar row that unfolds on hover crashed the game when its logo was clicked: the click handler folded the row, removing the button while its click was still being handled (a player&rsquo;s crash report). Queue the action and the fold for the next frame (in <code>onStep</code>). The fix shipped; the crash was not reproduced by us.</p>
+        <p><strong>Seen again, and the assert it gives.</strong></p>
+        <p>It happened in two more mods (players&rsquo; reports): UI assertion &ldquo;NodeStorage activeNodeIds[id]&rdquo; while transforming a floating WindowContainer. In <code>onClick</code> only note what to do (a <code>react.useRef</code>); do it, and fold the row, from <code>react.onStep</code> on the next frame. After that hotfix the crashes stopped. Applies to any handler that destroys, rebuilds or hides its own element.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: CJK text shows as boxes outside a CJK game <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The game loads its Chinese / Japanese / Korean font only when it runs in one of those languages: in an English game a language picker showed 日本語, 한국어, 简体中文 as boxes, and tooltips do the same. Test <code>api.util.getLanguage().code</code> against <code>ja / ko / zh_CN / zh_TW</code>; otherwise show a Latin name or a small image of the native name. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: builtin.FlowLayout wraps a row that would run off its card <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A horizontal row of buttons doesn&rsquo;t wrap &mdash; in German, buttons ran off a card. <code>builtin.FlowLayout{ children = kids }</code> in place of the horizontal BoxLayout moves children onto the next line when the row is full. Use it for any row whose labels grow when translated. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a construction with a depot opens the depot window <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Clicking a construction that holds a depot opened the game&rsquo;s depot window, and a card plugged into the empty-construction window never appeared &mdash; that window is keyed on the depot piece. Plug into it as well, and get the owner with <code>api.engine.system.streetConnectorSystem.getConstructionEntityForDepot(e)</code>, falling back to <code>getConstructionEntityForSubconstruction(e)</code>, both in pcall.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: replacing the game&rsquo;s button bar can break other windows <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A mod replaced the ActionButtonBar to drop Configure from its own constructions, guessing the construction from &lsquo;the last empty-construction window built&rsquo;. Station windows never reset that, so after opening one of the mod&rsquo;s windows every station lost its Configure &mdash; a live bug for many players. Trust such a guess only within ~0.5 s of building that window. Also seen: Configure on a modular construction with no other module opens an empty module editor only Esc leaves.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a plugin&rsquo;s script loads only when its extension point first draws <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A toolbar tile registered by the script behind a warehouse-window card (<code>WarehouseEowExtensionPoint</code>) was missing until the player first opened a warehouse window. Add a second, invisible plugin in the top bar / mod button area that loads the same script at game start and returns an empty layout. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: draw cargo classes and controls in the game&rsquo;s own colours and icons <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p><code>api.res.cargoClassRep</code> gives each class&rsquo;s name and colour (the Stocks card&rsquo;s); each cargo&rsquo;s icon comes from its cargo type. The game&rsquo;s padlocks, trash, refresh, check, close and arrow icons can be reused as tinted masks, the way the mission window draws them. Players read them faster than words, and they need no translation. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: hearing line edits from any window &mdash; wrap api.cmd.makeLineUpdateCmd <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A plugin in the line window doesn&rsquo;t see stops added in the Line Manager, which has no plugin slot (seen). To hear every line edit GUI-side, wrap the builders once: keep <code>local orig = api.cmd.makeLineUpdateCmd</code>, replace it with a function that notes the line id and returns <code>orig(l, ...)</code>; the same for <code>makeLineCreateCmd</code>. Act ~0.5 s later, and flag your own writes so you don&rsquo;t react to yourself. The wrapper loaded; catching a Line Manager edit is not confirmed. Help once, then leave the player&rsquo;s settings alone.</p>
+      </article>
     </div>
   </section>
 
@@ -1215,6 +1455,8 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf3 crash">
         <h3>Material texture paths: relative or ::/, never a mod path <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>A texture <code>fileName</code> pointing into another model's folder by mod path (<code>&lt;modId&gt;::/&hellip;</code>) failed the Validation Report ("Model verification: Texture &hellip;") and crashed a tester's game. Use relative paths or game paths (<code>::/&hellip;</code>). To share textures, share whole <code>.mtl</code> files: an <code>.mdl</code> can point at another folder's material.</p>
+        <p><strong>A bare /assets/... path is looked up inside your mod.</strong></p>
+        <p>A path written <code>/assets/industries/decals/street_markings_white.mtl</code> (no <code>::</code>) is looked up inside YOUR mod &mdash; the missing-model box in game. Write <code>::/assets/...</code>. That is how lane arrows can be painted with no texture of yours: flat quads 15 mm up, UV-mapped onto the game&rsquo;s street-marking atlas (its v runs from the DDS top). Seen.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>DDS headers must match the Model Editor's <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1232,6 +1474,8 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
           <li>It reopens on the mod used last (<code>pathOptions.lastOpenedMod</code> in its settings), so imports kept landing in the wrong mod. Check the top dropdown before every import, and close the editor normally so the choice is saved.</li>
           <li>Give glow its own mesh: shaped like the letters (a few mm proud of the panel) or only over the lamp faces.</li>
         </ul>
+        <p><strong>Every re-import resets glow materials; animated FBX exports fail.</strong></p>
+        <p>Every FBX re-import writes emissive materials back as plain PHYSICAL &mdash; signs that glowed went dark after a re-export. Keep a script that re-applies the emissive materials (with their <code>emissive_scale</code> time ranges) and run it after every import. A Blender export with keyframed flashing would not import at all: write <code>forever</code> node animations straight into the <code>.mdl</code> instead. Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>You can write a TF3 model without the Model Editor <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1262,10 +1506,70 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf3">
         <h3>TF3 build-menu art sizes <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Icon <code>&lt;name&gt;@2x.tga</code> 240×150 plus a 1× 120×75. Preview <code>&lt;name&gt;_preview@2x.tga</code> 720×405 plus 360×202. A missing preview leaves flat blue. Base glyphs in gui.zip are white and tinted by the UI; reference them without "@2x".</p>
+        <p><strong>Vehicle store icons.</strong></p>
+        <p>The game finds vehicle icons by name in the model&rsquo;s own <code>icons/</code> folder: <code>&lt;model&gt;_icon20@2x.tga</code> 52&times;40, <code>&lt;model&gt;_icon_small@2x.tga</code> 204&times;160 (side-on, nose left), their two <code>_cblend</code> masks, and <code>&lt;model&gt;_store.tga</code> 1792&times;1008, written bottom-up like the base files. A tab in the Air menu is a category file with <code>menu = "AIR"</code>. Seen in game.</p>
+        <p><strong>Shrink transparent icons premultiplied.</strong></p>
+        <p>Scale RGBA menu icons with premultiplied alpha (multiply colour by alpha, resize, divide back); a plain resize mixes the transparent pixels&rsquo; black into the edges and leaves dark fringes.</p>
       </article>
       <article class="note" data-g="tf2">
         <h3>Blender bake gotchas <span class="tags"><span class="tag tf2">TF2</span></span></h3>
         <p>Put the backdrop behind the content, and un-hide the light for the render. World strength can wash out materials. An RGBA TGA can render blank under the DITHERED render method, so strip the alpha. A decal inside another solid bakes blank.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: a mesh node with 0 triangles is fatal &mdash; vbo.buffer.Valid() <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>The game died with <code>vbo.buffer.Valid()</code> right after a model with an empty node was placed (a glass node with 0 triangles). Removing the node fixed it. Before shipping, check every mesh node in every LOD has at least one triangle &mdash; an exporter can leave empty nodes behind after you delete geometry. Seen in game.</p>
+        <p><strong>Seen twice more.</strong></p>
+        <p>An edited copy of a glass mesh left with 0 triangles, still named by a node, crashed a Toll Way the same way &mdash; new seated characters were blamed first, so check what else changed in the model. If an edit empties a mesh, drop its node from the LOD instead of writing an empty .msh.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a vehicle that takes the player&rsquo;s colour (cblend) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Give the paintable parts material type <code>PHYSICAL_NRML_MAP_CBLEND_DIRT</code>, as the base helicopters&rsquo; bodies have: where the cdr map has R = 0 the player&rsquo;s colour applies, R = 1 keeps the texture. Ship <code>icons/&lt;model&gt;_icon20_cblend@2x.tga</code> and <code>_icon_small_cblend@2x.tga</code> masks (white = paintable). With those the vehicle manager&rsquo;s colour button worked. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: a landing light on a helicopter-type vehicle <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Copied from the Bell 206 (not yet seen in game): a node named <code>landinglights</code> in every LOD, animations <code>landing_light_on</code> / <code>landing_light_off</code> as FILE_REFs to <code>::/vehicle/shared/ani/landing_light_on.ani</code> / <code>_off.ani</code>, and a <code>SPOT</code> in <code>lightSourceList</code> with <code>meshId = "landinglights"</code>, <code>lightId = "20"</code>, <code>mask = 32</code>, <code>invertMask = true</code>, pointing down. The engine should switch it on around landing.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>Shrink a mod: share identical materials, RLE-compress TGAs <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A 63 MB mod went to about 44 MB with no visible change: every model pointed at one copy of byte-identical materials and textures, unused variants removed, TGAs re-saved with lossless RLE. Shipped without reports, but load the result once in game before relying on RLE TGAs everywhere.</p>
+        <p><strong>Proven: RLE TGAs, compressed DDS, the game&rsquo;s flat normal.</strong></p>
+        <p>TF3 reads run-length-encoded TGA (type 10): re-saving 151 TGAs took them from 30.4 to 12.6 MB and a download from 85 to 68 MB, pixel-identical, shipped. Another mod went 32 &rarr; 24 MB with compressed DDS (DXT1 / DXT5 / BC5, mostly &le; 512 px), the game&rsquo;s flat normal map, and unused materials removed. Bottom-up row order still applies.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: use the game&rsquo;s flat normal map <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Materials that need no surface detail can point their normal map at the game&rsquo;s <code>::/placeholders/mat/tex/default_normal_map.dds</code> instead of shipping a flat copy &mdash; moving 45 materials to it cut 5.2 MB. Use the <code>::/</code> game path, never a path into another mod. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: base materials with OFFSET_TEXCOORD overlays need a second UV stream <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Base meshes carry a second UV stream of zeros, and some base materials (the textile factory&rsquo;s weathered <code>txf_*</code> walls, era-A brick, slate) run overlay ops in <code>OFFSET_TEXCOORD</code> mode that read it. A hand-written .msh reusing those materials should write a zero uv1 stream too. Checked offline.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: ground looks from the game&rsquo;s terrain materials &mdash; a .gtex pointing at its .tmat <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>groundFaces take a <code>.gtex</code>, but some game surfaces (the dirt country road, grass_dry_01) ship only as terrain materials (<code>.tmat</code>). Put a tiny .gtex in your mod: <code>data() return { priority = 14, indices = { data = "1", size = {1,1} }, texSize = {1,1}, materialIndexMap = { "::/terrain/materials/dirt_country_road/dirt_country_road.tmat" } }</code>, as the base dirt.gtex points at dirt.tmat. asphalt_02 is plain grey, asphalt_05 reads as gravel, asphalt_01/03/04 make subtle wheel tracks. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: wide light cones with a long radius darken map squares far away <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>At night, dark squares appeared far outside a lit yard. Every lamp had an 80&deg; cone with radius 40. Cones of 60&deg; / radius 12 for lamps, and floods aimed 40&deg; / radius 35 as the vanilla <code>ind_light_huge</code>, cleared it. Warm sodium that blended well: colour (1.0, 0.72, 0.42), strength 0.72, radius 45, 50&deg; cone, 35&deg; down.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: copies of an animated model don&rsquo;t share a loop start <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Two copies of one <code>forever</code>-animated gantry crane on the same rails drove through each other: each instance starts its loop at its own time, so you can&rsquo;t stagger copies by phase. Give each its own travel range or its own model; make the bounding box cover the whole travel. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: building animations can&rsquo;t react to vehicles <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>From the base models: building animations use only <code>forever</code>, the clock events, <code>open</code> / <code>close</code> (depot doors, crossing barriers) and <code>green</code> (signals). There is no &lsquo;vehicle arrived&rsquo; event, so a crane can&rsquo;t react to a train &mdash; run it on its own loop.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: style options for free &mdash; swap material paths, reuse the game&rsquo;s assets by ::/ <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Brick and roof choices came from copies of the same .mdl differing only in material paths; the meshes are shared, so the download barely grows. The game&rsquo;s own weathered materials (era-A brick <code>a_is_w_brk01</code>, stone <code>a_cs_w_stnraw02</code>, slate <code>a_i1_r_slate01</code>) at their ~3 m tile made clean models look like they belong. Whole game props (<code>::/assets/buildings/ind/...</code> crates, forklifts) can be placed in a construction with no files of yours.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: glass that reads as glass <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p><code>type = "PHYS_TRANSPARENT_NRML_MAP"</code> with <code>alpha_test.fragmentProperties = {{ cutout = false, disableDepthAndNormalWrite = true, sorted = true }}</code>, <code>light_receiver.disableShadowMapWrite = true</code>, a light green-grey partly see-through albedo-opacity texture and the game&rsquo;s flat normal &mdash; based on the base goods-warehouse and greenhouse glass. Keep panes at least 15 mm off the glazing bars.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: tram overhead wire height <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The game&rsquo;s street tram wire and the tram depot&rsquo;s hang at about 5.1 m; TF3 trams fold their pantographs down to about 3.7&ndash;3.8 m (<code>pantographMin</code>). A home-made wire at 4.8 m, about 4 cm thick, looked right; keep poles about 2.5 m from any lane. Seen in game.</p>
       </article>
     </div>
   </section>
@@ -1297,6 +1601,36 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf3">
         <h3>Give a per-vehicle pass a budget <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A game script that renamed and re-tuned every new vehicle in one pass (<code>makeEntitySetNameCmd</code> + <code>makeVehicleSetModifiersCmd</code>, plus a <code>print</code> each) froze the game for about 20 seconds when a player bought 3,367 drones at once: about 6,700 commands and 6,700 log lines in a single tick, logged as "Thread did not respond to ping. Possible hang detected!". Cap the commands per pass (50 worked), stop there, and run the pass again a couple of seconds later while work is waiting. Log one summary line per pass, not one per vehicle. A player buying in bulk is normal, not an edge case.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: walking every construction on the map costs 25&ndash;32 ms &mdash; cache and go incremental <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A game script read every construction on a big map to find its own, on every look: 25&ndash;32 ms a time, even with none of them on the map. Walk the whole map at most once a minute and keep your own list; between walks check only those; on later walks read only constructions not seen before (capped per look) and drop removed ones. Time each job separately to find the slow one. Seen in a frame-time meter.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>TF3: reading a game script&rsquo;s state from the GUI can stall the game <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>A settings window re-read a game script&rsquo;s state from the GUI every 10 s (<code>api.engine.getComponent(..., GAME_SCRIPT)</code>); on a big map each read stalled ~300 ms, heard as an audio stutter. Read it once when the window opens, time the read, and back off when it costs more than ~20 ms. The stall was seen; the cause not isolated.</p>
+        <p><strong>Why: the read copies the whole state.</strong></p>
+        <p><code>getComponent(..., GAME_SCRIPT).state</code> copies the script&rsquo;s whole saved state into the reading Lua world. Reading two big mods&rsquo; states every 10 s froze a big save for about 1 s each time (a player reported it). Read only while something on screen needs it, back off when slow (every 2 minutes over 20 ms), and keep game-script state small. Seen.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: every catchment circle costs, all the time the station window is open <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A reviewer saw 17 FPS while a station&rsquo;s window was open: it carried a 300 m catchment circle per bay plus a 220 m one every 200 m across the site, and the game works out overlay and reach for every circle. One circle per station at the bays&rsquo; centre fixed it. Add circles only where reach really needs them. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a window that hands back a new table every frame redraws every frame <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>60 FPS fell to 17 with a big warehouse&rsquo;s window open: every frame the card did a full stock read and returned a fresh table, so react redrew the whole card. Read one cheap number per store as a fingerprint each frame; do the expensive read only when it changes (plus every 10 s), and hand back the <em>same</em> table in between. The drop was reported in game; the fix measured offline.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>Don&rsquo;t measure frame time in the first minute after loading <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>An auto setting measuring 20 s after the first tick read about 26 fps on a fast PC &mdash; the game was still rebuilding its shader cache after an update. Start 60 s after the first tick and take a second sample later. <code>os.clock</code> steps in whole milliseconds here, so short jobs measure 0: show them as &ldquo;&lt; 1 ms&rdquo;. Seen.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>Skip rebuilds that would change nothing <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A sign rebuilt its boards on every pass: 447 identical rebuilds in one session. Before sending a proposal, check whether the right objects already stand there, and cap rebuilds per object (once a minute). The same bug stacked four more boards each refresh, because model-only boards had become decorations a CONSTRUCTION search never found. Seen.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>Bucket vehicles into map squares once per look <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>Counting vehicles past 112 points cost 84&ndash;103 ms a second (seen). Sort every road vehicle into 128 m squares once per look and let each point test only the squares its circle touches, instead of every point against every vehicle.</p>
       </article>
     </div>
   </section>
@@ -1349,6 +1683,8 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf3 crash">
         <h3>TF3: _content.json decides which files players get <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>A mod installed from mod.io is loaded through the file list in its root <code>_content.json</code> (the log says "Reading content cache from json"). A file that is in the mod but not in that list doesn't exist for players. Your staging copy loads the real folder, so everything works on your PC. Pay Your Tolls shipped two versions with a list from an older release: 47 newer files were invisible, so a whole window add-on and a set of model materials were missing for everyone, and a hidden button came back and crashed games. Regenerate the list from the content folder before every upload, and compare it first whenever a player reports something missing that works for you.</p>
+        <p><strong>Your own copy reads _content.json too.</strong></p>
+        <p>Seen: 314 new files (a model set and its materials) sat in the staging folder but not in <code>_content.json</code>, and the new models were invisible in the author&rsquo;s own game until the list was rebuilt. Rebuild the list after every export, not only before upload. Another miss: one list had none of a rail kit&rsquo;s 36 files, so the upload would have shipped no rails.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: reading a userdata file that isn't there is a Lua error, even inside pcall <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1386,6 +1722,32 @@ end</code></pre>
           <li><strong>Anyone can download a waiting file:</strong> <code>https://g-&lt;game&gt;.modapi.io/v1/games/&lt;game&gt;/mods/&lt;mod&gt;/files/&lt;file&gt;/download</code> returns the zip with no login and no expiry, for live, waiting and even rejected files. PC players can install it by hand, and mod.io still hosts it. The zip installs as is (<code>_content.json</code>, <code>content</code>, <code>mod.json</code>, <code>strings.json</code>).</li>
           <li>The game&rsquo;s uploader stamps every file &lsquo;1.0&rsquo;: keep your own file-id &rarr; version list.</li>
         </ul>
+        <p><strong>More on what the in-game upload does.</strong></p>
+        <p>Every file is labelled &ldquo;Version: 1.0&rdquo; and the label can&rsquo;t be edited afterwards. The console file (Xbox / PS5) is built separately and is smaller (10.7 vs 15.3 MB for one mod); right after an upload it can still show the previous build, so check it.</p>
+      </article>
+    <article class="note" data-g="tf2 tf3">
+        <h3>Promo videos: a &lsquo;free&rsquo; library track can still draw a Content ID claim <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>A promo video used a Pixabay-licensed track and still drew a YouTube Content ID claim, so the track had to be swapped. Keep a <code>LICENCES.md</code> with every third-party sound and music file, its author and licence, and credit the music on screen. Check a track for Content ID registration before cutting a video around it.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>mod.io page: flag emoji show as letters on Windows <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>On Windows a flag emoji in a mod.io description renders as two letters (&ldquo;DE&rdquo;). Use a small hosted PNG of the flag instead. Seen on the published page.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>mod.io page: name the game build you tested, not &lsquo;latest&rsquo; <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>&lsquo;Works with the latest TF3&rsquo; is wrong after the next patch. Name the build you tested (for example 40423) and update it when you re-test. A renamed mod may show its old name in the in-game mod list until the new version is uploaded &mdash; the list shows the subscribed mod.io copy.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: what the Validation Report flags in textures and paths <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul><li>A texture that isn&rsquo;t a power of two on both sides is rejected (48&times;16 failed, 64&times;16 passed).</li><li>Upper-case letters in a file path: one warning per file.</li><li>Resized DDS files and texture paths into another model&rsquo;s folder fail &ldquo;Model verification: Texture &hellip;&rdquo;.</li></ul><p>Run the report for PC and Console before every upload. Seen.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>mod.io page text: asterisks get mangled; keep the page short <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>mod.io treats asterisks as formatting: a line containing them came out mangled and lower-cased &mdash; leave them out of prose. Keep the page short (a hook, bullets, how to start, the newest update) and link a full details page elsewhere; the 50,000-character limit stops a growing release history anyway. Seen.</p>
+      </article>
+    <article class="note" data-g="tf3 inferred">
+        <h3>Who plays TF3 mods: write for German and Chinese players too <span class="tags"><span class="tag tf3">TF3</span><span class="tag inferred">Inferred</span></span></h3>
+        <p>mod.io&rsquo;s download-location stats are worth reading: for this mod family Germany and China were the two biggest groups, and a German review video showed untranslated text. A short section in German and in Chinese on the page was well received. Keep each language in its own section, and check every button at German length &mdash; German words run longer.</p>
       </article>
     </div>
   </section>
@@ -1418,6 +1780,8 @@ end</code></pre>
       <article class="note" data-g="tf3">
         <h3>Sharing state between mods without "Global variable in mod" errors (and without rawset) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Mods' scripts run in one Lua state, so a plain global (<code>MY_FLAG = true</code>) works as a shared flag between mods. But TF3's <code>base/init.lua</code> guards <code>_G</code>: every new global a mod creates logs <code>ERROR Global variable in mod</code> with the mod id and key. One flag set in a <code>runFn</code> showed up 199 times a session, once per loading thread. Don't reach for <code>rawset</code>: TF3's mod environment has no <code>rawget</code> or <code>rawset</code>, so calling them is a fatal "attempt to call global 'rawget' (a nil value)" in your runScript. Instead, hang ONE shared table on an object that already exists, such as the standard <code>string</code> library: <code>local t = string.my_shared; if t == nil then t = {}; string.my_shared = t end</code>. That's a field, not a new global, so nothing is logged, and every mod in the same Lua state reads and writes the same table.</p>
+        <p><strong>Several mods shipping one shared core: let the newest copy act.</strong></p>
+        <p>When several mods each ship a copy of the same shared script, a player may update one and not another. Have each copy write its version into the shared table as it loads and run only if it is the highest seen; older copies stand back.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>A hover menu in the top bar, and mods joining each other's buttons <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1490,6 +1854,8 @@ end</code></pre>
       <article class="note" data-g="tf3">
         <h3>Road-drawn walls (edge decorations) run into junctions and can&#39;t tell town from country <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>A rail or noise wall drawn with the road tool (an <code>.edge.lua</code>: <code>repModel</code> repeated along the edge, <code>snapMode = "Side"</code>) is laid the full length of each road piece, and a piece runs to the junction&#39;s centre, so at a crossing the rail carries on past the kerb corner into the junction. Nothing in the definition trims it (the base noise walls use the same fields). Where one may be built is decided only by tags: <code>requiredTags</code> / <code>incompatibleTags</code> against the edge&#39;s tags, which are just <code>street</code> / <code>track</code>, <code>bridge</code> / <code>tunnel</code>, plus <code>decorated</code> once something is on it (api tealdef <code>EdgeDecoration</code>). A street type&#39;s <code>country</code> flag is not a tag, so &#39;country roads only&#39; can&#39;t be said there (the base noise wall even carries a commented-out <code>requiredTags = {"withSidewalk"}</code>). An edge tool also gets its own menu icon: it can&#39;t sit inside a construction button. What we did instead: a construction wall whose GUI script lays 4 m sections along the road piece&#39;s Hermite curve offset to the kerb, stopping a crossing road&#39;s half width short of a junction, and snapping only where <code>streetTemplateRep</code> says <code>country = true</code>; the drawn rails were hidden (<code>availability.yearTo = 1</code>, files kept so built ones load). 2026-10-15, PYT packs (P487&ndash;P490)</p>
+        <p><strong>An edge decoration follows each piece&rsquo;s drawn direction.</strong></p>
+        <p>It is laid in the piece&rsquo;s drawn direction, so a one-sided detail (a glowing strip facing the road) faced the grass on pieces the player drew the other way &mdash; make such details two-sided. Drawn edge tools live in the game&rsquo;s road tools, not your construction tab: give them your mod&rsquo;s name prefix so players can search for them.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>A town&#39;s demand and its ratings: the town window&#39;s own calls <span class="tags"><span class="tag tf3">TF3</span></span></h3>
@@ -1514,6 +1880,8 @@ end</code></pre>
       <article class="note" data-g="tf3">
         <h3>TF3: one construction = several stations + a depot + a warehouse (subconstructions) <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>TF3 has no <code>result.stations</code>: a station, a depot or a warehouse store is a field on an entry of <code>result.subconstructions</code>. A plain (non-industry) construction built two truck stations (5 bays each: a drive-through BUS/TRUCK lane of 2 edges with the stop at node 1, a PERSON/CARGO walk beside it, <code>station = { terminals, catchmentAreas, pool }</code>), a catchment-only maintenance depot (<code>depot = { catchmentArea, transportModes, maintenancePool }</code>, no lanes) and a store (<code>warehouse = {}</code> + a <code>STORAGE_STOCK</code> with <code>cargoClassesIncluded</code>) &mdash; the window shows Road Station, Road Station, Maintenance Building and Warehouse tabs. Rules learned the hard way: (1) &quot;Empty Subconstruction&quot; = a subconstruction without models, AND one with models but no job (no station / depot / warehouse / industry) &mdash; hang the yard&#39;s scenery and roads on a station sub; (2) a bay needs <code>cargoTransferSpeeds</code> with a class (or <code>passengers = true</code>), or the station window and the line editor&#39;s bay picker crash in TerminalTitle / TerminalSelection with &quot;argument #2 can&#39;t be cast&quot; (<code>getCargoClassId(nil)</code>); (3) a built construction KEEPS the bays it was built with &mdash; after a script fix bulldoze it (with the bulldozer, never by opening its window) and place a new one, or you chase a crash the code no longer has; (4) lanes link across subconstructions where end points coincide; the street stubs are <code>edgeLists</code> with <code>snapNodes</code>. Template: the mod.io &quot;Shopping Mall and Auto Dealership&quot; mod and the vanilla airport. 2026-10-16, PYT Fleet Control (H0&ndash;H6)</p>
+        <p><strong>Duplicate edges, and lanes outside the plot.</strong></p>
+        <p>A linkable PERSON / CARGO lane starting outside the plot made the building impossible to place where a side road met it &mdash; keep linkable lane ends inside the footprint. Clamping those starts onto one line put two lanes on the same point, and placement crashed with &ldquo;Duplicate edges found&rdquo;: give every lane its own start point (0.75 m apart worked). Seen in game.</p>
       </article>
       <article class="note" data-g="tf3">
         <h3>TF3: 200 locals per file &mdash; the mod fails to START <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
@@ -1566,10 +1934,26 @@ end</code></pre>
       <article class="note" data-g="tf3 crash">
         <h3>TF3 on PS5: a Window with <code>closable = true</code> breaks the whole UI &mdash; test the field first <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>The PS5 build&#39;s <code>builtin.Window</code> has no <code>closable</code> field, and an unknown field there fails the entire interface, not just your window. A player reported &ldquo;crashes the UI on PS5 &hellip; when you click the button at the top left&rdquo; &mdash; the PYT button, whose windows all asked for the close X. Test it once on a spare param object and only ask where it exists: <code>local made, ud = pcall(function() return api.gui.react.params.builtin.Window.new() end)</code>; <code>ok = (not made) or pcall(function() ud.closable = true end)</code>; then <code>closable = ok and true or nil</code>. Without the X, your own button opens and closes the window. First found by the &lsquo;Better Minimap&rsquo; mod (PYT Mini Map MM45); fixed across every PYT mod 2026-10-29 (P532) and shipped first in PYT - Pay Your Tolls 3.0.1 the same day; we have no PS5 copy, so the reporting player is our test &mdash; until a PS5 player confirms, treat it as Inferred. Any other optional Window field (<code>header</code>&hellip;) deserves the same test.</p>
+        <p><strong>pinnable too: test every optional Window field.</strong></p>
+        <p>Apply the same guard to <code>pinnable</code>, which nobody has proven on PS5: ask for each optional <code>Window</code> field only when the platform&rsquo;s Window has it.</p>
       </article>
     <article class="note" data-g="tf3 crash">
         <h3>TF3: LuaJIT allows 60 upvalues per function <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>Next to the 200-locals-per-file limit there is a second wall: one function can capture at most 60 outer locals. A big UI function that reaches for many file-level helpers stops the script loading. Gather helpers in a table and reach them through that one name (we hung ours on a global the card and the tick both read).</p>
+      </article>
+    <article class="note" data-g="tf2 tf3">
+        <h3>Prove the station with base vehicles before you blame your own <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>When a modded vehicle won&rsquo;t run a line between modded stations, run base vehicles on the same line first. Base helicopters delivered at our pads, which cleared the station and pointed at the vehicle. Then change one number per full restart, resetting the others first, so results never stack. Seen in game.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>Don&rsquo;t animate a button that is always on screen <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>A top-bar mod button that pulsed all the time made a player unsubscribe from a whole family of mods. Keep a permanent button still; if something must catch the eye, animate only a &lsquo;new&rsquo; marker, only while that menu is open, and only until it is read.</p>
+        <p><strong>Players punish nagging, and judge a feature within seconds.</strong></p>
+        <p>A What&rsquo;s New that opened by itself and cross-promotion tiles drew complaints and were removed. A sign mod showing &lsquo;WELCOME TO&rsquo; in English got thumbs-down from players who thought it did nothing. Players gave up on a new object whose window stayed empty ~20 s waiting for the next scan: re-check a freshly placed object every 2 s for its first 30 s. Name build-menu entries with your mod&rsquo;s prefix &mdash; players use the menu search.</p>
+      </article>
+    <article class="note" data-g="tf2 tf3">
+        <h3>pairs() order changes between runs &mdash; sort keys before you seed a layout <span class="tags"><span class="tag tf2">TF2</span><span class="tag tf3">TF3</span></span></h3>
+        <p>Props placed with a fixed seed still came out different on each rebuild, because the cells were walked with <code>pairs()</code>, whose order Lua doesn&rsquo;t promise. Put the keys in a list, <code>table.sort</code> it, then walk it with <code>ipairs</code>. Anything that must look the same after a rebuild (random props, layouts, numbering) needs this. Checked offline.</p>
       </article>
     </div>
   </section>
