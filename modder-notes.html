@@ -839,6 +839,18 @@ end</pre>
         <h3>TF3's era years (base content) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
         <p>Track: simple always, simple catenary from 1921, standard 1930, high speed 1980. Roads: <code>_old_</code> to 1940, <code>_new_</code> from 1940, and one-way roads are new-only (from 1940; town small and medium only, no large). Signals: <code>signal_path_a</code> to 1950, <code>_c</code> from 1950. Rail station modules: <code>_era_a</code> to 1950, <code>_b</code> to 1990, <code>_c</code> after. Bridges: stone always, steel and suspension 1940, concrete 1970, cable 2000. Road tunnel <code>tunnel_a_car</code> from 1900. Read them from the <code>availability</code> blocks in <code>base/content/*/*.zip</code>; anything placed from a script for another era should be swapped to the year's version first.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: settings in the mod setup screen (mod.json <code>params</code>) <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Each entry is <code>{ key, name, uiType, values, defaultIndex }</code>. <code>uiType</code> is case-sensitive: the game knows <code>Button</code>, <code>Slider</code>, <code>ComboBox</code>, <code>IconButton</code> and <code>CheckBox</code>. <code>SLIDER</code> made the game <strong>skip the whole mod</strong> (&lsquo;invalid ui element type&rsquo;).</p>
+        <p>Read the values in game with <code>api.engine.config.getModParams()[&lt;mod folder id&gt;][key]</code>, and at load in a <code>postRunScript</code> as the third argument of <code>postRunFn(_, _, allModParams)</code>. Print what arrives before you index with it, and clamp it (<code>math.max(1, &hellip;)</code>): ours indexed straight into a 1-based Lua list. The player sets them before a save loads, and can change them on the next load.</p>
+        <p>The setup screen shows <strong>no tooltips</strong> and can&rsquo;t calculate anything. It does keep line breaks in a <code>name</code>, so a display-only entry (a <code>Button</code> nobody reads) can carry a short multi-line price chart under your sliders.</p>
+        <p>To scale a construction&rsquo;s build price: in <code>postRunFn</code>, write the setting into each of your .con&rsquo;s <code>updateScript.params</code>, then multiply <code>result.cost</code> in its update function. The build menu, placing, upgrades and resizes all charge it, natively.</p>
+      </article>
+      <article class="note" data-g="tf3 crash">
+        <h3>TF3: changing another mod&rsquo;s construction from a build hook &mdash; copy, never edit in place <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Seen</span></span></h3>
+        <p>A hook that wraps every construction&rsquo;s update function (e.g. to add tram lanes to an industry&rsquo;s yard) gets back tables a mod may <em>share</em> between builds. One mod built its yard from template pieces kept in a module. Our hook wrote the tram modes into those templates, so every later build already &lsquo;had&rsquo; trams and our rails were skipped: the trams ran, but no track or wire was drawn.</p>
+        <p>Copy every lane, edge, station and sub-construction table you change, and put the copy in its place. Never write into the pieces another mod hands you.</p>
+      </article>
     </div>
   </section>
 
@@ -1045,6 +1057,17 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
       <article class="note" data-g="tf2 inferred">
         <h3>math.randomseed seemed to do nothing <span class="tags"><span class="tag tf2">TF2</span><span class="tag inferred">Inferred</span></span></h3>
         <p>Two fresh games rolled identical values even when seeded from <code>os.time</code>, <code>os.clock</code> and a heap address. The workaround derives variation from map data. Also guard <code>math.random() == 0</code> before taking a log.</p>
+      </article>
+    <article class="note" data-g="tf3">
+        <h3>TF3: a monthly charge the paused calendar can&rsquo;t dodge <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>The world&rsquo;s <code>GAME_TIME.gameTime</code> (milliseconds) keeps running when the player pauses or slows the <em>calendar</em>, and stops only when the game itself is paused &mdash; the game charges its own upkeep on this clock. A bill counted in calendar months can be dodged by pausing the calendar (a player found it within a day).</p>
+        <p>Bill on play time instead: <code>month = math.floor(gameTime / api.util.getDefaultMonthDuration())</code>. The helper is in <code>api.util</code>; <code>api.engine.util</code> has no such function, and our first try read 0 there and billed nothing. Seen: 121,750 ms a month (about 2 minutes at 1&times;). Treat anything under ~10 s as a bad read. Keep the last month billed in your game script&rsquo;s state so a reload doesn&rsquo;t bill twice, and cap a catch-up at a few months.</p>
+        <p>Verified: 102 minutes with the calendar paused gave 56 monthly bills, none missed or doubled.</p>
+      </article>
+      <article class="note" data-g="tf3">
+        <h3>TF3: put a script charge on the right line of the finances &mdash; and the game&rsquo;s own upkeep <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <p>Book it with <code>api.cmd.makeJournalBookAssetCmd(player, entry, position)</code>, where <code>entry = api.type.JournalEntry.new()</code>, <code>entry.amount</code> is negative for a cost and <code>entry.time = -1</code>. Set <code>entry.category.type = JournalEntry.Type.MAINTENANCE</code>, <code>category.maintenance = JournalEntry.Maintenance.INFRASTRUCTURE</code> and <code>category.carrier = JournalEntry.Carrier.ROAD</code> and it lands under Road &rsaquo; Upkeep Buildings. Leave the carrier empty and it is filed under &lsquo;General&rsquo;. Set each field in its own <code>pcall</code>.</p>
+        <p>The yearly upkeep the construction&rsquo;s own window shows is <code>MAINTENANCE_COST.maintenanceCost &times; baseConfig.costs.infrastructureMaintenanceScale</code> (&times; the year multiplier where the construction uses one), as the game&rsquo;s <code>entity_window_util</code> works it out. It differs by difficulty. To replace it with your own price, book only the difference.</p>
       </article>
     </div>
   </section>
@@ -1355,6 +1378,15 @@ end</code></pre>
 } ]</code></pre>
         <p>The in-game mod browser also reads mod.io's own dependencies (<code>hasDependencies</code>, and a dependency list in the mod details), so set them on the mod.io page too. Neither forces a subscribe; say what's needed in the first line of the description as well.</p>
       </article>
+    <article class="note" data-g="tf3">
+        <h3>mod.io: waiting for approval &mdash; what the queue does to you, and what still works <span class="tags"><span class="tag tf3">TF3</span></span></h3>
+        <ul>
+          <li><strong>Don&rsquo;t re-upload while a file waits.</strong> A newer upload goes to the back of the queue; some mods have waited over a week.</li>
+          <li><strong>The in-game upload replaces your mod.io description at once</strong> with the plain text from <code>_metadata/modinfo.json</code>, even while the file is still waiting. Push your real (HTML) page straight after uploading. The description is limited to 50,000 characters.</li>
+          <li><strong>Anyone can download a waiting file:</strong> <code>https://g-&lt;game&gt;.modapi.io/v1/games/&lt;game&gt;/mods/&lt;mod&gt;/files/&lt;file&gt;/download</code> returns the zip with no login and no expiry, for live, waiting and even rejected files. PC players can install it by hand, and mod.io still hosts it. The zip installs as is (<code>_content.json</code>, <code>content</code>, <code>mod.json</code>, <code>strings.json</code>).</li>
+          <li>The game&rsquo;s uploader stamps every file &lsquo;1.0&rsquo;: keep your own file-id &rarr; version list.</li>
+        </ul>
+      </article>
     </div>
   </section>
 
@@ -1534,6 +1566,10 @@ end</code></pre>
       <article class="note" data-g="tf3 crash">
         <h3>TF3 on PS5: a Window with <code>closable = true</code> breaks the whole UI &mdash; test the field first <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
         <p>The PS5 build&#39;s <code>builtin.Window</code> has no <code>closable</code> field, and an unknown field there fails the entire interface, not just your window. A player reported &ldquo;crashes the UI on PS5 &hellip; when you click the button at the top left&rdquo; &mdash; the PYT button, whose windows all asked for the close X. Test it once on a spare param object and only ask where it exists: <code>local made, ud = pcall(function() return api.gui.react.params.builtin.Window.new() end)</code>; <code>ok = (not made) or pcall(function() ud.closable = true end)</code>; then <code>closable = ok and true or nil</code>. Without the X, your own button opens and closes the window. First found by the &lsquo;Better Minimap&rsquo; mod (PYT Mini Map MM45); fixed across every PYT mod 2026-10-29 (P532) and shipped first in PYT - Pay Your Tolls 3.0.1 the same day; we have no PS5 copy, so the reporting player is our test &mdash; until a PS5 player confirms, treat it as Inferred. Any other optional Window field (<code>header</code>&hellip;) deserves the same test.</p>
+      </article>
+    <article class="note" data-g="tf3 crash">
+        <h3>TF3: LuaJIT allows 60 upvalues per function <span class="tags"><span class="tag tf3">TF3</span><span class="tag crash">Fatal</span></span></h3>
+        <p>Next to the 200-locals-per-file limit there is a second wall: one function can capture at most 60 outer locals. A big UI function that reaches for many file-level helpers stops the script loading. Gather helpers in a table and reach them through that one name (we hung ours on a global the card and the tick both read).</p>
       </article>
     </div>
   </section>
