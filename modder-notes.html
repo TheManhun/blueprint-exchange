@@ -2312,7 +2312,7 @@ api.cmd.sendCommand(api.cmd.makeWorldBuildProposalCmd(p, nil, false, true))</pre
           <li>Publish from TF3's mod manager: Validate (PC + Console), then Upload. TF3 builds the console version, so this can't be skipped. <strong>Run the Validation Report before any zip or upload.</strong></li>
           <li>A missing summary shows a generic "check your network" box (error 13009). The log says "The summary field is required" (250 characters max).</li>
           <li>Unaccepted mod.io terms give 403 (error_ref 11074).</li>
-          <li>Keep <code>_metadata/mod.io_fileid.txt</code> so the button reads Update. An update replaces the page's tags with modinfo.json's.</li>
+          <li>Keep <code>_metadata/mod.io_fileid.txt</code> so the button reads Update. An update replaces the page's tags with modinfo.json's. The file holds only your mod's mod.io id (the number, e.g. <code>6415619</code>). Lose it (a reinstall, a copy, a git export &mdash; it is easy to leave untracked) and the button reads Upload, &ldquo;A new mod will be created on mod.io&rdquo;: a duplicate mod. Back it up; if it is missing, write the id back in before uploading, and delete any duplicate on mod.io. Seen twice.</li>
           <li>The mod picture is <code>_metadata/0.png</code> at 1920×1080.</li>
         </ul>
         <p><strong>What the in-game upload does to the mod.io page.</strong></p>
@@ -2373,6 +2373,7 @@ end</code></pre>
           <li>The game&rsquo;s uploader stamps every file &lsquo;1.0&rsquo;: keep your own file-id &rarr; version list.</li>
         </ul>
         <p><strong>More on what the in-game upload does.</strong></p>
+        <p><strong>One upload makes two files</strong> on the mod&rsquo;s page: one for PC (Windows / Mac / Linux) and one for consoles (Xbox / PS5). That is normal &mdash; keep both; without the console file, console players don&rsquo;t get that version. Each waits for approval on its own. Seen on every upload.</p>
         <p>Every file is labelled &ldquo;Version: 1.0&rdquo; and the label can&rsquo;t be edited afterwards. The console file (Xbox / PS5) is built separately and is smaller (10.7 vs 15.3 MB for one mod); right after an upload it can still show the previous build, so check it.</p>
       </article>
     <article class="note" data-g="tf2 tf3">
