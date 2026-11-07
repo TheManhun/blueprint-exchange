@@ -75,11 +75,11 @@
     </div>
 
     <div class="ea-mod">
-      <h3>PYT - Pay Your Tolls<span class="ver">3.0.2</span></h3>
-      <p><strong>Plays nice with Mod Bar:</strong> with Mod Bar installed, a click in the PYT bar could freeze the game and close it &mdash; fixed. The PYT button can also fade until your mouse is over it (PYT - Settings). Plus the PlayStation fix waiting on mod.io. Otherwise it plays like the live 3.0.</p>
-      <div class="ea-facts"><span>17.9 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl">VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/f93d23a04671ce04355026a5786d812459e451e9df6296e0991a5156ecf3e31e" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.0.2_PC.zip" hidden></span></div>
-      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.0.2_PC.zip">Download Pay Your Tolls 3.0.2</a>
-      <span class="hash">SHA-256 F93D23A04671CE04355026A5786D812459E451E9DF6296E0991A5156ECF3E31E</span>
+      <h3>PYT - Pay Your Tolls<span class="ver">3.1</span></h3>
+      <p><strong>Your fleet, your roads:</strong> trams pay tolls, and cars, buses, trucks and trams each have their own price. My Fleet in the toll window shows buses, trucks, trams or your whole fleet. New option: tolls only on roads you own (a red padlock shows the rest). Signs and gantries keep off the lanes &mdash; at Y splits, on curves and when a town builds a junction beside them. Lighter plaza models at a distance, and the 1980 gantry lights glow at night again. Includes 3.0.2&rsquo;s Mod Bar fix, the fading PYT button and the PlayStation fix waiting on mod.io.</p>
+      <div class="ea-facts"><span>19.4 MB</span><span>waiting since 28 Oct 2026</span><span class="ok">Defender: clean</span><span class="vtl">VirusTotal: <a id="vt-pyt" href="https://www.virustotal.com/gui/file/9deed5d516891022053a630ebb8f23ded807216b115fac289c092f4ab263a967" target="_blank" rel="noopener">report</a></span><span class="dl" data-asset="PYT_Pay_Your_Tolls_3.1_PC.zip" hidden></span></div>
+      <a class="btn" href="https://github.com/TheManhun/blueprint-exchange/releases/download/early-access/PYT_Pay_Your_Tolls_3.1_PC.zip">Download Pay Your Tolls 3.1</a>
+      <span class="hash">SHA-256 9DEED5D516891022053A630EBB8F23DED807216B115FAC289C092F4AB263A967</span>
     </div>
 
     <div class="ea-mod">
@@ -126,10 +126,10 @@
 const FILES = {
   "98FEA2CC8489D4A9999056347AABBEFFBA23669E45AA212F98EFD71E9BF4648A": { name: "PYT - A Plus 1.0.3", vt: "vt-aplus" },
   "6C4467A70880B01245978C723A508D55061DB68483D519C42A353566682D8716": { name: "PYT - Blueprint Exchange 1.3.2", vt: "vt-bpx" },
-  "F93D23A04671CE04355026A5786D812459E451E9DF6296E0991A5156ECF3E31E": { name: "PYT - Pay Your Tolls 3.0.2", vt: "vt-pyt" },
+  "9DEED5D516891022053A630EBB8F23DED807216B115FAC289C092F4AB263A967": { name: "PYT - Pay Your Tolls 3.1", vt: "vt-pyt" },
   "5DBAF53BA5EB56BDFD33B4C07508DD58F3A3B066CFFEBA33C020A72223C960CD": { name: "PYT - Drone 2020 1.1.4", vt: "vt-drone" },
 };
-const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone', 'vt-pyt']); // files VirusTotal has (Epod uploads them; only those get a report link)
+const VT_OK = new Set(['vt-aplus', 'vt-bpx', 'vt-drone']); // files VirusTotal has (Epod uploads them; only those get a report link)
 const vtUrl = h => "https://www.virustotal.com/gui/file/" + h.toLowerCase();
 // every VirusTotal link on the page goes to its file's live report, by fingerprint
 for (const [h, f] of Object.entries(FILES)) { const a = document.getElementById(f.vt); if (a) a.href = vtUrl(h); }
