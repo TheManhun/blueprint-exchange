@@ -87,6 +87,38 @@ def sitemap_lastmod():
         print("sitemap.xml: lastmod dates updated")
 
 
+VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+
+def tag_problems(text):
+    """Every opened tag closed in order (2026-11-07: five notes had left a <p> open, which cascaded into 8 mismatches;
+    browsers repair that, screen readers and extractors may not). Returns a list of 'line N: ...' strings."""
+    from html.parser import HTMLParser
+
+    class Check(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.open, self.bad = [], []
+
+        def handle_starttag(self, tag, attrs):
+            if tag not in VOID:
+                self.open.append((tag, self.getpos()[0]))
+
+        def handle_endtag(self, tag):
+            if tag in VOID:
+                return
+            if self.open and self.open[-1][0] == tag:
+                self.open.pop()
+            else:
+                top = self.open[-1] if self.open else ("nothing", 0)
+                self.bad.append("line %d: </%s> while <%s> from line %d is open" % (self.getpos()[0], tag, top[0], top[1]))
+
+    c = Check()
+    c.feed(text)
+    c.close()
+    return c.bad + ["<%s> from line %d never closed" % t for t in c.open]
+
+
 def main():
     check = "--check" in sys.argv
     header = read(os.path.join(SRC, "_header.html"))
@@ -97,6 +129,9 @@ def main():
             continue
         out_path = os.path.join(ROOT, name)
         built = render(name, header, footer)
+        problems = tag_problems(built)
+        if problems:
+            raise SystemExit("%s: unbalanced HTML, not written --\n  %s" % (name, "\n  ".join(problems[:10])))
         current = read(out_path) if os.path.exists(out_path) else None
         if current != built:
             stale.append(name)
