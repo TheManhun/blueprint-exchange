@@ -14,7 +14,7 @@
 <meta property="og:url" content="https://tfbpx.com/pyt-mega-warehouse.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="tfbpx.com">
-<meta property="og:image" content="https://image.modcdn.io/mods/d5ab/6455636/0.18.png">
+<meta property="og:image" content="https://image.modcdn.io/mods/d5ab/6455636/0.21.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
@@ -66,10 +66,10 @@
     <p class="sub">A storage camp with its own LOCKED store for every cargo on your map -- the stock piles up where you can see it. From 1960, a drive-through shed with staff. 500 to 5,000 per cargo. Pile Your Trades.</p>
   </div>
   <div class="pm-hero"><div>
-<ul class="pm-meta"><li>Version 2.4.1</li><li>Tested on TF3 build 40425</li><li>Road Station</li><li>Warehouse</li><li>Depot</li></ul>
+<ul class="pm-meta"><li>Version 2.4.2</li><li>Tested on TF3 build 40425</li><li>Road Station</li><li>Warehouse</li><li>Depot</li></ul>
 <div class="pm-actions"><a class="btn" href="https://mod.io/g/transportfever3/m/pyt-mega-warehouse">Get it on mod.io</a><a class="btn secondary" href="pyt-mega-warehouse-history.html">Update history</a><a class="btn secondary" href="pyt-mods.html">All PYT mods</a></div>
 </div>
-<div><img src="https://image.modcdn.io/mods/d5ab/6455636/0.18.png" alt="PYT - Mega Warehouse"></div>
+<div><img src="https://image.modcdn.io/mods/d5ab/6455636/0.21.png" alt="PYT - Mega Warehouse"></div>
   </div>
   <section class="pm-sec"><h2>What it does</h2>
 <p><strong>A whole storage camp with its own store for every cargo on your map &mdash; and the stock piles up where you can see it.</strong></p>
@@ -229,13 +229,18 @@
 <p>&#129437; <strong>NEU: Sicherheit im PYT Mega Warehouse.</strong> Gepr&uuml;ft vom Waschb&auml;r-Premierminister h&ouml;chstpers&ouml;nlich &mdash; Fracht gesch&uuml;tzt: 100&nbsp;%, Waschb&auml;ren gefasst: 0, Waschb&auml;ren ins Management bef&ouml;rdert: 1. <em>(Alle Tests fanden nur in unserer Fantasie statt.)</em> Eure Fracht ist sicher. Wahrscheinlich. &#128513;</p>
 </details></section>
   <section class="pm-sec"><h2>Latest update</h2>
-<p><strong>2.4.1 &mdash; ON THE CLOCK</strong></p>
-<p>JamesJustice paused the calendar and the warehouse stopped sending bills. The accountant has been spoken to.</p>
-<p>In plain terms: the running cost now ticks with play time, like the game's own upkeep, so pausing or slowing the calendar no longer pauses or slows it.</p>
+<p><strong>2.4.2 &mdash; FAIR BILLS</strong></p>
+<p>JamesJustice's empty warehouse got a bill for 71 cargos it had never seen. The accountant now counts what is actually on the shelves.</p>
+<p>In plain terms: you pay for the cargos a warehouse holds, older warehouses stop slowing the game, and a change that can't be made now says why.</p>
 <ul>
-<li><strong>Fixed:</strong> the running cost is booked once every game month of play time (about 2 minutes at normal speed), the way the game charges its own upkeep &mdash; a paused or slowed calendar no longer pauses or slows the bill. Pausing the game itself still stops it, as it stops everything</li>
-<li><strong>Fixed:</strong> the 2.4 tip about switching cargos off was wrong &mdash; an off cargo hands its space to the others of its kind, so the camp's capacity and its bill stay the same. The bill follows the camp's size and how full it is right now</li>
-<li><strong>Thanks:</strong> to JamesJustice for testing it properly</li>
+<li><strong>Fixed:</strong> the running cost (harder costs in the mod settings) is charged only for the cargos a warehouse actually holds, each by how full its store is. An empty warehouse pays the game's own upkeep. Big cargo mods no longer double the bill</li>
+<li><strong>Fixed:</strong> warehouses built before 2.3.1 could drop the game to a few FPS while their station window was open (an old, oversized catchment). Each one now refreshes itself once after you load &mdash; stock, split and layout kept</li>
+<li><strong>Fixed:</strong> warehouses built before 2.3 could refuse every change with 'Not applied: nil'. They now keep the shape they were built with</li>
+<li><strong>Fixed:</strong> a crash when the mod updated a warehouse in the background while its window was open on the Station or Depot tab</li>
+<li><strong>Better:</strong> 'Not applied' now says what is in the way. A road junction right at a gate gets a tip: remove the road piece between the gate and the junction, make your change, then reconnect it</li>
+<li><strong>Better:</strong> the running cost line: at the default settings it shows the game's own figure, as the window's footer does; with harder costs it shows a calendar year at your calendar speed</li>
+<li><strong>Faster:</strong> the warehouse window counts spoiled crates every 10 seconds instead of on every stock change</li>
+<li><strong>Thanks:</strong> to JamesJustice for the report and the numbers</li>
 </ul>
 <p><a href="pyt-mega-warehouse-history.html">Full update history &rarr;</a></p></section>
   <section class="pm-sec"><h2>More PYT mods</h2>

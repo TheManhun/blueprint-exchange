@@ -14,7 +14,7 @@
 <meta property="og:url" content="https://tfbpx.com/pyt-mega-warehouse-history.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="tfbpx.com">
-<meta property="og:image" content="https://image.modcdn.io/mods/d5ab/6455636/0.18.png">
+<meta property="og:image" content="https://image.modcdn.io/mods/d5ab/6455636/0.21.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 <style>
@@ -66,7 +66,29 @@
     <p class="sub">Every release, newest first. <a href="pyt-mega-warehouse.html">Back to the mod page</a> &middot; <a href="https://mod.io/g/transportfever3/m/pyt-mega-warehouse">mod.io</a></p>
   </div>
   <div class="pm-hist">
-<details open><summary><span class="v">2.4.1</span>ON THE CLOCK</summary><div class="body"><p>JamesJustice paused the calendar and the warehouse stopped sending bills. The accountant has been spoken to.</p>
+<details open><summary><span class="v">2.4.2</span>FAIR BILLS</summary><div class="body"><p>JamesJustice's empty warehouse got a bill for 71 cargos it had never seen. The accountant now counts what is actually on the shelves.</p>
+<p>In plain terms: you pay for the cargos a warehouse holds, older warehouses stop slowing the game, and a change that can't be made now says why.</p>
+<ul>
+<li><strong>Fixed:</strong> the running cost (harder costs in the mod settings) is charged only for the cargos a warehouse actually holds, each by how full its store is. An empty warehouse pays the game's own upkeep. Big cargo mods no longer double the bill</li>
+<li><strong>Fixed:</strong> warehouses built before 2.3.1 could drop the game to a few FPS while their station window was open (an old, oversized catchment). Each one now refreshes itself once after you load &mdash; stock, split and layout kept</li>
+<li><strong>Fixed:</strong> warehouses built before 2.3 could refuse every change with 'Not applied: nil'. They now keep the shape they were built with</li>
+<li><strong>Fixed:</strong> a crash when the mod updated a warehouse in the background while its window was open on the Station or Depot tab</li>
+<li><strong>Better:</strong> 'Not applied' now says what is in the way. A road junction right at a gate gets a tip: remove the road piece between the gate and the junction, make your change, then reconnect it</li>
+<li><strong>Better:</strong> the running cost line: at the default settings it shows the game's own figure, as the window's footer does; with harder costs it shows a calendar year at your calendar speed</li>
+<li><strong>Faster:</strong> the warehouse window counts spoiled crates every 10 seconds instead of on every stock change</li>
+<li><strong>Thanks:</strong> to JamesJustice for the report and the numbers</li>
+</ul><div class="de"><p><img src="https://tfbpx.com/pyt-flag-de.png" alt="Deutsch" width="20"> <em>Neu in 2.4.2: Du zahlst nur noch f&uuml;r die Frachten, die ein Lager wirklich hat, &auml;ltere Lager bremsen das Spiel nicht mehr, und eine &Auml;nderung, die nicht geht, sagt jetzt warum.</em></p>
+<ul lang="de">
+<li><strong>Behoben:</strong> die Betriebskosten (h&auml;rtere Kosten in den Mod-Einstellungen) gelten nur noch f&uuml;r die Frachten, die ein Lager wirklich hat, je nachdem wie voll ihr Speicher ist. Ein leeres Lager zahlt den Unterhalt des Spiels. Gro&szlig;e Fracht-Mods verdoppeln die Rechnung nicht mehr</li>
+<li><strong>Behoben:</strong> Lager von vor 2.3.1 konnten das Spiel bei offenem Bahnhofsfenster auf wenige FPS bremsen (ein altes, zu gro&szlig;es Einzugsgebiet). Jedes erneuert sich nach dem Laden einmal von selbst &mdash; Bestand, Aufteilung und Layout bleiben</li>
+<li><strong>Behoben:</strong> Lager von vor 2.3 konnten jede &Auml;nderung mit 'Nicht &uuml;bernommen: nil' ablehnen. Sie behalten jetzt die Form, mit der sie gebaut wurden</li>
+<li><strong>Behoben:</strong> ein Absturz, wenn die Mod ein Lager im Hintergrund erneuerte, w&auml;hrend sein Fenster auf dem Bahnhofs- oder Depot-Reiter offen war</li>
+<li><strong>Besser:</strong> 'Nicht &uuml;bernommen' sagt jetzt, was im Weg ist. Bei einer Kreuzung direkt am Tor gibt es einen Tipp: das Stra&szlig;enst&uuml;ck zwischen Tor und Kreuzung entfernen, &auml;ndern, dann wieder verbinden</li>
+<li><strong>Besser:</strong> die Zeile Betriebskosten: in den Standard-Einstellungen zeigt sie den Wert des Spiels wie die Fu&szlig;zeile des Fensters; mit h&auml;rteren Kosten ein Kalenderjahr bei deiner Kalendergeschwindigkeit</li>
+<li><strong>Schneller:</strong> das Lagerfenster z&auml;hlt verdorbene Kisten alle 10 Sekunden statt bei jeder Bestands&auml;nderung</li>
+<li><strong>Danke:</strong> an JamesJustice f&uuml;r die Meldung und die Zahlen</li>
+</ul></div></div></details>
+<details><summary><span class="v">2.4.1</span>ON THE CLOCK</summary><div class="body"><p>JamesJustice paused the calendar and the warehouse stopped sending bills. The accountant has been spoken to.</p>
 <p>In plain terms: the running cost now ticks with play time, like the game's own upkeep, so pausing or slowing the calendar no longer pauses or slows it.</p>
 <ul>
 <li><strong>Fixed:</strong> the running cost is booked once every game month of play time (about 2 minutes at normal speed), the way the game charges its own upkeep &mdash; a paused or slowed calendar no longer pauses or slows the bill. Pausing the game itself still stops it, as it stops everything</li>
